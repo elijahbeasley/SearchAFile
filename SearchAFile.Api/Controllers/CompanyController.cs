@@ -1,0 +1,59 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using SearchAFile.Core.Domain.Entities;
+using SearchAFile.Core.Interfaces;
+
+namespace SearchAFile.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class CompanyController : ControllerBase
+{
+    private readonly ICompanyService _companyService;
+
+    public CompanyController(ICompanyService companyService)
+    {
+        _companyService = companyService;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Company>>> GetAll()
+    {
+        var companies = await _companyService.GetAllAsync();
+        return Ok(companies);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Company>> GetById(Guid id)
+    {
+        var company = await _companyService.GetByIdAsync(id);
+        if (company == null) return NotFound();
+        return Ok(company);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] Company company)
+    {
+        await _companyService.CreateAsync(company);
+        return CreatedAtAction(nameof(GetById), new { id = company.CompanyId }, company);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] Company company)
+    {
+        if (id != company.CompanyId) return BadRequest();
+
+        var result = await _companyService.UpdateAsync(company);
+        if (!result) return NotFound();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var result = await _companyService.DeleteAsync(id);
+        if (!result) return NotFound();
+
+        return NoContent();
+    }
+}
