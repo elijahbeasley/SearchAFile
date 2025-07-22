@@ -5,27 +5,23 @@ using SearchAFile.Core.Interfaces;
 namespace SearchAFile.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/companies")]
 public class CompanyController : ControllerBase
 {
-    private readonly ICompanyService _companyService;
+    private readonly ICompanyService _service;
 
-    public CompanyController(ICompanyService companyService)
+    public CompanyController(ICompanyService service)
     {
-        _companyService = companyService;
+        _service = service;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Company>>> GetAll()
-    {
-        var companies = await _companyService.GetAllAsync();
-        return Ok(companies);
-    }
+    public async Task<IActionResult> GetAll([FromQuery] string? search) => Ok(await _service.GetAllAsync(search));
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Company>> GetById(Guid id)
     {
-        var company = await _companyService.GetByIdAsync(id);
+        var company = await _service.GetByIdAsync(id);
         if (company == null) return NotFound();
         return Ok(company);
     }
@@ -33,7 +29,7 @@ public class CompanyController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Company company)
     {
-        await _companyService.CreateAsync(company);
+        await _service.CreateAsync(company);
         return CreatedAtAction(nameof(GetById), new { id = company.CompanyId }, company);
     }
 
@@ -42,7 +38,7 @@ public class CompanyController : ControllerBase
     {
         if (id != company.CompanyId) return BadRequest();
 
-        var result = await _companyService.UpdateAsync(company);
+        var result = await _service.UpdateAsync(company);
         if (!result) return NotFound();
 
         return NoContent();
@@ -51,7 +47,7 @@ public class CompanyController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var result = await _companyService.DeleteAsync(id);
+        var result = await _service.DeleteAsync(id);
         if (!result) return NotFound();
 
         return NoContent();

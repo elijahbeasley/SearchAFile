@@ -43,6 +43,8 @@ public partial class SearchAFileDbContext : DbContext
 
             entity.Property(e => e.EventId).HasDefaultValueSql("(newsequentialid())");
             entity.Property(e => e.ChangeDate).HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.HasOne(d => d.ChangedByUser).WithMany(p => p.Events).HasConstraintName("FK_Event_User");
         });
 
         modelBuilder.Entity<Core.Domain.Entities.File>(entity =>

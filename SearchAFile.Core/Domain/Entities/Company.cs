@@ -29,30 +29,38 @@ public partial class Company
     [StringLength(200)]
     public string? Address { get; set; }
 
+    [Required]
     [StringLength(30)]
-    public string? HeaderLogo { get; set; }
+    public required string HeaderLogo { get; set; }
 
+    [Required]
     [StringLength(30)]
-    public string? FooterLogo { get; set; }
+    public required string FooterLogo { get; set; }
 
+    [Required]
     [StringLength(30)]
-    public string? EmailLogo { get; set; }
+    public required string EmailLogo { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? PrimaryColor { get; set; }
+    public required string PrimaryColor { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? SecondaryColor { get; set; }
+    public required string SecondaryColor { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? PrimaryTextColor { get; set; }
+    public required string PrimaryTextColor { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? SecondaryTextColor { get; set; }
+    public required string SecondaryTextColor { get; set; }
 
     [Column("URL")]
+    [Required]
     [StringLength(500)]
-    public string? Url { get; set; }
+    public required string Url { get; set; }
 
     public bool? Lock { get; set; }
 

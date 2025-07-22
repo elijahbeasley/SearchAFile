@@ -5,7 +5,7 @@ using SearchAFile.Core.Interfaces;
 namespace SearchAFile.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 public class UserController : ControllerBase
 {
     private readonly IUserService _service;
@@ -13,7 +13,7 @@ public class UserController : ControllerBase
     public UserController(IUserService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
+    public async Task<IActionResult> GetAll([FromQuery] string? search) => Ok(await _service.GetAllAsync(search));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)

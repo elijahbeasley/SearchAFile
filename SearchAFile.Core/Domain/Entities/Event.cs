@@ -21,9 +21,13 @@ public partial class Event
     [StringLength(100)]
     public string? PrimaryKeyValue { get; set; }
 
-    public Guid? ChangedBy { get; set; }
+    public Guid? ChangedByUserId { get; set; }
 
     public DateTime? ChangeDate { get; set; }
 
     public string? Details { get; set; }
+
+    [ForeignKey("ChangedByUserId")]
+    [InverseProperty("Events")]
+    public virtual User? ChangedByUser { get; set; }
 }

@@ -13,45 +13,58 @@ public partial class SystemInfo
     [Column("SystemInfoID")]
     public Guid SystemInfoId { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? SystemName { get; set; }
+    public required string SystemName { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? ContactName { get; set; }
+    public required string ContactName { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? ContactEmailAddress { get; set; }
+    public required string ContactEmailAddress { get; set; }
 
+    [Required]
     [StringLength(20)]
-    public string? ContactPhoneNumber { get; set; }
+    public required string ContactPhoneNumber { get; set; }
 
+    [Required]
     [StringLength(30)]
-    public string? Favicon { get; set; }
+    public required string Favicon { get; set; }
 
+    [Required]
     [StringLength(30)]
-    public string? HeaderLogo { get; set; }
+    public required string HeaderLogo { get; set; }
 
+    [Required]
     [StringLength(30)]
-    public string? FooterLogo { get; set; }
+    public required string FooterLogo { get; set; }
 
+    [Required]
     [StringLength(30)]
-    public string? EmailLogo { get; set; }
+    public required string EmailLogo { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? PrimaryColor { get; set; }
+    public required string PrimaryColor { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? SecondaryColor { get; set; }
+    public required string SecondaryColor { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? PrimaryTextColor { get; set; }
+    public required string PrimaryTextColor { get; set; }
 
+    [Required]
     [StringLength(50)]
-    public string? SecondaryTextColor { get; set; }
+    public required string SecondaryTextColor { get; set; }
 
     [Column("URL")]
+    [Required]
     [StringLength(500)]
-    public string? Url { get; set; }
+    public required string Url { get; set; }
 
     [StringLength(10)]
     public string? Version { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
@@ -14,22 +15,32 @@ public partial class User
     public Guid UserId { get; set; }
 
     [Column("CompanyID")]
-    public Guid? CompanyId { get; set; }
+    [Required]
+    public required Guid CompanyId { get; set; }
 
+    [Required]
     [StringLength(25)]
-    public string? FirstName { get; set; }
+    public required string FirstName { get; set; }
 
+    [Required]
     [StringLength(25)]
-    public string? LastName { get; set; }
+    public required string LastName { get; set; }
 
+    public string FullName => $"{FirstName ?? ""} {LastName ?? ""}".Trim();
+
+    public string FullNameReverse => $"{LastName ?? ""}, {FirstName ?? ""}".Trim();
+
+    [Required]
     [StringLength(50)]
-    public string? EmailAddress { get; set; }
+    public required string EmailAddress { get; set; }
 
+    [Required]
     [StringLength(20)]
-    public string? PhoneNumber { get; set; }
+    public required string PhoneNumber { get; set; }
 
+    [Required]
     [StringLength(200)]
-    public string? Password { get; set; }
+    public required string Password { get; set; }
 
     [Column("ResetURL")]
     [StringLength(30)]
@@ -42,7 +53,7 @@ public partial class User
     [Column(TypeName = "datetime")]
     public DateTime? ResetExpiration { get; set; }
 
-    public bool? EmailVerified { get; set; }
+    public bool EmailVerified { get; set; }
 
     [Column("EmailVerificationURL")]
     [StringLength(50)]
@@ -51,14 +62,20 @@ public partial class User
     [StringLength(30)]
     public string? HeadshotPath { get; set; }
 
+    [Required]
     [StringLength(20)]
-    public string? Role { get; set; }
+    public required string Role { get; set; }
 
-    public bool? Active { get; set; }
+    [DisplayName("Status")]
+    [Required]
+    public required bool Active { get; set; }
 
     [ForeignKey("CompanyId")]
     [InverseProperty("Users")]
     public virtual Company? Company { get; set; }
+
+    [InverseProperty("ChangedByUser")]
+    public virtual ICollection<Event> Events { get; set; } = new List<Event>();
 
     [InverseProperty("CreatedByUser")]
     public virtual ICollection<FileGroup> FileGroups { get; set; } = new List<FileGroup>();

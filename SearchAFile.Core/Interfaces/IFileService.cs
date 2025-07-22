@@ -7,7 +7,7 @@ namespace SearchAFile.Core.Interfaces;
 
 public interface IFileService
 {
-    Task<IEnumerable<Domain.Entities.File>> GetAllAsync();
+    Task<IEnumerable<Domain.Entities.File>> GetAllAsync(string? search = null);
     Task<Domain.Entities.File?> GetByIdAsync(Guid fileId);
     Task CreateAsync(Domain.Entities.File file);
     Task<bool> UpdateAsync(Domain.Entities.File file);

@@ -7,7 +7,7 @@ namespace SearchAFile.Core.Interfaces;
 
 public interface IUserService
 {
-    Task<IEnumerable<User>> GetAllAsync();
+    Task<IEnumerable<User>> GetAllAsync(string? search = null);
     Task<User?> GetByIdAsync(Guid userId);
     Task CreateAsync(User user);
     Task<bool> UpdateAsync(User user);

@@ -16,6 +16,7 @@ public class SystemInfoService : ISystemInfoService
 
     public async Task<IEnumerable<SystemInfo>> GetAllAsync() => await _context.SystemInfos.ToListAsync();
 
+
     public async Task<SystemInfo?> GetByIdAsync(Guid id) => await _context.SystemInfos.FindAsync(id);
 
     public async Task CreateAsync(SystemInfo info)

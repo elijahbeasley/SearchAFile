@@ -1,0 +1,147 @@
+﻿@page
+@model SearchAFile.Web.Pages.Companies.IndexModel
+@{
+    ViewData["Title"] = "Companies";
+}
+
+<div class="card">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <label class="fs-2">@ViewData["Title"]</label>
+        <form method="get">
+            <div class="input-group">
+                <input asp-for="search" class="form-control" type="search" placeholder="Search products..." onchange="if (this.value === '') {this.form.submit(); }" />
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body">
+        <p>
+            <a asp-page="Create" class="btn btn-outline-success w-100">Create Company</a>
+        </p>
+
+        @if (Model.Companies == null)
+        {
+            <div class="table-responsive">
+                <table class="table table-striped m-0">
+                    <thead>
+                        <tr style="white-space: nowrap;">
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].Company1)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].ContactName)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].ContactEmailAddress)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].ContactPhoneNumber)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].Address)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].HeaderLogo)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].FooterLogo)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].EmailLogo)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].PrimaryColor)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].SecondaryColor)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].PrimaryTextColor)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].SecondaryTextColor)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].Url)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].Lock)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Companies[0].Active)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Companies)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Company1)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ContactName)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ContactEmailAddress)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ContactPhoneNumber)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Address)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.HeaderLogo)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.FooterLogo)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.EmailLogo)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.PrimaryColor)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.SecondaryColor)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.PrimaryTextColor)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.SecondaryTextColor)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Url)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Lock)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Active)
+                                </td>
+                                <td style="white-space: nowrap;">
+                                    <a asp-page="./Details" asp-route-id="@item.CompanyId" class="btn btn-outline-secondary">Details</a>
+                                    <a asp-page="./Edit" asp-route-id="@item.CompanyId" class="btn btn-outline-primary">Edit</a>
+                                    <a asp-page="./Delete" asp-route-id="@item.CompanyId" class="btn btn-outline-danger">Delete</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="mb-3 text-center text-secondary">
+                <i>No existing companies</i>
+            </div>
+        }
+
+    </div>
+
+</div>

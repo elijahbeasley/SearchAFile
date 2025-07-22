@@ -1,0 +1,71 @@
+﻿@page
+@model SearchAFile.Pages.Home.PrivacyModel
+@using SearchAFile.Core.Domain.Entities;
+@using SearchAFile.Web.Extensions
+@{
+    SystemInfo SystemInfo = HttpContext.Session.GetObject<SystemInfo>("SystemInfo");
+}
+
+<style>
+    .accordion-button {
+        box-shadow: none !important;
+        color: var(--primary-text-color) !important;
+        font-weight: 500;
+    }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--primary-color) !important;
+            color: var(--secondary-text-color) !important;
+        }
+
+            .accordion-button:not(.collapsed)::after {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            }
+
+    .accordion-item {
+        border: 1px solid lightgray;
+    }
+</style>
+
+<div class="container accordion" id="divPrivacyPolicy" style="max-width: 50rem;">
+
+    <div class="accordion-item">
+        <div class="accordion-header cus-no-select">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Cookie Data
+            </button>
+        </div>
+        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#divPrivacyPolicy">
+            <div class="accordion-body">
+                <label>By using the @SystemInfo.SystemName system, you are agreeing to allowing cookie data to be saved to your browser.</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header cus-no-select">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Sensative Data
+            </button>
+        </div>
+        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#divPrivacyPolicy">
+            <div class="accordion-body">
+                <label>All sensative data (e.g., passwords) in the @SystemInfo.SystemName system is encrypted.</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header cus-no-select">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                SMS & WhatsApp Messages Opt-In
+            </button>
+        </div>
+        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#divPrivacyPolicy">
+            <div class="accordion-body">
+                <label>By using the @SystemInfo.SystemName system, you are agreeing to receive occasional SMS and/or WhatsApp messages and will pay any associated fees from your carrier.</label>
+            </div>
+        </div>
+    </div>
+
+</div>

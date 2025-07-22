@@ -5,7 +5,7 @@ using SearchAFile.Core.Interfaces;
 namespace SearchAFile.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/systeminfos")]
 public class SystemInfoController : ControllerBase
 {
     private readonly ISystemInfoService _service;

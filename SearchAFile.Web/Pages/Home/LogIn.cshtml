@@ -1,0 +1,139 @@
+﻿@page
+@model SearchAFile.Pages.Home.LogInModel
+
+<form id="objForm" method="post" onsubmit="$('#btnLogIn').prop('disabled', $(this).valid()); $('#btnResetPassword').prop('disabled', $(this).valid());">
+
+    <div id="divValidationSummary" asp-validation-summary="All" class="text-danger" hidden></div>
+
+    <div id="divLoadingBlock" class="card m-auto p-0" style="max-width: 30rem;">
+
+        <div class="card-header cus-bg-primary cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
+            <span class="fs-5 p-0" style="color: var(--secondary-text-color);">
+                Email Address and Password
+            </span>
+        </div>
+
+        <div class="card-body cus-bootstrap-table-striped p-0">
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col fw-bold">
+                    <div class="form-floating">
+                        <input id="txtEmailAddress" asp-for="EmailAddress" type="email" class="form-control" placeholder="@Html.DisplayNameFor(model => model.EmailAddress)">
+                        <label class="fw-bold">@Html.DisplayNameFor(model => model.EmailAddress)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col fw-bold">
+                    <div class="form-floating">
+                        <input id="txtPassword" asp-for="Password" type="password" class="form-control" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"; margin: 0;">
+                        <label class="fw-bold">@Html.DisplayNameFor(model => model.Password)</label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-footer text-center cus-no-select">
+            <button id="btnLogIn" type="submit" class="btn btn-outline-success" onclick="LogIn();" style="min-width: 25%;">
+                <span id="lblSubmit" style="color: unset;">
+                    Log In
+                    <i class="fa-duotone fa-solid fa-right-to-bracket"></i>
+                </span>
+                <img id="imgSubmit" src="~/SystemFiles/loading.gif" style="display: none; height: 20px; width: 20px;" />
+            </button>
+            <button id="btnResetPassword" type="button" class="btn cus-btn-outline-primary" onclick="ResetPassword();">
+                Reset Password
+                <i class="fa-duotone fa-solid fa-unlock-keyhole"></i>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+
+        $(document).on('keypress', function (event) {
+
+            let keycode = (event.keyCode ? event.keyCode : event.which);
+
+            if (keycode == '13') {
+
+                event.preventDefault();
+                $('#btnLogIn').click();
+            }
+        });
+
+        function LogIn() {
+
+            // Clear out the messages.
+            window.top.ClearToast();
+
+            // Validate the page.
+            $('#objForm').validate();
+
+            if ($('#objForm').valid()) {
+
+                $('#lblSubmit').toggle();
+                $('#imgSubmit').toggle();
+            }
+            else {
+
+                // Output the errors.
+                 window.top.ShowToast("danger", "The following errors have occured", $('#divValidationSummary').html(), 0, false);
+            }
+        }
+
+        function ResetPassword() {
+
+            if ($('#txtEmailAddress').val().trim() == '') {
+                
+                window.location = '/Home/ResetPassword';
+            }
+            else {
+
+                window.location = '/Home/ResetPassword?email=' + encodeURIComponent($('#txtEmailAddress').val());
+            }
+        }
+
+        function SendVerificationEmail(id) {
+
+            $('#btnSendVerificationEmail').prop('disabled', true);
+
+            $.ajax({
+                type: 'GET',
+                url: PageURL + '?handler=SendVerificationEmail',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: {
+                    emailaddress: encodeURIComponent($('#txtEmailAddress').val())
+                },
+                success: function (response) {
+
+                    const jsonResponse = $.parseJSON(response);
+
+                    if (jsonResponse.booSuccess) {
+
+                        window.top.ClearToast();
+                        window.top.ShowSnack('success', 'Email address verification email successfully sent', 0, false);
+
+                        $('#itemID').val(null);
+                    }
+                    else {
+
+                         window.top.ShowToast('danger', 'Error!', jsonResponse.ErrorMessage.replace('\r', ' ').replace('\n', '<br />'), 0, false);
+                    }
+                }
+            });
+        }
+
+    </script>
+
+}

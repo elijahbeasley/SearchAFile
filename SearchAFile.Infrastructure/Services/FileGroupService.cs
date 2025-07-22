@@ -14,7 +14,22 @@ public class FileGroupService : IFileGroupService
         _context = context;
     }
 
-    public async Task<IEnumerable<FileGroup>> GetAllAsync() => await _context.FileGroups.ToListAsync();
+    public async Task<IEnumerable<FileGroup>> GetAllAsync(string? search = null)
+    {
+        var query = _context.FileGroups.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(file_group =>
+                (file_group.FileGroup1 != null && file_group.FileGroup1.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (file_group.CreatedByUser != null && file_group.CreatedByUser.FullName != null && file_group.CreatedByUser.FullName.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (file_group.CreatedByUser != null && file_group.CreatedByUser.FullNameReverse != null && file_group.CreatedByUser.FullNameReverse.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (file_group.Created != null && file_group.Created.Value.ToString("dddd, M/d/yyyy h:mm tt").Trim().ToLower().Contains(search.Trim().ToLower()))
+            );
+        }
+
+        return await query.ToListAsync();
+    }
 
     public async Task<FileGroup?> GetByIdAsync(Guid id) => await _context.FileGroups.FindAsync(id);
 

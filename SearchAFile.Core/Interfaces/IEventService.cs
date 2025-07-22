@@ -7,6 +7,6 @@ namespace SearchAFile.Core.Interfaces;
 
 public interface IEventService
 {
-    Task<IEnumerable<Event>> GetAllAsync();
+    Task<IEnumerable<Event>> GetAllAsync(string? search = null);
     Task<Event?> GetByIdAsync(Guid eventId);
 }

@@ -15,6 +15,8 @@ builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IFileGroupService, FileGroupService>();
 builder.Services.AddScoped<ISystemInfoService, SystemInfoService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<JwtTokenGenerator>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers();
 
@@ -32,6 +34,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ClientAuthMiddleware>();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

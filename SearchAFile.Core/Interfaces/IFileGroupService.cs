@@ -7,7 +7,7 @@ namespace SearchAFile.Core.Interfaces;
 
 public interface IFileGroupService
 {
-    Task<IEnumerable<FileGroup>> GetAllAsync();
+    Task<IEnumerable<FileGroup>> GetAllAsync(string? search = null);
     Task<FileGroup?> GetByIdAsync(Guid fileGroupId);
     Task CreateAsync(FileGroup fileGroup);
     Task<bool> UpdateAsync(FileGroup fileGroup);

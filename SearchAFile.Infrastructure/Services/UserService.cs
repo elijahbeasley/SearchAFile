@@ -14,7 +14,22 @@ public class UserService : IUserService
         _context = context;
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync() => await _context.Users.ToListAsync();
+    public async Task<IEnumerable<User>> GetAllAsync(string? search = null)
+    {
+        var query = _context.Users.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(user =>
+                (user.FullName != null && user.FullName.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (user.FullNameReverse != null && user.FullNameReverse.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (user.EmailAddress != null && user.EmailAddress.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (user.PhoneNumber != null && user.PhoneNumber.Trim().ToLower().Contains(search.Trim().ToLower()))
+            );
+        }
+
+        return await query.ToListAsync();
+    }
 
     public async Task<User?> GetByIdAsync(Guid id) => await _context.Users.FindAsync(id);
 

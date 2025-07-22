@@ -14,7 +14,22 @@ public class CompanyService : ICompanyService
         _context = context;
     }
 
-    public async Task<IEnumerable<Company>> GetAllAsync() => await _context.Companies.ToListAsync();
+    public async Task<IEnumerable<Company>> GetAllAsync(string? search = null)
+    {
+        var query = _context.Companies.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(company =>
+                (company.Company1 != null && company.Company1.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (company.ContactName != null && company.ContactName.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (company.ContactEmailAddress != null && company.ContactEmailAddress.Trim().ToLower().Contains(search.Trim().ToLower())) ||
+                (company.ContactPhoneNumber != null && company.ContactPhoneNumber.Trim().ToLower().Contains(search.Trim().ToLower()))
+            );
+        }
+
+        return await query.ToListAsync();
+    }
 
     public async Task<Company?> GetByIdAsync(Guid id) => await _context.Companies.FindAsync(id);
 
