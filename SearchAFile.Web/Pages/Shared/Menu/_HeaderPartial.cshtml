@@ -1,0 +1,14 @@
+﻿@model (string PageTitle, string Logo, string BodyClass)
+
+<header id="header" class="header cus-bg-primary @Model.BodyClass">
+    <div class="header_toggle d-flex align-items-center">
+        <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor:pointer;"></i>
+        <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height:1.5rem;">
+            @Model.PageTitle
+        </span>
+    </div>
+    <img class="ms-auto px-2"
+         src="~/SystemFiles/@Model.Logo"
+         style="max-height:50px;"
+         alt="Logo" />
+</header>

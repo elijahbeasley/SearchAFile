@@ -1,0 +1,568 @@
+﻿@using Microsoft.AspNetCore.Http;
+@using SearchAFile.Core.Domain.Entities;
+@using Microsoft.EntityFrameworkCore;
+@{
+    SystemInfo? SystemInfo = Context.Session.GetObject<SystemInfo>("SystemInfo");
+
+    Company? Company = Context.Session.GetObject<Company>("Company");
+
+    UserDto? user = Context.Session.GetObject<UserDto>("User");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" href="~/SystemFiles/@SystemInfo.Favicon">
+
+    <title>@Context.Session.GetString("PageTitle") | @SystemInfo.SystemName</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    @*Link for Font Awesome icons*@
+    <script src="https://kit.fontawesome.com/9716da10c3.js" crossorigin="anonymous" asp-append-version="true"></script>
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @* This is the link to the project's CSS, which overrides the master CSS file.' *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/menu.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            --primary-color: @(Company != null ? Company.PrimaryColor : SystemInfo.PrimaryColor); /* This is the main color. */
+            --secondary-color: @(Company != null ? Company.SecondaryColor : SystemInfo.SecondaryColor); /* This is the accent color. */
+            --primary-text-color: @(Company != null ? Company.PrimaryTextColor : SystemInfo.PrimaryTextColor); /* This is the color of text against a white, light gray, etc. background. */
+            --secondary-text-color: @(Company != null ? Company.SecondaryTextColor : SystemInfo.SecondaryTextColor); /* This is the color of text against a colored background. */
+        }
+    </style>
+</head>
+
+@if (Context.Request.Cookies["SearchAFile_menu"] != null
+    && Context.Request.Cookies["SearchAFile_menu"].Equals("large"))
+{
+    <body id="body-pd" class="body bg-white body-pd">
+
+        <div id="divLoading" class="cus-progress-overlay" style="display: none;">
+            <div class="cus-modal-progress">
+                <div class="cus-progress">
+                    <img alt="Loading..." src="~/SystemFiles/loading.gif" height="100" width="100" />
+                </div>
+            </div>
+        </div>
+
+        <img id="imgLoading" alt="Loading..." src="~/SystemFiles/loading.gif" height="50" width="50" style="display: none;" />
+
+        @if (User.Identity.IsAuthenticated
+            && user != null)
+        {
+            if (string.IsNullOrEmpty(user.HeadshotPath))
+            {
+                user.HeadshotPath = "Generic.jpg";
+            }
+
+            switch (user.Role)
+            {
+                case "System Admin":
+                    <header class="header cus-bg-primary body-pd" id="header">
+                        <div class="header_toggle d-flex align-items-center">
+                            <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor: pointer;"></i>
+                            <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+                        </div>
+                        <img class="ms-auto px-2" src="@Context.Session.GetString("Logo")" style="max-height: 50px;" />
+                    </header>
+                    <div class="l-navbar cus-bg-primary show-menu" id="nav-bar">
+                        <nav class="nav">
+                            <div id="navMenu">
+                                <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
+                                    <a class="text-center" href="~/UserFiles/@user.HeadshotPath" target="_blank" style="cursor: pointer;">
+                                        <img src="~/UserFiles/@user.HeadshotPath" onerror="this.onerror = null; this.src='/UserFiles/Generic.jpg'; this.parentElement.href='/UserFiles/Generic.jpg';" style="border-radius: 50%;" width="45px" height="45px">
+                                    </a>
+                                    <span class="nav_logo-name" style="cursor: context-menu; font-size: 12pt; line-height: 1.25rem;">
+                                        @user.FullName
+                                    </span>
+                                    <span class="badge text-white cus-bg-primary px-0">SAdmin</span>
+                                </div>
+                                <div class="overflow-auto" style="display: flex; flex-direction: column; height: var(--body-height);">
+                                    <div class="nav_list">
+                                        <a href="~/SystemAdmins/Dashboard" class="nav_link cus-text-secondary-text" title="Dashboard">
+                                            <i class="fa-solid fa-house nav_icon" style="width: 25px;"></i> <span class="nav_name">Dashboard</span>
+                                        </a>
+                                        <a href="~/MaintainCompanys/List" class="nav_link cus-text-secondary-text" title="Companys">
+                                            <i class="fa-regular fa-building nav_icon" style="width: 25px;"></i> <span class="nav_name">Companys</span>
+                                        </a>
+                                        <a href="~/MaintainUsers/List" class="nav_link cus-text-secondary-text" title="Users">
+                                            <i class="fa-solid fa-users nav_icon" style="width: 25px;"></i> <span class="nav_name">Users</span>
+                                        </a>
+                                        <a href="~/SystemAdmins/SystemSettings" class="nav_link cus-text-secondary-text" title="System Settings">
+                                            <i class="fa-solid fa-gears nav_icon" style="width: 25px;"></i> <span class="nav_name">System Settings</span>
+                                        </a>
+                                        <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text" title="Account Settings">
+                                            <i class="fa-solid fa-user-gear nav_icon" style="width: 25px;"></i> <span class="nav_name">Account Settings</span>
+                                        </a>
+                                        <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                            <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                                        </a>
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="cursor: pointer;" title="Log Out">
+                                        <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i>
+                                        <span class="nav_name">Log Out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    break;
+
+                case "Admin":
+                    <header class="header cus-bg-primary body-pd" id="header">
+                        <div class="header_toggle d-flex align-items-center">
+                            <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor: pointer;"></i>
+                            <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+                        </div>
+                        <img class="ms-auto px-2" src="@Context.Session.GetString("Logo")" style="max-height: 50px;" />
+                    </header>
+                    <div class="l-navbar cus-bg-primary show-menu" id="nav-bar">
+                        <nav class="nav">
+                            <div id="navMenu">
+                                <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
+                                    <a href="~/UserFiles/@user.HeadshotPath" target="_blank" style="cursor: pointer;">
+                                        <img src="~/UserFiles/@user.HeadshotPath" onerror="this.onerror = null; this.src='/UserFiles/Generic.jpg'; this.parentElement.href='/UserFiles/Generic.jpg';" style="border-radius: 50%;" width="45px" height="45px">
+                                    </a>
+                                    <span class="nav_logo-name" style="cursor: context-menu; font-size: 12pt; line-height: 1.25rem;">
+                                        @user.FullName
+                                    </span>
+                                    <span class="badge text-white cus-bg-primary px-0">@user.Role</span>
+                                </div>
+                                <div class="overflow-auto" style="display: flex; flex-direction: column; height: var(--body-height);">
+                                    <div class="nav_list">
+                                        <a href="~/Admins/Dashboard" class="nav_link cus-text-secondary-text" title="Dashboard">
+                                            <i class="fa-solid fa-house nav_icon" style="width: 25px;"></i> <span class="nav_name">Dashboard</span>
+                                        </a>
+                                        <a href="~/MaintainReferralSources/List" class="nav_link cus-text-secondary-text" title="Referral Sources">
+                                            <i class="fa-solid fa-person-walking-arrow-right nav_icon" style="width: 25px;"></i> <span class="nav_name">Referral Sources</span>
+                                        </a>
+                                        <a href="~/MaintainServiceTypes/List" class="nav_link cus-text-secondary-text" title="Services">
+                                            <i class="fa-solid fa-handshake-angle nav_icon" style="width: 25px;"></i> <span class="nav_name">Services</span>
+                                        </a>
+                                        <a href="~/MaintainSpecialClassifications/List" class="nav_link cus-text-secondary-text" title="Special Classifications">
+                                            <i class="fa-solid fa-id-badge nav_icon" style="width: 25px;"></i> <span class="nav_name">Special Classifications</span>
+                                        </a>
+                                        <a href="~/MaintainTherapists/List" class="nav_link cus-text-secondary-text" title="Therapists">
+                                            <i class="fa-solid fa-person-chalkboard nav_icon" style="width: 25px;"></i> <span class="nav_name">Therapists</span>
+                                        </a>
+                                        <a href="~/MaintainUsers/List" class="nav_link cus-text-secondary-text" title="Users">
+                                            <i class="fa-solid fa-users nav_icon" style="width: 25px;"></i> <span class="nav_name">Users</span>
+                                        </a>
+                                        <a href="~/MaintainVictimizationTypes/List" class="nav_link cus-text-secondary-text" title="Victimization Types">
+                                            <i class="fa-solid fa-person-falling-burst nav_icon" style="width: 25px;"></i> <span class="nav_name">Victimization Types</span>
+                                        </a>
+                                        <a href="~/Admins/CompanySettings" class="nav_link cus-text-secondary-text" title="Company Settings">
+                                            <i class="fa-regular fa-building nav_icon" style="width: 25px;"></i> <span class="nav_name">Company Settings</span>
+                                        </a>
+                                        <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text" title="Account Settings">
+                                            <i class="fa-solid fa-user-gear nav_icon" style="width: 25px;"></i> <span class="nav_name">Account Settings</span>
+                                        </a>
+                                        @if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
+                                        {
+                                            <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                                <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                                            </a>
+                                        }
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="cursor: pointer;" title="Log Out">
+                                        <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i>
+                                        <span class="nav_name">Log Out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    break;
+
+                case "Employee":
+                    <header class="header cus-bg-primary body-pd" id="header">
+                        <div class="header_toggle d-flex align-items-center">
+                            <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor: pointer;"></i>
+                            <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+                        </div>
+                        <img class="ms-auto px-2" src="@Context.Session.GetString("Logo")" style="max-height: 50px;" />
+                    </header>
+                    <div class="l-navbar cus-bg-primary show-menu" id="nav-bar">
+                        <nav class="nav">
+                            <div id="navMenu">
+                                <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
+                                    <a href="~/UserFiles/@user.HeadshotPath" target="_blank" style="cursor: pointer;">
+                                        <img src="~/UserFiles/@user.HeadshotPath" onerror="this.onerror = null; this.src='/UserFiles/Generic.jpg'; this.parentElement.href='/UserFiles/Generic.jpg';" style="border-radius: 50%;" width="45px" height="45px">
+                                    </a>
+                                    <span class="nav_logo-name" style="cursor: context-menu; font-size: 12pt; line-height: 1.25rem;">
+                                        @user.FullName
+                                    </span>
+                                    <span class="badge text-white cus-bg-primary px-0">@user.Role</span>
+                                </div>
+                                <div class="overflow-auto" style="display: flex; flex-direction: column; height: var(--body-height);">
+                                    <div class="nav_list">
+                                        <a href="~/Users/Dashboard" class="nav_link cus-text-secondary-text" title="Dashboard">
+                                            <i class="fa-solid fa-home nav_icon" style="width: 25px;"></i> <span class="nav_name">Dashboard</span>
+                                        </a>
+                                        <a href="~/MaintainClients/List" class="nav_link cus-text-secondary-text" title="Clients">
+                                            <i class="fa-solid fa-people-group nav_icon" style="width: 25px;"></i> <span class="nav_name">Clients</span>
+                                        </a>
+                                        <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text" title="Account Settings">
+                                            <i class="fa-solid fa-user-cog nav_icon" style="width: 25px;"></i> <span class="nav_name">Account Settings</span>
+                                        </a>
+                                        @if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
+                                        {
+                                            <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                                <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                                            </a>
+                                        }
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="cursor: pointer;" title="Log Out">
+                                        <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i>
+                                        <span class="nav_name">Log Out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    break;
+            }
+            <form asp-controller="Account" asp-action="LogOut" method="post" id="logout_form"></form>
+        }
+        else
+        {
+            <header class="header cus-bg-primary body-pd" id="header">
+                <div class="header_toggle d-flex align-items-center">
+                    <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor: pointer;"></i>
+                    <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+                </div>
+                <img class="ms-auto px-2" src="@Context.Session.GetString("Logo")" style="max-height: 50px;" />
+            </header>
+            <div class="l-navbar cus-bg-primary show-menu" id="nav-bar">
+                <nav class="nav">
+                    <div id="navMenu">
+                        <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
+                            <img src="~/UserFiles/Generic.jpg" alt="" style="border-radius: 50%;" width="45px" height="45px"> <span class="nav_logo-name" style="cursor: context-menu;">Please Log In</span>
+                        </div>
+                    </div>
+                    <a href="~/Home/LogIn" class="nav_link cus-text-secondary-text mb-0" title="Log In">
+                        <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                    </a>
+                </nav>
+            </div>
+        }
+
+        <!--Container Main start-->
+        <div id="divBody" class="height-100 bg-light height-100-show" style="border-radius: 0.25rem; padding: 1rem">
+            @RenderBody()
+        </div>
+
+        <div id="footer" class="cus-bg-primary d-flex align-items-center cus-no-select footer-show">
+            <span style="color: var(--secondary-text-color); font-size: smaller;"><b>Version:</b> @SystemInfo.Version</span>
+            <span class="ps-3" style="color: var(--secondary-text-color); font-size: smaller;"><b>Contact:</b> <a class="cus-text-secondary-text" href="mailto:@SystemInfo.ContactEmailAddress">@SystemInfo.ContactName</a></span>
+            <img class="ps-3 ms-auto" height="35" src="~/SystemFiles/@SystemInfo.FooterLogo" />
+        </div>
+
+        <div id="divMessage"></div>
+        <div id="StartupJavaScript" hidden>@TempData["StartupJavaScript"]</div>
+
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+
+        <script src="~/js/menu.js" asp-append-version="true"></script>
+
+        @* Script for jQuery BlockUI. *@
+        <script src="https://malsup.github.io/jquery.blockUI.js" asp-append-version="true"></script>
+
+        @* jQuery autocomplete box. *@
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" asp-append-version="true">
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" asp-append-version="true"></script>
+
+        @* These are for Google Maps autofill. *@
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=default" asp-append-version="true"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9U50suCLYH3cTjjGnSsGVk4GfKVHPloM&callback=initAutocomplete&libraries=places&v=weekly" defer asp-append-version="true"></script>
+
+        @await RenderSectionAsync("Scripts", required: false)
+
+        <script type="text/javascript">
+
+            $('#body').removeClass("modal-open");
+
+            function RefreshMenu() {
+
+                $('#nav-bar').load(document.URL + ' #nav-bar>*', function () {
+
+                    SetMenuHighlight();
+                });
+            }
+
+        </script>
+    </body>
+}
+else
+{
+    <body id="body-pd" class="body bg-white">
+
+        <div id="divLoading" class="cus-progress-overlay" style="display: none;">
+            <div class="cus-modal-progress">
+                <div class="cus-progress">
+                    <img alt="Loading..." src="~/SystemFiles/loading.gif" height="100" width="100" />
+                </div>
+            </div>
+        </div>
+
+        <img id="imgLoading" alt="Loading..." src="~/SystemFiles/loading.gif" height="50" width="50" style="display: none;" />
+
+        @if (User.Identity.IsAuthenticated
+            && user != null)
+        {
+            if (string.IsNullOrEmpty(user.HeadshotPath))
+            {
+                user.HeadshotPath = "Generic.jpg";
+            }
+
+            switch (user.Role)
+            {
+                case "System Admin":
+                    <header class="header cus-bg-primary" id="header">
+                        <div class="header_toggle d-flex align-items-center">
+                            <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor: pointer;"></i>
+                            <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+                        </div>
+                        <img class="ms-auto px-2" src="@Context.Session.GetString("Logo")" style="max-height: 50px;" />
+                    </header>
+                    <div class="l-navbar cus-bg-primary" id="nav-bar">
+                        <nav class="nav">
+                            <div id="navMenu">
+                                <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
+                                    <a class="text-center" href="~/UserFiles/@user.HeadshotPath" target="_blank" style="cursor: pointer;">
+                                        <img src="~/UserFiles/@user.HeadshotPath" onerror="this.onerror = null; this.src='/UserFiles/Generic.jpg'; this.parentElement.href='/UserFiles/Generic.jpg';" style="border-radius: 50%;" width="45px" height="45px">
+                                    </a>
+                                    <span class="nav_logo-name" style="cursor: context-menu; font-size: 12pt; line-height: 1.25rem;">
+                                        @user.FullName
+                                    </span>
+                                    <span class="badge text-white cus-bg-primary px-0">SAdmin</span>
+                                </div>
+                                <div class="overflow-auto" style="display: flex; flex-direction: column; height: var(--body-height);">
+                                    <div class="nav_list">
+                                        <a href="~/SystemAdmins/Dashboard" class="nav_link cus-text-secondary-text" title="Dashboard">
+                                            <i class="fa-solid fa-house nav_icon" style="width: 25px;"></i> <span class="nav_name">Dashboard</span>
+                                        </a>
+                                        <a href="~/MaintainCompanys/List" class="nav_link cus-text-secondary-text" title="Companys">
+                                            <i class="fa-regular fa-building nav_icon" style="width: 25px;"></i> <span class="nav_name">Companys</span>
+                                        </a>
+                                        <a href="~/MaintainUsers/List" class="nav_link cus-text-secondary-text" title="Users">
+                                            <i class="fa-solid fa-users nav_icon" style="width: 25px;"></i> <span class="nav_name">Users</span>
+                                        </a>
+                                        <a href="~/SystemAdmins/SystemSettings" class="nav_link cus-text-secondary-text" title="System Settings">
+                                            <i class="fa-solid fa-gears nav_icon" style="width: 25px;"></i> <span class="nav_name">System Settings</span>
+                                        </a>
+                                        <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text" title="Account Settings">
+                                            <i class="fa-solid fa-user-gear nav_icon" style="width: 25px;"></i> <span class="nav_name">Account Settings</span>
+                                        </a>
+                                        <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                            <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                                        </a>
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="cursor: pointer;" title="Log Out">
+                                        <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i>
+                                        <span class="nav_name">Log Out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    break;
+
+                case "Admin":
+                    <header class="header cus-bg-primary" id="header">
+                        <div class="header_toggle d-flex align-items-center">
+                            <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor: pointer;"></i>
+                            <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+                        </div>
+                        <img class="ms-auto px-2" src="@Context.Session.GetString("Logo")" style="max-height: 50px;" />
+                    </header>
+                    <div class="l-navbar cus-bg-primary" id="nav-bar">
+                        <nav class="nav">
+                            <div id="navMenu">
+                                <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
+                                    <a href="~/UserFiles/@user.HeadshotPath" target="_blank" style="cursor: pointer;">
+                                        <img src="~/UserFiles/@user.HeadshotPath" onerror="this.onerror = null; this.src='/UserFiles/Generic.jpg'; this.parentElement.href='/UserFiles/Generic.jpg';" style="border-radius: 50%;" width="45px" height="45px">
+                                    </a>
+                                    <span class="nav_logo-name" style="cursor: context-menu; font-size: 12pt; line-height: 1.25rem;">
+                                        @user.FullName
+                                    </span>
+                                    <span class="badge text-white cus-bg-primary px-0">@user.Role</span>
+                                </div>
+                                <div class="overflow-auto" style="display: flex; flex-direction: column; height: var(--body-height);">
+                                    <div class="nav_list">
+                                        <a href="~/Admins/Dashboard" class="nav_link cus-text-secondary-text" title="Dashboard">
+                                            <i class="fa-solid fa-house nav_icon" style="width: 25px;"></i> <span class="nav_name">Dashboard</span>
+                                        </a>
+                                        <a href="~/MaintainReferralSources/List" class="nav_link cus-text-secondary-text" title="Referral Sources">
+                                            <i class="fa-solid fa-person-walking-arrow-right nav_icon" style="width: 25px;"></i> <span class="nav_name">Referral Sources</span>
+                                        </a>
+                                        <a href="~/MaintainServiceTypes/List" class="nav_link cus-text-secondary-text" title="Services">
+                                            <i class="fa-solid fa-handshake-angle nav_icon" style="width: 25px;"></i> <span class="nav_name">Services</span>
+                                        </a>
+                                        <a href="~/MaintainSpecialClassifications/List" class="nav_link cus-text-secondary-text" title="Special Classifications">
+                                            <i class="fa-solid fa-id-badge nav_icon" style="width: 25px;"></i> <span class="nav_name">Special Classifications</span>
+                                        </a>
+                                        <a href="~/MaintainTherapists/List" class="nav_link cus-text-secondary-text" title="Therapists">
+                                            <i class="fa-solid fa-person-chalkboard nav_icon" style="width: 25px;"></i> <span class="nav_name">Therapists</span>
+                                        </a>
+                                        <a href="~/MaintainUsers/List" class="nav_link cus-text-secondary-text" title="Users">
+                                            <i class="fa-solid fa-users nav_icon" style="width: 25px;"></i> <span class="nav_name">Users</span>
+                                        </a>
+                                        <a href="~/MaintainVictimizationTypes/List" class="nav_link cus-text-secondary-text" title="Victimization Types">
+                                            <i class="fa-solid fa-person-falling-burst nav_icon" style="width: 25px;"></i> <span class="nav_name">Victimization Types</span>
+                                        </a>
+                                        <a href="~/Admins/CompanySettings" class="nav_link cus-text-secondary-text" title="Company Settings">
+                                            <i class="fa-regular fa-building nav_icon" style="width: 25px;"></i> <span class="nav_name">Company Settings</span>
+                                        </a>
+                                        <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text" title="Account Settings">
+                                            <i class="fa-solid fa-user-gear nav_icon" style="width: 25px;"></i> <span class="nav_name">Account Settings</span>
+                                        </a>
+                                        @if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
+                                        {
+                                            <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                                <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                                            </a>
+                                        }
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="cursor: pointer;" title="Log Out">
+                                        <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i>
+                                        <span class="nav_name">Log Out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    break;
+
+                case "Employee":
+                    <header class="header cus-bg-primary" id="header">
+                        <div class="header_toggle d-flex align-items-center">
+                            <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor: pointer;"></i>
+                            <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+                        </div>
+                        <img class="ms-auto px-2" src="@Context.Session.GetString("Logo")" style="max-height: 50px;" />
+                    </header>
+                    <div class="l-navbar cus-bg-primary" id="nav-bar">
+                        <nav class="nav">
+                            <div id="navMenu">
+                                <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
+                                    <a href="~/UserFiles/@user.HeadshotPath" target="_blank" style="cursor: pointer;">
+                                        <img src="~/UserFiles/@user.HeadshotPath" onerror="this.onerror = null; this.src='/UserFiles/Generic.jpg'; this.parentElement.href='/UserFiles/Generic.jpg';" style="border-radius: 50%;" width="45px" height="45px">
+                                    </a>
+                                    <span class="nav_logo-name" style="cursor: context-menu; font-size: 12pt; line-height: 1.25rem;">
+                                        @user.FullName
+                                    </span>
+                                    <span class="badge text-white cus-bg-primary px-0">@user.Role</span>
+                                </div>
+                                <div class="overflow-auto" style="display: flex; flex-direction: column; height: var(--body-height);">
+                                    <div class="nav_list">
+                                        <a href="~/Users/Dashboard" class="nav_link cus-text-secondary-text">
+                                            <i class="fa-solid fa-home nav_icon" style="width: 25px;"></i> <span class="nav_name" title="Dashboard">Dashboard</span>
+                                        </a>
+                                        <a href="~/MaintainClients/List" class="nav_link cus-text-secondary-text" title="Clients">
+                                            <i class="fa-solid fa-people-group nav_icon" style="width: 25px;"></i> <span class="nav_name">Clients</span>
+                                        </a>
+                                        <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text">
+                                            <i class="fa-solid fa-user-cog nav_icon" style="width: 25px;"></i> <span class="nav_name" title="Account Settings">Account Settings</span>
+                                        </a>
+                                        @if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
+                                        {
+                                            <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                                <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                                            </a>
+                                        }
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="cursor: pointer;" title="Log Out">
+                                        <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i>
+                                        <span class="nav_name">Log Out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    break;
+            }
+            <form asp-controller="Account" asp-action="LogOut" method="post" id="logout_form"></form>
+        }
+        else
+        {
+            <header class="header cus-bg-primary" id="header">
+                <div class="header_toggle d-flex align-items-center">
+                    <i class="fa-solid fa-bars cus-text-secondary-text-no-hover" id="header-toggle" style="cursor: pointer;"></i>
+                    <span class="fs-4 ps-3" style="color: var(--secondary-text-color); line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+                </div>
+                <img class="ms-auto px-2" src="@Context.Session.GetString("Logo")" style="max-height: 50px;" />
+            </header>
+            <div class="l-navbar cus-bg-primary" id="nav-bar">
+                <nav class="nav">
+                    <div id="navMenu">
+                        <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
+                            <img src="~/UserFiles/Generic.jpg" alt="" style="border-radius: 50%;" width="45px" height="45px"> <span class="nav_logo-name" style="cursor: context-menu;">Please Log In</span>
+                        </div>
+                    </div>
+                    <a href="~/Home/LogIn" class="nav_link cus-text-secondary-text mb-0" title="Log In">
+                        <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                    </a>
+                </nav>
+            </div>
+        }
+
+        <!--Container Main start-->
+        <div id="divBody" class="height-100 bg-light" style="border-radius: 0.25rem; padding: 1rem">
+            @RenderBody()
+        </div>
+
+        <div id="footer" class="cus-bg-primary d-flex align-items-center cus-no-select">
+            <span style="color: var(--secondary-text-color); font-size: smaller;"><b>Version:</b> @SystemInfo.Version</span>
+            <span class="ps-3" style="color: var(--secondary-text-color); font-size: smaller;"><b>Contact:</b> <a class="cus-text-secondary-text" href="mailto:@SystemInfo.ContactEmailAddress">@SystemInfo.ContactName</a></span>
+            <img class="ps-3 ms-auto" height="35" src="~/SystemFiles/@SystemInfo.FooterLogo" />
+        </div>
+
+        <div id="divMessage"></div>
+        <div id="StartupJavaScript" hidden>@TempData["StartupJavaScript"]</div>
+
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        <script src="~/js/menu.js" asp-append-version="true"></script>
+
+        @* Script for jQuery BlockUI. *@
+        <script src="https://malsup.github.io/jquery.blockUI.js" asp-append-version="true"></script>
+
+        @* jQuery autocomplete box. *@
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" asp-append-version="true">
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" asp-append-version="true"></script>
+
+        @* These are for Google Maps autofill. *@
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=default" asp-append-version="true"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9U50suCLYH3cTjjGnSsGVk4GfKVHPloM&callback=initAutocomplete&libraries=places&v=weekly" defer asp-append-version="true"></script>
+
+        @await RenderSectionAsync("Scripts", required: false)
+
+        <script type="text/javascript">
+
+            $('#body').removeClass("modal-open");
+
+            function RefreshMenu() {
+
+                $('#nav-bar').load(document.URL + ' #nav-bar>*', function () {
+
+                    SetMenuHighlight();
+                });
+            }
+
+        </script>
+    </body>
+}
+</html>

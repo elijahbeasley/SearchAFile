@@ -54,6 +54,12 @@ public class AuthenticatedApiClient
 
         return await _httpClient.SendAsync(request);
     }
+    public async Task<HttpResponseMessage> PostAsync(string url)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        AddAuthHeaders(request);
+        return await _httpClient.SendAsync(request);
+    }
 
     public async Task<HttpResponseMessage> PutAsync<T>(string url, T data)
     {

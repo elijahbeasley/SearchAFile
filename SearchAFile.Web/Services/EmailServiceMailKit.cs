@@ -4,6 +4,7 @@ using MailKit.Net.Smtp;
 using SearchAFile.Helpers;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
+using SearchAFile.Web.Interfaces;
 
 namespace SearchAFile.Services;
 

@@ -1,0 +1,19 @@
+﻿@model (SearchAFile.Core.Domain.Entities.SystemInfo SystemInfo, string FooterShow)
+
+<div id="footer"
+     class="cus-bg-primary d-flex align-items-center cus-no-select @Model.FooterShow">
+    <span style="color: var(--secondary-text-color); font-size: smaller;">
+        <b>Version:</b> @Model.SystemInfo.Version
+    </span>
+    <span class="ps-3" style="color: var(--secondary-text-color); font-size: smaller;">
+        <b>Contact:</b>
+        <a class="cus-text-secondary-text"
+           href="mailto:@Model.SystemInfo.ContactEmailAddress">
+            @Model.SystemInfo.ContactName
+        </a>
+    </span>
+    <img class="ps-3 ms-auto"
+         height="35"
+         src="~/SystemFiles/@Model.SystemInfo.FooterLogo"
+         alt="Footer Logo" />
+</div>

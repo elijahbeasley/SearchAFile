@@ -3,13 +3,12 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using MimeKit;
 using Newtonsoft.Json;
 using SearchAFile.Core.Domain.Entities;
-using SearchAFile.Services;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
+using SearchAFile.Web.Interfaces;
 using SearchAFile.Web.Services;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -23,8 +22,8 @@ public class LogInModel : PageModel
     private readonly TelemetryClient TelemetryClient;
     private readonly AccountController AccountController;
     private readonly IEmailService IEmailService;
-    private readonly LoginService _loginService;
-    public LogInModel(TelemetryClient TC, IEmailService IES, AccountController AC, LoginService loginService)
+    private readonly AuthClient _loginService;
+    public LogInModel(TelemetryClient TC, IEmailService IES, AccountController AC, AuthClient loginService)
     {
         TelemetryClient = TC;
         IEmailService = IES;
@@ -48,7 +47,7 @@ public class LogInModel : PageModel
         {
             if (HttpContext.Session.GetObject<UserDto>("User") != null)
             {
-                return Redirect(SystemFunctions.GetDashboardURL(HttpContext.Session.GetString("Role")));
+                //return Redirect(SystemFunctions.GetDashboardURL(HttpContext.Session.GetObject<UserDto>("User").Role));
             }
 
             if (!string.IsNullOrEmpty(email))
@@ -100,15 +99,18 @@ public class LogInModel : PageModel
 
             if (loginResult.Success)
             {
-                Redirect("/Admins/Dasboard");
+                UserDto User = HttpContext.Session.GetObject<UserDto>("User");
+
+                TempData["StartupJavaScript"] = "ShowSnack('success', 'Login Successful!', 7000, true)";
+                return Redirect(SystemFunctions.GetDashboardURL(User.Role));
             }
             else if (string.IsNullOrEmpty(loginResult.ErrorMessage))
             {
-                TempData["StartupJavaScript"] = "ShowSnack('warning', 'Unable to login.', 10000, false)";
+                TempData["StartupJavaScript"] = "ShowSnack('warning', 'Unable to login.', 7000, true)";
             }
             else
             {
-                TempData["StartupJavaScript"] = "ShowSnack('warning', '" + loginResult.ErrorMessage.EscapeJsString() + "', 10000, false)";
+                TempData["StartupJavaScript"] = "ShowToast('warning', 'Login Error', '" + loginResult.ErrorMessage.EscapeJsString() + "', 0, false)";
             }
         }
         catch (Exception ex)
@@ -169,7 +171,7 @@ public class LogInModel : PageModel
             //            <table> 
             //                <tr> 
             //                    <td> 
-            //                        Hello " + User.FirstName + " " + User.LastName + @", 
+            //                        Hello " + User.FullName + @", 
             //                    </td> 
             //                </tr> 
             //                <tr> 
@@ -184,7 +186,7 @@ public class LogInModel : PageModel
             //        List<KeyValuePair<string, string>> lstTo = new List<KeyValuePair<string, string>>();
 
             //        // Add service to the email.
-            //        lstTo.Add(new KeyValuePair<string, string>(User.EmailAddress, User.FirstName + " " + User.LastName));
+            //        lstTo.Add(new KeyValuePair<string, string>(User.EmailAddress, User.FullName));
 
             //        // CC.
             //        List<KeyValuePair<string, string>> lstCC = new List<KeyValuePair<string, string>>();

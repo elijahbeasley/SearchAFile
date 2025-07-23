@@ -56,8 +56,7 @@ public partial class User
     public bool EmailVerified { get; set; }
 
     [Column("EmailVerificationURL")]
-    [StringLength(50)]
-    public string? EmailVerificationUrl { get; set; }
+    public Guid EmailVerificationUrl { get; set; }
 
     [StringLength(30)]
     public string? HeadshotPath { get; set; }

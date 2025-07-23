@@ -1,101 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
+using System.Security.Claims;
 
 namespace SearchAFile;
 
 public class AccountController : Controller
 {
-    private readonly IHttpContextAccessor HttpContextAccessor;
-    public AccountController(IHttpContextAccessor HCA)
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    public AccountController(IHttpContextAccessor httpContextAccessor)
     {
-        HttpContextAccessor = HCA;
-    }
-
-    [AcceptVerbs("GET", "POST")]
-    public async Task<IActionResult> LogOut()
-    {
-        try
-        {
-            await HttpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            // Clear the session.
-            HttpContextAccessor.HttpContext.Session.Clear();
-
-            // Delete all cookies.
-            if (HttpContextAccessor.HttpContext.Request != null)
-            {
-                foreach (var cookie in HttpContextAccessor.HttpContext.Request.Cookies.Where(cookie => cookie.Key.StartsWith("SearchAFile")))
-                {
-                    Web.Extensions.CookieExtensions.DeleteCookie(cookie.Key); // Delete each cookie by key
-                }
-            }
-        }
-        catch
-        {
-            throw;
-        }
-
-        return Redirect("/");
-    }
-
-    public async Task<bool> LogInUserAsync(User User)
-    {
-        bool booSuccess = true;
-
-        try
-        {
-            // Sign out the current authentication cookie. 
-            await HttpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            // Clear the current session.
-            HttpContextAccessor.HttpContext.Session.Clear();
-
-            // Set the staff object. 
-            HttpContextAccessor.HttpContext.Session.SetObject("User", User);
-
-            // Set the staff's role claim.
-            List<Claim> objClaimList = new List<Claim>
-            {
-                new Claim(ClaimTypes.Role, User.Role),
-            };
-
-            // Save the role claim.
-            ClaimsIdentity objClaimsIdentity = new ClaimsIdentity(objClaimList, CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContextAccessor.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(objClaimsIdentity));
-
-            // Save the staff role and dashboard session variables. 
-            HttpContextAccessor.HttpContext.Session.SetString("Role", User.Role);
-            HttpContextAccessor.HttpContext.Session.SetString("DashboardURL", SystemFunctions.GetDashboardURL(User.Role));
-
-            switch (User.Role)
-            {
-                case "System Admin":
-
-                    HttpContextAccessor.HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
-                    break;
-
-                case "Global Admin":
-                case "Country Admin":
-
-                    HttpContextAccessor.HttpContext.Session.SetBoolean("AllowRoleImpersonation", true);
-                    break;
-
-                default:
-
-                    break;
-            }
-        }
-        catch
-        {
-            booSuccess = false;
-            throw;
-        }
-
-        return booSuccess;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<IActionResult> EndUserImpersonationAsync(string CurrentPage = "~/")
@@ -104,10 +22,8 @@ public class AccountController : Controller
 
         try
         {
-            User User = HttpContextAccessor.HttpContext.Session.GetObject<User>("User");
-            strMessage = "Impersonation of " + User.FirstName + " " + User.LastName + " has ended.";
-
-            User = HttpContextAccessor.HttpContext.Session.GetObject<User>("OriginalUser");
+            UserDto User = _httpContextAccessor.HttpContext.Session.GetObject<UserDto>("User");
+            strMessage = "Impersonation of " + User.FullName + " has ended.";
 
             if (User == null)
             {
@@ -118,11 +34,35 @@ public class AccountController : Controller
             }
             else
             {
-                // Log the staff member in. 
-                await LogInUserAsync(User);
+                // Sign out of cookie authentication
+                await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                User = _httpContextAccessor.HttpContext.Session.GetObject<UserDto>("OriginalUser");
+                _httpContextAccessor.HttpContext.Session.SetObject("User", User);
+
+                // Add claims and sign in
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, User.UserId.ToString()),
+                    new Claim(ClaimTypes.Name, User.FullName ?? ""),
+                    new Claim(ClaimTypes.Email, User.EmailAddress),
+                    new Claim(ClaimTypes.Role, User.Role ?? "")
+                };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                await _httpContextAccessor.HttpContext!.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    new AuthenticationProperties
+                    {
+                        IsPersistent = true,
+                        ExpiresUtc = DateTimeOffset.UtcNow.AddHours(12)
+                    });
 
                 // Reset the AllowUserImpersonation session variable. 
-                HttpContextAccessor.HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
+                _httpContextAccessor.HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
+
                 TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 7000, true)";
 
                 return Redirect(SystemFunctions.GetDashboardURL(User.Role));

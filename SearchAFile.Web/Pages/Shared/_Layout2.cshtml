@@ -1,0 +1,378 @@
+﻿@using Microsoft.AspNetCore.Http;
+@using SearchAFile.Core.Domain.Entities;
+@{
+    SystemInfo? SystemInfo = Context.Session.GetObject<SystemInfo>("SystemInfo");
+
+    Company? Company = Context.Session.GetObject<Company>("Company");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" href="~/SystemFiles/@SystemInfo.Favicon">
+    <title>@Context.Session.GetString("PageTitle") | @SystemInfo.SystemName</title>
+
+    @* Bootstrap v5.3.2 CSS *@
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    @* jQuery autocomplete box. *@
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    @* Font Awesome Free v6.x *@
+    <script src="https://kit.fontawesome.com/9716da10c3.js" crossorigin="anonymous" asp-append-version="true"></script>
+
+    @* Project CSS ' *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @* Custom buttons *@
+    <link href="~/css/cus-buttons.css" rel="stylesheet" />
+
+    @* Project Bootstrap extensions *@
+    <link rel="stylesheet" href="~/css/bootstrap-extensions.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            --primary-color: @(Company != null ? Company.PrimaryColor : SystemInfo.PrimaryColor); /* This is the main color. */
+            --secondary-color: @(Company != null ? Company.SecondaryColor : SystemInfo.SecondaryColor); /* This is the accent color. */
+            --primary-text-color: @(Company != null ? Company.PrimaryTextColor : SystemInfo.PrimaryTextColor); /* This is the color of text against a white, light gray, etc. background. */
+            --secondary-text-color: @(Company != null ? Company.SecondaryTextColor : SystemInfo.SecondaryTextColor); /* This is the color of text against a colored background. */
+        }
+    </style>
+</head>
+
+<body id="body" style="display: flex; flex-flow: column; min-height: 100vh; opacity: 0;">
+
+    <div id="divLoading" class="cus-progress-overlay" style="display: none;">
+        <div class="cus-modal-progress">
+            <div class="cus-progress">
+                <img alt="Loading..." src="~/SystemFiles/loading.gif" height="100" width="100" />
+            </div>
+        </div>
+    </div>
+
+    <img id="imgLoading" alt="Loading..." src="~/SystemFiles/loading.gif" height="50" width="50" style="display: none;" />
+
+    <header id="header" class="sticky-top cus-bg-primary d-flex align-items-center px-3 py-2 cus-no-select" style="height: 4rem;">
+        <i class="fa-solid fa-bars fa-2x cus-text-secondary-text" data-bs-toggle="modal" data-bs-target="#divMenu" style="cursor: pointer;"></i>
+        <span class="fs-4 px-3 cus-text-secondary-text-no-hover" style="line-height: 1.5rem;">@Context.Session.GetString("PageTitle")</span>
+        <img class="ms-auto me-3" src="@Context.Session.GetString("Logo")" style="height: 45px;" />
+    </header>
+
+    <div id="divMenu" class="modal fade left p-0 cus-no-select" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-slideout modal-dialog-slideout-left modal-sm cus-bg-primary" role="document">
+            <div id="divMenuContent" class="modal-content cus-bg-primary" style="border-radius: 0; overflow: hidden;">
+
+                @if (User != null
+                    && User.Identity.IsAuthenticated
+                    && Context.Session.GetObject<UserDto>("User") == null)
+                {
+                    TempData["StartupJavaScript"] = "alert('Your session has expired. You have been logged out.'); $('#logout_form').submit();";
+                    <form id="logout_form" asp-controller="Account" asp-action="LogOut" method="post"></form>
+                }
+                else if (User != null
+                && User.Identity.IsAuthenticated
+                && Context.Session.GetObject<UserDto>("User") != null)
+                {
+                    UserDto User = Context.Session.GetObject<UserDto>("User");
+
+                    if (string.IsNullOrEmpty(User.HeadshotPath))
+                    {
+                        User.HeadshotPath = "Generic.jpg";
+                    }
+
+                    <div class="d-flex align-items-center cus-bg-primary" style="border-bottom: 2px solid var(--secondary-color); height: 4rem;">
+                        <i class="fa-solid fa-bars cus-text-secondary-text me-3" data-bs-toggle="modal" data-bs-target="#divMenu" style="cursor: pointer; font-size: 1.75rem; padding: 0.5rem 0 0.5rem 0.75rem;"></i>
+                        <div style="line-height: 1.25rem;">
+                            <span class="cus-text-secondary-text-no-hover me-2" style="font-size: 12pt; line-height: 1rem; white-space: nowrap;">@SystemFunctions.CreateSubstring(30, User.FullName)</span>
+                            <br />
+                            <span class="badge cus-text-secondary-text-no-hover cus-bg-secondary me-2">@User.Role</span>
+                        </div>
+                        <a class="text-center ms-auto me-2 py-2" href="~/UserFiles/@User.HeadshotPath" target="_blank" style="cursor: pointer;">
+                            <img class="bg-white" src="~/UserFiles/@User.HeadshotPath" onerror="this.onerror = null; this.src='/UserFiles/Generic.jpg'; this.parentElement.href='/UserFiles/Generic.jpg';" style="border-radius: 50%; width: 45px; height: 45px;">
+                        </a>
+                    </div>
+
+                    <div class="modal-body d-flex flex-column p-0 cus-bg-primary">
+                        @switch (User.Role)
+                        {
+                            case "Super Admin":
+                                <a href="~/SuperAdmins/Dashboard" class="nav_link cus-text-secondary-text" title="Dashboard">
+                                    <i class="fa-solid fa-house nav_icon" style="width: 25px;"></i> Dashboard
+                                </a>
+                                <div class="overflow-auto h-100 d-flex flex-column">
+                                    <a href="~/SuperAdmins/CleanupImages" class="nav_link cus-text-secondary-text" title="Cleanup Images">
+                                        <i class="fa-regular fa-images nav_icon" style="width: 25px;"></i> Cleanup Images
+                                    </a>
+                                    <a class="nav_link cus-text-secondary-text d-flex cus-collapse" title="Maintain" data-bs-toggle="collapse" href="#divCollapseMaintain" role="button" aria-expanded="false" aria-controls="divCollapseMaintain" onclick="ClickMenuDropdownMaintain();">
+                                        <i class="fa-solid fa-gear nav_icon" style="width: 25px; transition-duration: 0.5s;"></i> <span class="d-flex w-100 cus-text-secondary-text">Maintain <i id="icoMaintain" class="fa-solid fa-angle-left ms-auto me-3 align-self-center @Context.Request.Cookies["SearchAFile_Menu_MaintainCarat"]" style="transition-duration: 0.5s;"></i></span>
+                                    </a>
+                                    <div class="collapse border-top border-bottom @Context.Request.Cookies["SearchAFile_Menu_Maintain"]" id="divCollapseMaintain">
+                                        <a href="~/SuperAdmins/Errors" class="nav_link cus-text-secondary-text cus-sub-item" title="Errors">
+                                            <i class="fa-solid fa-triangle-exclamation nav_icon" style="width: 25px;"></i> Errors
+                                        </a>
+                                        <a href="~/MaintainOrganizations/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Organizations">
+                                            <i class="fa-regular fa-building nav_icon" style="width: 25px;"></i> Organizations
+                                        </a>
+                                        <a href="~/MaintainUsers/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Users">
+                                            <i class="fa-solid fa-users nav_icon" style="width: 25px;"></i> Users
+                                        </a>
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text d-flex cus-collapse" title="Reports" data-bs-toggle="collapse" href="#divCollapseReports" role="button" aria-expanded="false" aria-controls="divCollapseReports" onclick="ClickMenuDropdownReports();">
+                                        <i class="fa-solid fa-chart-column cus-bounce-on-click" style="font-size: 20px; width: 25px; transition-duration: 0.5s; animation-iteration-count: 1 !important"></i> <span class="d-flex w-100 cus-text-secondary-text">Reports <i id="icoReports" class="fa-solid fa-angle-left ms-auto me-3 align-self-center @Context.Request.Cookies["SearchAFile_Menu_ReportsCarat"]" style="transition-duration: 0.5s;"></i></span>
+                                    </a>
+                                    <div class="collapse border-top border-bottom @Context.Request.Cookies["SearchAFile_Menu_Reports"]" id="divCollapseReports">
+                                        <a href="~/SuperAdminReports/Organization" class="nav_link cus-text-secondary-text cus-sub-item" title="Organization Report" onclick="ClearToast(); ShowSnack('info', 'Report still under construction. Please try again later.', 3000, true); return false">
+                                            <i class="fa-solid fa-building nav_icon" style="width: 25px;"></i> Organization
+                                        </a>
+                                    </div>
+                                    <a href="~/SuperAdmins/SystemSettings" class="nav_link cus-text-secondary-text mt-auto" title="System Settings">
+                                        <i class="fa-solid fa-gears nav_icon" style="width: 25px;"></i> System Settings
+                                    </a>
+                                    <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text" title="Account Settings">
+                                        <i class="fa-solid fa-user-gear nav_icon" style="width: 25px;"></i> Account Settings
+                                    </a>
+                                    <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                        <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> Log In
+                                    </a>
+                                </div>
+                                <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="border-top: 2px solid var(--secondary-color); cursor: pointer;" title="Log Out">
+                                    <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i> Log Out
+                                </a>
+                                break;
+
+                            case "Admin":
+                                <a href="~/Admins/Dashboard" class="nav_link cus-text-secondary-text" title="Dashboard">
+                                    <i class="fa-solid fa-house nav_icon" style="width: 25px;"></i> Dashboard
+                                </a>
+                                <div class="overflow-auto h-100 d-flex flex-column">
+                                    <a class="nav_link cus-text-secondary-text d-flex cus-collapse" title="Maintain" data-bs-toggle="collapse" href="#divCollapseMaintain" role="button" aria-expanded="false" aria-controls="divCollapseMaintain" onclick="ClickMenuDropdownMaintain();">
+                                        <i class="fa-solid fa-gear nav_icon" style="width: 25px; transition-duration: 0.5s;"></i> <span class="d-flex w-100 cus-text-secondary-text">Maintain <i id="icoMaintain" class="fa-solid fa-angle-left ms-auto me-3 align-self-center  @Context.Request.Cookies["SearchAFile_Menu_MaintainCarat"]" style="transition-duration: 0.5s;"></i></span>
+                                    </a>
+                                    <div class="collapse border-top border-bottom @Context.Request.Cookies["SearchAFile_Menu_Maintain"]" id="divCollapseMaintain">
+                                        <a href="~/MaintainClients/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Maintain Clients">
+                                            <i class="fa-solid fa-people-group nav_icon" style="width: 25px;"></i> Clients
+                                        </a>
+                                        <a href="~/MaintainReferralSources/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Maintain Referral Sources">
+                                            <i class="fa-solid fa-people-arrows nav_icon" style="width: 25px;"></i> Referral Sources
+                                        </a>
+                                        <a href="~/MaintainSessionTypes/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Maintain Session Types">
+                                            <i class="fa-solid fa-users-rectangle nav_icon" style="width: 25px;"></i> Session Types
+                                        </a>
+                                        <a href="~/MaintainServiceTypes/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Maintain Services">
+                                            <i class="fa-solid fa-handshake-angle nav_icon" style="width: 25px;"></i> Services
+                                        </a>
+                                        <a href="~/MaintainSpecialClassifications/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Maintain Special Classifications">
+                                            <i class="fa-solid fa-id-badge nav_icon" style="width: 25px;"></i> Special Classifications
+                                        </a>
+                                        <a href="~/MaintainTherapists/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Maintain Therapists">
+                                            <i class="fa-solid fa-person-chalkboard nav_icon" style="width: 25px;"></i> Therapists
+                                        </a>
+                                        <a href="~/MaintainVictimizationTypes/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Maintain Victimization Types">
+                                            <i class="fa-solid fa-person-falling-burst nav_icon" style="width: 25px;"></i> Victimization Types
+                                        </a>
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text d-flex cus-collapse" title="Reports" data-bs-toggle="collapse" href="#divCollapseReports" role="button" aria-expanded="false" aria-controls="divCollapseReports" onclick="ClickMenuDropdownReports();">
+                                        <i class="fa-solid fa-chart-column cus-bounce-on-click" style="font-size: 20px; width: 25px; transition-duration: 0.5s; animation-iteration-count: 1 !important"></i> <span class="d-flex w-100 cus-text-secondary-text">Reports <i id="icoReports" class="fa-solid fa-angle-left ms-auto me-3 align-self-center @Context.Request.Cookies["SearchAFile_Menu_ReportsCarat"]" style="transition-duration: 0.5s;"></i></span>
+                                    </a>
+                                    <div class="collapse border-top border-bottom @Context.Request.Cookies["SearchAFile_Menu_Reports"]" id="divCollapseReports">
+                                        <a href="~/Reports/PMTReport" class="nav_link cus-text-secondary-text cus-sub-item" title="PMT Report">
+                                            <i class="fa-solid fa-chart-line nav_icon" style="width: 25px;"></i> PMT
+                                        </a>
+                                        @*<a href="~/AdminReports/Organization" class="nav_link cus-text-secondary-text cus-sub-item" title="Organization Report" onclick="ClearToast(); ShowSnack('info', 'Report still under construction. Please try again later.', 3000, true); return false">
+                                            <i class="fa-solid fa-building nav_icon" style="width: 25px;"></i> Organization
+                                        </a>*@
+                                    </div>
+                                    <a href="~/MaintainUsers/List" class="nav_link cus-text-secondary-text mt-auto" title="Users">
+                                        <i class="fa-solid fa-users nav_icon" style="width: 25px;"></i> Users
+                                    </a>
+                                    <a href="~/Admins/OrganizationSettings" class="nav_link cus-text-secondary-text" title="Organization Settings">
+                                        <i class="fa-regular fa-building nav_icon" style="width: 25px;"></i> Organization Settings
+                                    </a>
+                                    <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text" title="Account Settings">
+                                        <i class="fa-solid fa-user-gear nav_icon" style="width: 25px;"></i> Account Settings
+                                    </a>
+                                    @if (Convert.ToBoolean(Context.Session.GetBoolean("IsSuperAdmin")))
+                                    {
+                                        <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                            <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> Log In
+                                        </a>
+                                    }
+                                </div>
+                                <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="border-top: 2px solid var(--secondary-color); cursor: pointer;" title="Log Out">
+                                    <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i> Log Out
+                                </a>
+                                break;
+
+                            case "User":
+                                <a href="~/Users/Dashboard" class="nav_link cus-text-secondary-text" title="Dashboard">
+                                    <i class="fa-solid fa-home nav_icon" style="width: 25px;"></i> Dashboard
+                                </a>
+                                <div class="overflow-auto h-100 d-flex flex-column">
+                                    <a class="nav_link cus-text-secondary-text d-flex cus-collapse" title="Maintain" data-bs-toggle="collapse" href="#divCollapseMaintain" role="button" aria-expanded="false" aria-controls="divCollapseMaintain" onclick="ClickMenuDropdownMaintain();">
+                                        <i class="fa-solid fa-gear nav_icon" style="width: 25px; transition-duration: 0.5s;"></i> <span class="d-flex w-100 cus-text-secondary-text">Maintain <i id="icoMaintain" class="fa-solid fa-angle-left ms-auto me-3 align-self-center  @Context.Request.Cookies["SearchAFile_Menu_MaintainCarat"]" style="transition-duration: 0.5s;"></i></span>
+                                    </a>
+                                    <div class="collapse border-top border-bottom @Context.Request.Cookies["SearchAFile_Menu_Maintain"]" id="divCollapseMaintain">
+                                        <a href="~/MaintainClients/List" class="nav_link cus-text-secondary-text cus-sub-item" title="Maintain Clients">
+                                            <i class="fa-solid fa-people-group nav_icon" style="width: 25px;"></i> Clients
+                                        </a>
+                                    </div>
+                                    <a class="nav_link cus-text-secondary-text d-flex cus-collapse" title="Reports" data-bs-toggle="collapse" href="#divCollapseReports" role="button" aria-expanded="false" aria-controls="divCollapseReports" onclick="ClickMenuDropdownReports();">
+                                        <i class="fa-solid fa-chart-column cus-bounce-on-click" style="font-size: 20px; width: 25px; transition-duration: 0.5s; animation-iteration-count: 1 !important"></i> <span class="d-flex w-100 cus-text-secondary-text">Reports <i id="icoReports" class="fa-solid fa-angle-left ms-auto me-3 align-self-center @Context.Request.Cookies["SearchAFile_Menu_ReportsCarat"]" style="transition-duration: 0.5s;"></i></span>
+                                    </a>
+                                    <div class="collapse border-top border-bottom @Context.Request.Cookies[" SearchAFile_Menu_Reports"]" id="divCollapseReports">
+                                        <a href="~/Reports/PMTReport" class="nav_link cus-text-secondary-text cus-sub-item" title="PMT Report">
+                                            <i class="fa-solid fa-chart-line nav_icon" style="width: 25px;"></i> PMT
+                                        </a>
+                                        @*<a href="~/UserReports/Organization" class="nav_link cus-text-secondary-text cus-sub-item" title="Organization Report" onclick="ClearToast(); ShowSnack('info', 'Report still under construction. Please try again later.', 3000, true); return false">
+                                            <i class="fa-solid fa-building nav_icon" style="width: 25px;"></i> Organization
+                                        </a>*@
+                                    </div>
+                                    <a href="~/Common/AccountSettings" class="nav_link cus-text-secondary-text mt-auto" title="Account Settings">
+                                        <i class="fa-solid fa-user-cog nav_icon" style="width: 25px;"></i> Account Settings
+                                    </a>
+                                    @if (Convert.ToBoolean(Context.Session.GetBoolean("IsSuperAdmin")))
+                                    {
+                                        <a href="~/Common/LogIn" class="nav_link cus-text-secondary-text" title="Log In">
+                                            <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> Log In
+                                        </a>
+                                    }
+                                </div>
+                                <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="border-top: 2px solid var(--secondary-color); cursor: pointer;" title="Log Out">
+                                    <i class="fa-solid fa-sign-out nav_icon" style="width: 25px;"></i> Log Out
+                                </a>
+                                break;
+                        }
+                        <form asp-controller="Account" asp-action="LogOut" method="post" id="logout_form"></form>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex align-items-center cus-bg-primary" style="border-bottom: 3px solid var(--secondary-color); height: 4rem;">
+                        <i class="fa-solid fa-bars cus-text-secondary-text me-3" data-bs-toggle="modal" data-bs-target="#divMenu" style="cursor: pointer; font-size: 1.75rem; padding: 0.5rem 0 0.5rem 0.75rem;"></i>
+                    </div>
+
+                    <div class="modal-body d-flex flex-column p-0 cus-bg-primary">
+                        @*<a href="~/Home/Privacy" class="nav_link cus-text-secondary-text" title="Privacy Policy">
+                            <i class="fa-solid fa-circle-info nav_icon" style="width: 25px;"></i> Privacy Policy
+                        </a>*@
+                        <a href="~/Home/LogIn" class="nav_link cus-text-secondary-text mt-auto" style="border-top: 2px solid var(--secondary-color);" title="Log In">
+                            <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> Log In
+                        </a>
+                    </div>
+                }
+
+                <input id="MenuLoadCompleteFlag" type="hidden" value="1" />
+            </div>
+        </div>
+    </div>
+
+    <!--Container Main start-->
+    <div class="jumbotron m-3" style="flex: auto;">
+        @RenderBody()
+    </div>
+
+    <div class="p-3 cus-bg-primary d-flex flex-wrap align-items-center cus-no-select" style="font-size: smaller;">
+        <span class="cus-text-secondary-text-no-hover"><i class="fa-regular fa-copyright"></i> 2025-@DateTime.Today.Year Brothers Analytics</span>
+        <span class="cus-text-secondary-text-no-hover px-2">|</span>
+        <span class="cus-text-secondary-text-no-hover"><a href="~/Home/Privacy" class="cus-text-secondary-text">Privacy Policy</a></span>
+        <span class="cus-text-secondary-text-no-hover px-2">|</span>
+        <span class="cus-text-secondary-text-no-hover"><b>Version:</b> @SystemInfo.Version</span>
+        <span class="cus-text-secondary-text-no-hover px-2">|</span>
+        <span class="cus-text-secondary-text-no-hover"><b>Contact:</b> <a class="cus-text-secondary-text" href="mailto:@SystemInfo.ContactEmailAddress?subject=@SystemInfo.SystemName" style="white-space: nowrap;">@SystemInfo.ContactName (@SystemInfo.ContactEmailAddress)</a></span>
+        <img class="px-3 position-absolute" style="height: 35px; right: 0;" src="~/SystemFiles/@SystemInfo.FooterLogo" />
+    </div>
+
+    <div id="divMessage"></div>
+    <div id="StartupJavaScript" hidden>@TempData["StartupJavaScript"]</div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @* Script for jQuery BlockUI. *@
+    <script src="https://malsup.github.io/jquery.blockUI.js" asp-append-version="true"></script>
+
+    @* jQuery autocomplete box. *@
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" asp-append-version="true">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" asp-append-version="true"></script>
+
+    @* These are for Google Maps autofill. *@
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default" asp-append-version="true"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9U50suCLYH3cTjjGnSsGVk4GfKVHPloM&callback=initAutocomplete&libraries=places&v=weekly" defer asp-append-version="true"></script>
+
+    @* Highcharts scripts for graphs. *@
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script type="text/javascript">
+
+        $('#body').removeClass("modal-open");
+
+        let MenuInterval;
+
+        function RefreshMenu() {
+
+            // Refresh the table.
+            $('#MenuLoadCompleteFlag').val('0');
+            $('#divMenuContent').load(PageURL + ' #divMenuContent>*');
+            MenuInterval = setInterval(CheckMenuLoadCompleteFlag, 300);
+        }
+
+        function CheckMenuLoadCompleteFlag() {
+
+            if ($('#MenuLoadCompleteFlag').val() == '1') {
+
+                clearInterval(MenuInterval);
+                SetMenuHighlight();
+            }
+        }
+
+        function ClickMenuDropdownMaintain () {
+
+            $('.fa-gear').toggleClass('fa-rotate-90');
+            $('#icoMaintain').toggleClass('fa-rotate-90');
+
+            if (getCookie('SearchAFile_Menu_Maintain') == '') {
+
+                setCookie('SearchAFile_Menu_MaintainCarat', 'fa-rotate-90');
+                setCookie('SearchAFile_Menu_Maintain', 'show');
+            }
+            else {
+
+                setCookie('SearchAFile_Menu_MaintainCarat', '');
+                setCookie('SearchAFile_Menu_Maintain', '');
+            }
+        }
+
+        function ClickMenuDropdownReports() {
+
+            $('.cus-bounce-on-click').removeClass('fa-bounce');
+            setTimeout(function () { $('.cus-bounce-on-click').addClass('fa-bounce'); }, 100);
+            setTimeout(function () { $('.cus-bounce-on-click').removeClass('fa-bounce'); }, 1100);
+            $('#icoReports').toggleClass('fa-rotate-90');
+
+            if (getCookie('SearchAFile_Menu_Reports') == '') {
+
+                setCookie('SearchAFile_Menu_ReportsCarat', 'fa-rotate-90');
+                setCookie('SearchAFile_Menu_Reports', 'show');
+            }
+            else {
+
+                setCookie('SearchAFile_Menu_ReportsCarat', '');
+                setCookie('SearchAFile_Menu_Reports', '');
+            }
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,78 +1,3 @@
-.cus-hover-underline {
-    text-decoration: none !important;
-}
-
-    .cus-hover-underline:hover {
-        text-decoration: underline !important;
-    }
-
-.nav_icon {
-    font-size: 1.25rem;
-}
-
-a.nav_link,
-a.nav_logo {
-    text-decoration: none !important;
-    text-align: center;
-    width: 100%;
-    white-space: nowrap;
-}
-
-.nav_link {
-    display: grid;
-    grid-template-columns: max-content max-content;
-    align-items: center;
-    column-gap: 1rem;
-    padding: 0.5rem 0 0.5rem 0.75rem;
-}
-
-.nav_link {
-    position: relative;
-    color: var(--first-color-light);
-    transition: .3s;
-}
-
-a.nav_link.cus-active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    width: 5px;
-    height: 100%;
-    background-color: var(--secondary-color);
-}
-
-a.nav_link.cus-active-secondary::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    width: 5px;
-    height: 100%;
-    background-color: var(--secondary-text-color);
-}
-
-.cus-sub-item {
-    padding-left: 3rem;
-}
-
-input:focus,
-textarea:focus {
-    box-shadow: none !important;
-}
-
-.cus-icon:hover {
-    transform: translate(0, 2px);
-}
-
-.cus-icon:focus {
-    box-shadow: none;
-}
-
-.cus-no-box-shadow:focus,
-.cus-no-box-shadow:active {
-    outline: none !important;
-    box-shadow: none !important;
-}
-
 /* MOBILE */
 @media (max-width: 768px) {
     /* CSS in here for mobile only */
@@ -225,18 +150,6 @@ textarea:focus {
         font-size: 10pt !important;
         white-space: nowrap;
     }
-
-    .cus-row-md-padding {
-        padding: 0.5rem 0 !important;
-    }
-
-    .cus-col-md-padding {
-        padding: 0.25rem 0.75rem !important;
-    }
-
-        .cus-col-md-padding > div > .form-control {
-            margin: 0 !important;
-        }
 }
 
 /* DESKTOP */
@@ -464,44 +377,6 @@ textarea:focus {
 
 
 /****************************************************************************************************/
-/*.modal-dialog-slideout {
-    min-height: 100%;
-    margin: 0 0 0 auto;
-    background: #fff;
-}
-
-.modal.fade .modal-dialog.modal-dialog-slideout {
-    -webkit-transform: translate(100%,0)scale(1);
-    transform: translate(100%,0)scale(1);
-}
-
-.modal.fade.show .modal-dialog.modal-dialog-slideout {
-    -webkit-transform: translate(0,0);
-    transform: translate(0,0);
-    display: flex;
-    align-items: stretch;
-    -webkit-box-align: stretch;
-    height: 100%;
-}
-
-    .modal.fade.show .modal-dialog.modal-dialog-slideout .modal-body {
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-.modal-dialog-slideout .modal-content {
-    border: 0;
-}
-
-.modal-dialog-slideout .modal-header, .modal-dialog-slideout .modal-footer {
-    height: 69px;
-    display: block;
-}
-
-    .modal-dialog-slideout .modal-header h5 {
-        float: left;
-    }*/
-
 .ui-autocomplete {
     z-index: 1100 !important;
 }
@@ -531,8 +406,6 @@ html {
     scrollbar-width: none; /* Firefox */
 }
 
-
-
 .cus-bootstrap-table-striped {
     padding: 0 1rem 0 1rem;
 }
@@ -553,29 +426,6 @@ html {
 
 
 /*  ************************************ */
-
-/* AJAX Modal Popup */
-
-.cus-modalbackground {
-    background-color: Black;
-    filter: alpha(opacity=90);
-    opacity: 0.8;
-}
-
-.cus-modalpopup {
-    background-color: white;
-    border: 3px solid var(--secondary-color);
-    border-radius: 0.5rem;
-    max-width: 20rem;
-    padding: 1rem;
-}
-
-.cus-modalpopup-fileuploader {
-    background-color: white;
-    border: 3px solid var(--secondary-color);
-    border-radius: 0.5rem;
-    padding: 1rem;
-}
 
 .cus-btn-primary {
     color: #fff;
@@ -611,8 +461,6 @@ html {
         }
 
 @baseColor: #d14836;
-
-
 
 .cus-btn-secondary {
     color: #fff;
@@ -691,38 +539,10 @@ button.bg-primary:focus {
     background-color: #002b4b !important;
 }
 
-/*.cus-text-primary,
-.cus-text-primary-no-hover {
-    color: var(--primary-color) !important;
-}
-
-    .cus-text-primary:hover,
-    .cus-text-primary:focus {
-        filter: brightness(75%);
-    }*/
-
 .dropdown-item {
     margin: 0 !important;
     padding: 0.3rem 1rem;
 }
-
-span.deleteicon {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    width: 25rem;
-}
-
-    span.deleteicon span {
-        cursor: pointer;
-        font: 10px monospace;
-        height: 21px;
-        line-height: 1.5rem;
-        margin-right: 0.35rem;
-        position: absolute;
-        right: 0;
-        width: 21px;
-    }
 
 .cus-no-select {
     -webkit-touch-callout: none; /* iOS Safari */
@@ -750,43 +570,25 @@ span.deleteicon {
     padding: 0 0 0 1rem;
 }
 
-.popover-body {
-    padding: 0.25rem 1rem;
-}
-
 
 
 /******************************** Changes to Font Aswesome Pro ******************************/
 
-.fa, .fab, .fad, .fal, .far, .fas, .fa-duotone, .fa-light, .fa-rregular, .fa-solid {
+
+
+
+
+.fa, .fab, .fad, .fal, .far, .fas {
     line-height: unset;
 }
 
-button.btn.dropdown-item > .fad,
-button.btn.dropdown-item > .far,
-button.btn.dropdown-item > .fas,
-button.btn.dropdown-item > .fal,
-button.btn.dropdown-item > .fa-duotone,
-button.btn.dropdown-item > .fa-regular,
-button.btn.dropdown-item > .fa-solid,
-button.btn.dropdown-item > .fa-light {
-    font-size: 14pt !important;
-}
 
-/******************************************************************************************/
-/* 
-    Franklin College Colors: 
-    Primary: #003C71 (Blue) 
-    Secondary: #F6BE00 (Yellow)
-*/
+
+
 
 /****************************** Additions to Bootstrap ***************************/
 
 /* Changes the background color and color for nav-links on hover. */
-
-.popover-body:has(img) {
-    padding: 0;
-}
 
 .dropdown-menu {
     padding: 0;
@@ -852,7 +654,7 @@ button.btn.dropdown-item > .fa-light {
         float: left;
     }
 
-/* Slideout Left */
+
 
 .modal-dialog-slideout-left {
     min-height: 100%;
@@ -860,12 +662,12 @@ button.btn.dropdown-item > .fa-light {
     background: #fff;
 }
 
-.modal.fade .modal-dialog.modal-dialog-slideout-left {
+.modal.fade .modal-dialog.modal-dialog-slideout {
     -webkit-transform: translate(-100%,0)scale(1);
     transform: translate(-100%,0)scale(1);
 }
 
-.modal.fade.show .modal-dialog.modal-dialog-slideout-left {
+.modal.fade.show .modal-dialog.modal-dialog-slideout {
     -webkit-transform: translate(0,0);
     transform: translate(0,0);
     display: flex;
@@ -874,21 +676,21 @@ button.btn.dropdown-item > .fa-light {
     height: 100%;
 }
 
-    .modal.fade.show .modal-dialog.modal-dialog-slideout-left .modal-body {
+    .modal.fade.show .modal-dialog.modal-dialog-slideout .modal-body {
         overflow-y: auto;
         overflow-x: hidden;
     }
 
-.modal-dialog-slideout-left .modal-content {
+.modal-dialog-slideout .modal-content {
     border: 0;
 }
 
-.modal-dialog-slideout-left .modal-header, .modal-dialog-slideout-left .modal-footer {
+.modal-dialog-slideout .modal-header, .modal-dialog-slideout .modal-footer {
     height: 69px;
     display: block;
 }
 
-    .modal-dialog-slideout-left .modal-header h5 {
+    .modal-dialog-slideout .modal-header h5 {
         float: left;
     }
 
@@ -906,33 +708,19 @@ button.btn.dropdown-item > .fa-light {
     margin: 0.2rem;
 }
 
+    .btn:disabled {
+        cursor: not-allowed;
+    }
+
 .focus-none:focus,
 .cus-no-focus:focus {
     outline: none !important;
     box-shadow: none !important;
 }
 
-
-a.disabled,
-a:disabled {
+.btn:disabled {
     cursor: not-allowed;
     opacity: 0.6;
-    pointer-events: none;
-}
-
-    a.disabled:hover,
-    a:disabled:hover {
-        cursor: not-allowed !important;
-        opacity: 0.6;
-        pointer-events: none;
-    }
-
-.btn:disabled,
-button.disabled,
-button:disabled {
-    cursor: not-allowed !important;
-    opacity: 0.6;
-    pointer-events: all !important;
 }
 
 .nav-link {
@@ -958,379 +746,39 @@ button:disabled {
 
 /******************************** CLASS SELECTORS ******************************/
 
-.cus-clickable-icon {
-    cursor: pointer !important;
-    pointer-events: auto !important;
-}
-
-/* Custon Drop Down List */
-.cus-dropdown-button {
-    display: flex;
-    max-width: var(--control-max-width);
-    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
-    text-align: left;
-    width: var(--control-width);
-}
-
-    .cus-dropdown-button:focus {
-        box-shadow: none !important;
-    }
-
-.cus-dropdown-chevron {
-    align-self: center;
-    font-size: 11px;
-    font-weight: bolder;
-    margin-left: auto;
-    position: relative;
-    right: -4px
-}
-
-.cus-dropdown-list {
-    margin: 0;
-    max-width: var(--control-max-width);
-    padding: 0;
-    width: var(--control-width);
-}
-
-.cus-dropdown-selected-item {
-    color: unset;
-    font-size: medium;
-    margin-left: 0.3rem;
-}
-
-.cus-dropdown-item {
-    cursor: pointer;
-    font-weight: 500;
-    font-size: smaller;
-    padding: 0.25rem 0.5rem;
-}
-
-    .cus-dropdown-item:active {
-        background-color: var(--primary-color);
-    }
-
-        .cus-dropdown-item:active span {
-            color: var(--secondary-text-color);
-        }
-
-.cus-dropdown-search {
-    border: 0 !important;
-    border-radius: 0 !important;
-    font-size: smaller;
-    margin: 0 !important;
-    min-height: unset !important;
-    padding: 0.3rem 0.5rem !important;
-}
-
-    .cus-dropdown-search:focus {
-        box-shadow: none !important;
-    }
-
-/* Buttons */
-
-.cus-button,
-.cus-button-green,
-.cus-button-orange,
-.cus-button-red {
-    border: 1px solid;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 1rem;
-    font-weight: bold;
-    line-height: 1.5;
-    margin: 0.2rem;
-    padding: 0.5rem 0.875rem 0.5rem 0.875rem;
-    text-align: center;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    vertical-align: middle;
-}
-
-    .cus-button:focus,
-    .cus-button-green:focus,
-    .cus-button-orange:focus,
-    .cus-button-red:focus {
-        outline: none;
-    }
-
-/* Button colors */
-
-/* Button Primary */
-
-.cus-button {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: var(--secondary-text-color);
-}
-
-    .cus-button:hover, .cus-button:active {
-        background: var(--secondary-text-color);
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    .cus-button:disabled {
-        opacity: .6;
-    }
-
-        .cus-button:disabled:hover {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            color: var(--secondary-text-color);
-            cursor: not-allowed;
-        }
-
-/* Button Green */
-
-.cus-button-green {
-    background-color: var(--green-color);
-    border-color: var(--green-color);
-    color: white;
-}
-
-    .cus-button-green:hover, .cus-button-green:active {
-        background-color: white;
-        border-color: var(--green-color);
-        color: var(--green-color);
-    }
-
-    .cus-button-green:disabled {
-        opacity: .6;
-    }
-
-        .cus-button-green:disabled:hover {
-            background-color: var(--green-color);
-            border-color: var(--green-color);
-            color: white;
-            cursor: not-allowed;
-        }
-
-/* Button Orange */
-
-.cus-button-orange {
-    background-color: var(--orange-color);
-    border-color: var(--orange-color);
-    color: white;
-}
-
-    .cus-button-orange:hover, .cus-button-orange:active {
-        background-color: white;
-        border-color: var(--orange-color);
-        color: var(--orange-color);
-    }
-
-    .cus-button-orange:disabled {
-        opacity: .6;
-    }
-
-        .cus-button-orange:disabled:hover {
-            background-color: var(--orange-color);
-            border-color: var(--orange-color);
-            color: white;
-            cursor: not-allowed;
-        }
-
-/* Button Red */
-
-.cus-button-red {
-    background-color: var(--red-color);
-    border-color: var(--red-color);
-    color: white;
-}
-
-    .cus-button-red:hover, .cus-button-red:active {
-        background-color: white;
-        border-color: var(--red-color);
-        color: var(--red-color);
-    }
-
-    .cus-button-red:disabled {
-        opacity: .6;
-    }
-
-        .cus-button-red:disabled:hover {
-            background-color: var(--red-color);
-            border-color: var(--red-color);
-            color: white;
-            cursor: not-allowed;
-        }
-
 .cus-menu-item-active-primary {
     box-shadow: 0 3px 0 var(--primary-color) inset, 0 -3px 0 var(--primary-color) inset;
 }
 
-/*.cus-menu-item-active-primary {
-    background-color: var(--secondary-color);
-    border-radius: 0.2rem;
-    color: var(--primary-text-color);
-}*/
-
-
 .cus-menu-item-active-secondary {
     box-shadow: 0 3px 0 var(--secondary-color) inset, 0 -3px 0 var(--secondary-color) inset;
-}
-
-/* Remove the padding in a formview table's table data. */
-.cus-formview td {
-    padding: 0;
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.cus-hide-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.cus-hide-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
 }
 
 .cus-row-selected {
     background: rgba(116, 17, 47, 0.1) !important;
 }
 
-/* This is for a table with a fixed column. */
-.cus-table-responsive {
-    margin-left: 20px;
-    overflow-x: auto;
-    overflow-y: visible;
-}
-
 .cus-fixed-col-th {
-    border: none;
-    box-shadow: none !important;
-    left: 0;
-    padding-left: 1px !important;
-    padding-right: inherit !important;
-    padding-top: inherit !important;
-    padding-bottom: inherit !important;
     position: absolute;
     width: 40px;
+    left: 0;
+    padding-left: inherit !important;
+    padding-right: inherit !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-color: inherit;
+    border-style: inherit;
+    border-width: 0;
 }
 
 .cus-fixed-col-td {
-    border: none !important;
-    box-shadow: none !important;
-    left: 0;
-    padding-left: 0.25rem !important;
-    padding-top: inherit !important;
-    padding-right: 0.25rem !important;
-    padding-bottom: inherit !important;
     position: absolute;
     width: 40px;
+    left: 0;
+    top: auto;
+    padding: 0.25rem !important;
+    margin-top: -1.1px;
 }
-
-/* Text Box (Unstyled) */
-.cus-textbox-unstyled {
-    color: none;
-    font-size: unset;
-    font-weight: unset;
-    max-width: var(--control-max-width);
-    overflow-wrap: break-word;
-    word-break: break-word;
-    width: var(--control-width);
-}
-
-/* Div Container for multiple lines (appears disabled) */
-
-.cus-textbox {
-    background-color: whitesmoke;
-    border: 1px solid gray;
-    border-radius: .2rem;
-    color: var(--primary-text-color);
-    cursor: not-allowed;
-    display: inline-block;
-    font-size: 1rem;
-    min-height: 1.5rem;
-    line-height: 1.5rem;
-    margin: 0.2rem;
-    max-width: var(--control-max-width);
-    opacity: .8;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    overflow-wrap: break-word;
-    padding: 0.5rem .875rem 0.5rem .875rem;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    vertical-align: middle;
-    width: var(--control-width);
-    word-break: break-word;
-}
-
-/* Div Container for multiple lines (appears disabled) */
-
-.cus-textbox-html {
-    background-color: whitesmoke;
-    border: 1px solid gray;
-    border-radius: .2rem;
-    color: black;
-    cursor: not-allowed;
-    display: inline-block;
-    font-size: 1rem;
-    margin: 0.2rem;
-    max-width: var(--control-max-width);
-    min-height: 1.5rem;
-    line-height: 1.5rem;
-    opacity: .8;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    overflow-wrap: break-word;
-    padding: 0.5rem .875rem 0.5rem .875rem;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    vertical-align: middle;
-    word-break: break-word;
-    width: var(--control-width);
-}
-
-.cus-checkboxlist {
-    background-color: whitesmoke;
-    border: 1px solid var(--primary-color);
-    border-radius: .2rem;
-    color: var(--primary-text-color);
-    cursor: unset;
-    display: inline-block;
-    font-size: 1rem;
-    height: 8.5rem;
-    line-height: 1.5rem;
-    margin: 0.2rem;
-    max-width: var(--control-max-width);
-    min-height: 2.65rem;
-    overflow: auto;
-    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
-    resize: vertical;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    vertical-align: middle;
-    width: var(--control-width);
-}
-
-/* Scrolling Div Container */
-
-div.scroll {
-    background-color: white;
-    border: 1px solid var(--primary-color);
-    border-radius: .2rem;
-    color: var(--primary-text-color);
-    max-height: 10rem;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    overflow-wrap: break-word;
-    margin: 0.2rem;
-    padding: 0.5rem .875rem 0.5rem .875rem;
-    vertical-align: middle;
-    width: var(--control-width);
-    word-break: break-word;
-}
-
-div.wholepage {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center
-}
-
-    div.wholepage p {
-        margin: 0
-    }
 
 .fileUpload {
     position: relative;
@@ -1354,51 +802,12 @@ div.wholepage {
         filter: alpha(opacity=0);
     }
 
-#cus-modal-loading {
-    position: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    opacity: 1;
-    background-color: gainsboro;
-    z-index: 1;
-}
-
-#cus-modal-loading-image {
-    z-index: 2;
-}
-
-.cus-form-control-disabled {
-    background-color: #e9ecef !important;
-    border: 1px solid gray !important;
-    cursor: not-allowed !important;
-    height: 3.25rem !important;
-    margin: 0.2rem !important;
-    min-height: 3.5rem;
-    opacity: 0.8 !important;
-}
-
-.cus-textarea-disabled {
-    background-color: #e9ecef !important;
-    border: 1px solid gray !important;
-    cursor: not-allowed !important;
-    height: 8.45rem;
-    margin: 0.2rem !important;
-    min-height: 3.6rem !important;
-    overflow-x: auto !important;
-    opacity: 0.8 !important;
-    resize: vertical !important;
-}
-
 
 
 /****************************** ELEMENT SELECTOR CSS ***************************/
 
 
 
-/* a (ASP Hyper Link) */
 a {
     overflow-wrap: break-word;
     word-break: break-word;
@@ -1423,17 +832,9 @@ a {
     box-shadow: none !important;
 }
 
-.cus-div,
+/*.cus-div,
 .cus-div-scroll,
-input[type=date],
-input[type=email],
-input[type=time],
-input[type=datetime-local],
-input[type=number],
-input[type=text],
-input[type=password],
-input[type=search],
-input[type=url],
+input,
 select {
     background-color: whitesmoke !important;
     border: 1px solid var(--primary-color) !important;
@@ -1484,53 +885,26 @@ input[type=color] {
     transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     vertical-align: middle;
     width: var(--control-width);
-}
+}*/
 
-input[type=date]:focus,
-input[type=email]:focus,
-input[type=time]:focus,
-input[type=datetime-local]:focus,
-input[type=number]:focus,
-input[type=text]:focus,
-input[type=password]:focus,
-input[type=search]:focus,
-input[type=url]:focus,
+/*input:focus,
 select:focus,
 textarea:focus {
-    background-color: white !important;
+    background-color: white !important;*/
     /*box-shadow: 0 0 0.2rem 0 var(--primary-color);*/
-    outline: none;
-}
+    /*outline: none;
+}*/
 
-input[type=color]:disabled,
-input[type=date]:disabled,
-input[type=email]:disabled,
-input[type=time]:disabled,
-input[type=datetime-local]:disabled,
-input[type=number]:disabled,
-input[type=text]:disabled,
-input[type=password]:disabled,
-input[type=search]:disabled,
-input[type=url]:disabled,
+/*input:disabled,
 select:disabled,
 textarea:disabled {
     border-color: gray;
-    cursor: not-allowed !important;
     opacity: .8;
-}
+}*/
 
-    input[type=color]:disabled:hover,
-    input[type=date]:disabled:hover,
-    input[type=email]:disabled:hover,
-    input[type=time]:disabled:hover,
-    input[type=datetime-local]:disabled:hover,
-    input[type=number]:disabled:hover,
-    input[type=text]:disabled:hover,
-    input[type=password]:disabled:hover,
-    input[type=search]:disabled:hover,
-    input[type=url]:disabled:hover,
+    input:disabled:hover,
     textarea:disabled:hover {
-        cursor: not-allowed !important;
+        cursor: not-allowed;
     }
 
     /* ***** Select-specific Sub-CSS ***** */
@@ -1539,30 +913,12 @@ textarea:disabled {
         background-color: whitesmoke;
         border: 1px solid gray;
         color: var(--primary-text-color);
-        cursor: not-allowed !important;
+        cursor: not-allowed;
     }
 
-select {
+/*select {
     cursor: pointer !important;
 }
-
-    /*select:active, 
-select:focus, 
-select option:active, 
-select option:focus {
-    background-color: whitesmoke;
-    border-color: var(--primary-color);
-    color: var(--primary-text-color);
-    outline: none;
-}*/
-
-    /*select:hover {*/
-    /*background-color: var(--primary-color);*/
-    /*background-color: white;*/
-    /*border: 1px solid white;*/
-    /*color: white;
-    cursor: pointer;
-}*/
 
     select option {
         background-color: white;
@@ -1590,83 +946,11 @@ select option:focus {
 
     select:invalid:hover {
         color: white;
-    }
+    }*/
 
-    .input-validation-error,
-    .cus-checkboxlist.input-validation-error,
-    .cus-div.input-validation-error,
-    .cus-div-scroll.input-validation-error,
-    input[type=date].input-validation-error,
-    input[type=email].input-validation-error,
-    input[type=file].input-validation-error,
-    input[type=time].input-validation-error,
-    input[type=datetime-local].input-validation-error,
-    input[type=number].input-validation-error,
-    input[type=text].input-validation-error,
-    input[type=password].input-validation-error,
-    input[type=search].input-validation-error,
-    input[type=url].input-validation-error,
-    select.input-validation-error,
-    textarea.input-validation-error {
+    .input-validation-error {
         border-color: red !important;
     }
-
-.cus-div-scroll {
-    max-height: 15rem;
-    overflow-y: auto;
-}
-
-.cus-control {
-    margin: 0.2rem;
-    max-width: var(--control-max-width);
-    vertical-align: middle;
-    width: var(--control-width);
-}
-
-select.form-control {
-    line-height: 1rem !important;
-}
-
-/* Radio Button */
-input[type=radio] {
-    cursor: pointer;
-}
-
-    input[type=radio] ~ label {
-        cursor: pointer;
-        display: inline;
-        padding: 0 0.5rem;
-    }
-
-    input[type=radio]:disabled {
-        cursor: not-allowed;
-    }
-
-        input[type=radio]:disabled ~ label {
-            cursor: not-allowed;
-        }
-
-
-/* Checkbox */
-input[type=checkbox] {
-    cursor: pointer;
-}
-
-    input[type=checkbox] ~ label {
-        cursor: pointer;
-        display: inline;
-        padding: 0 0.5rem;
-    }
-
-    input[type=checkbox]:disabled {
-        cursor: not-allowed;
-    }
-
-        input[type=checkbox]:disabled ~ label {
-            cursor: not-allowed;
-        }
-
-
 
 /* Label */
 label {
@@ -1679,8 +963,6 @@ span {
     color: var(--primary-text-color);
     /*height: 1rem;*/
 }
-
-/* Additions to FC */
 
 .cus-hover-image-container {
     position: relative;

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
+VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchAFile.Core", "SearchAFile.Core\SearchAFile.Core.csproj", "{AF3B56C6-3F66-4782-B893-B516159FEE27}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchAFile.Web", "SearchAFile.Web\SearchAFile.Web.csproj", "{327377FD-B10F-4ADE-AB33-D2FF7FED2260}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchAFile.Api", "SearchAFile.Api\SearchAFile.Api.csproj", "{521DA331-BDD3-48D3-9D95-DF3E57F4D47A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtKeyGen", "JwtKeyGen\JwtKeyGen.csproj", "{110C4E22-9AEA-AEA3-35DD-10D0FFD32F6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{521DA331-BDD3-48D3-9D95-DF3E57F4D47A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{521DA331-BDD3-48D3-9D95-DF3E57F4D47A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{521DA331-BDD3-48D3-9D95-DF3E57F4D47A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{110C4E22-9AEA-AEA3-35DD-10D0FFD32F6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{110C4E22-9AEA-AEA3-35DD-10D0FFD32F6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{110C4E22-9AEA-AEA3-35DD-10D0FFD32F6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{110C4E22-9AEA-AEA3-35DD-10D0FFD32F6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

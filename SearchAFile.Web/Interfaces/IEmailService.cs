@@ -1,6 +1,6 @@
 ﻿using MimeKit;
 
-namespace SearchAFile.Services;
+namespace SearchAFile.Web.Interfaces;
 
 public interface IEmailService
 {

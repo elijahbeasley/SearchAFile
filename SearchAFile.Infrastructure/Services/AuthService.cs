@@ -30,7 +30,16 @@ public class AuthService : IAuthService
         if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
             return new AuthResult { Success = false, ErrorMessage = "Invalid password" };
 
-        var token = _tokenGenerator.GenerateToken(user);
+        string token;
+        try
+        {
+            token = _tokenGenerator.GenerateToken(user);
+        }
+        catch (Exception ex)
+        {
+            // Optional: Log ex
+            return new AuthResult { Success = false, ErrorMessage = "Failed to generate authentication token." };
+        }
 
         return new AuthResult
         {

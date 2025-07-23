@@ -1,0 +1,98 @@
+﻿@model (SearchAFile.Core.Domain.Entities.UserDto User, string BodyClass, string ShowMenu)
+@{
+    // Ensure a valid headshot
+    if (string.IsNullOrEmpty(Model.User.HeadshotPath))
+    {
+        Model.User.HeadshotPath = "Generic.jpg";
+    }
+
+    // helper to render each nav link
+    void NavLink(string href, string icon, string label, string title = null)
+    {
+        <a href="@href"
+           class="nav_link cus-text-secondary-text"
+           title="@(title ?? label)">
+            <i class="@icon nav_icon" style="width:25px;"></i>
+            <span class="nav_name">@label</span>
+        </a>
+    }
+}
+
+@* ===== SIDEBAR ===== *@
+<div class="l-navbar cus-bg-primary @Model.ShowMenu" id="nav-bar">
+    <nav class="nav">
+        <div id="navMenu">
+
+            @* user headshot & name *@
+            <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select"
+                 style="border-bottom:2px solid var(--secondary-text-color);">
+                <a href="~/UserFiles/@Model.User.HeadshotPath"
+                   target="_blank"
+                   style="cursor:pointer;">
+                    <img src="~/UserFiles/@Model.User.HeadshotPath" onerror="this.onerror=null;this.src='/UserFiles/Generic.jpg';" style="border-radius: 50%;" width="45" height="45" />
+                </a>
+                <span class="nav_logo-name"
+                      style="cursor:context-menu; font-size:12pt; line-height:1.25rem;">
+                    @Model.User.FullName
+                </span>
+                <span class="badge text-white cus-bg-primary px-0">
+                    @(Model.User.Role == "System Admin" ? "SAdmin" : Model.User.Role)
+                </span>
+            </div>
+
+            @* scrollable link list *@
+            <div class="overflow-auto"
+                 style="display:flex; flex-direction:column; height:var(--body-height);">
+                <div class="nav_list">
+
+                    @switch (Model.User.Role)
+                    {
+                        case "System Admin":
+                            NavLink("~/SystemAdmins/Dashboard", "fa-solid fa-house", "Dashboard");
+                            NavLink("~/MaintainCompanys/List", "fa-regular fa-building", "Companys");
+                            NavLink("~/MaintainUsers/List", "fa-solid fa-users", "Users");
+                            NavLink("~/SystemAdmins/SystemSettings", "fa-solid fa-gears", "System Settings");
+                            NavLink("~/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
+                            NavLink("~/Common/LogIn", "fa-solid fa-sign-in", "Log In");
+                            break;
+
+                        case "Admin":
+                            NavLink("~/Admins/Dashboard", "fa-solid fa-house", "Dashboard");
+                            NavLink("~/MaintainReferralSources/List", "fa-solid fa-person-walking-arrow-right", "Referral Sources");
+                            NavLink("~/MaintainServiceTypes/List", "fa-solid fa-handshake-angle", "Services");
+                            NavLink("~/MaintainSpecialClassifications/List", "fa-solid fa-id-badge", "Special Classifications");
+                            NavLink("~/MaintainTherapists/List", "fa-solid fa-person-chalkboard", "Therapists");
+                            NavLink("~/MaintainUsers/List", "fa-solid fa-users", "Users");
+                            NavLink("~/MaintainVictimizationTypes/List", "fa-solid fa-person-falling-burst", "Victimization Types");
+                            NavLink("~/Admins/CompanySettings", "fa-regular fa-building", "Company Settings");
+                            NavLink("~/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
+                            if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
+                            {
+                                NavLink("~/Common/LogIn", "fa-solid fa-sign-in", "Log In");
+                            }
+                            break;
+
+                        case "Employee":
+                            NavLink("~/Users/Dashboard", "fa-solid fa-home", "Dashboard");
+                            NavLink("~/MaintainClients/List", "fa-solid fa-people-group", "Clients");
+                            NavLink("~/Common/AccountSettings", "fa-solid fa-user-cog", "Account Settings");
+                            if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
+                            {
+                                NavLink("~/Common/LogIn", "fa-solid fa-sign-in", "Log In");
+                            }
+                            break;
+                    }
+
+                </div>
+
+                @* always show logout at bottom *@
+                <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="cursor:pointer;" title="Log Out">
+                    <i class="fa-solid fa-sign-out nav_icon" style="width:25px;"></i>
+                    <span class="nav_name">Log Out</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+</div>
+
+<form asp-controller="Account" asp-action="LogOut" method="post" id="logout_form"></form>

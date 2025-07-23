@@ -1,0 +1,5 @@
+﻿.form-floating > label::after {
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    content: none !important;
+}

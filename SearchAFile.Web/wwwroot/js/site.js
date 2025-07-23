@@ -1,42 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function (event) {
-
-    /*===== LINK ACTIVE =====*/
-    const linkColor = document.querySelectorAll('.nav_link');
-    //const linkColor = document.querySelectorAll('.nav_link:not([href]="")');
-
-    function colorLink() {
-
-        if (!$(this).hasClass('cus-collapse')
-            && linkColor) {
-
-            linkColor.forEach(l => l.classList.remove('cus-active'));
-            linkColor.forEach(l => l.classList.remove('cus-active-secondary'));
-            this.classList.add('cus-active');
-
-            if ($(this).parent().hasClass('collapse')) {
-
-                $(this).parent().prev().addClass('cus-active-secondary');
-            }
-        }
-    }
-    linkColor.forEach(l => l.addEventListener('click', colorLink));
-
-    if (getCookie('SearchAFile_Menu_Maintain') == undefined
-        || getCookie('SearchAFile_Menu_Maintain') == null) {
-
-        setCookie('SearchAFile_Menu_MaintainCarat', '');
-        setCookie('SearchAFile_Menu_Maintain', '');
-    }
-
-    if (getCookie('SearchAFile_Menu_Reports') == undefined
-        || getCookie('SearchAFile_Menu_Reports') == null) {
-
-        setCookie('SearchAFile_Menu_ReportsCarat', '');
-        setCookie('SearchAFile_Menu_Reports', '');
-    }
-});
-
-// Initialize bootstrap popovers.
+﻿// Initialize bootstrap popovers.
 $(function () {
     $('[data-bs-toggle="popover"]').popover()
 })
@@ -159,27 +121,20 @@ $(document).ready(function () {
     }
 
     SetMenuHighlight();
-
-    $("#body").animate({ opacity: "1" }, 0);
 });
 
 function SetMenuHighlight() {
 
-    if (document.getElementById('divMenuContent') != null) {
+    if (document.getElementById('nav-bar') != null) {
 
-        let objElementList = document.getElementById('divMenuContent').querySelectorAll('a');
+        let objElementList = document.getElementById('nav-bar').querySelectorAll('a');
 
         for (let i = 0, l = objElementList.length; i < l; i++) {
 
             if (objElementList[i].classList.contains('nav_link')
-                && PageURL.toLowerCase() == objElementList[i].href.toLowerCase()) {
+                && PageURL == objElementList[i].href) {
 
-                objElementList[i].classList.add('cus-active');
-
-                if ($(objElementList[i]).parent().hasClass('collapse')) {
-
-                    $(objElementList[i]).parent().prev().addClass('cus-active-secondary');
-                }
+                objElementList[i].classList.add('active');
             }
         }
     }
@@ -189,7 +144,7 @@ function SetMenuHighlight() {
     makeToast.toast = function (objToast) {
         makeToast("#toast-container").length ||
             (makeToast("body").prepend('<div id="toast-container" aria-live="polite" aria-atomic="true" class="fixed-top d-flex justify-content-center cus-mobile cus-toast-container" style="height: 0; z-index: 1100;"></div>'),
-                makeToast("#toast-container").append('<div id="toast-wrapper" class="toast-container cus-toast-wrapper mx-2" style="max-width: 1024px; min-width: 300px;"></div>'));
+                makeToast("#toast-container").append('<div id="toast-wrapper" class="toast-container cus-toast-wrapper ms-2 me-2" style="max-width: 1024px; min-width: 300px;"></div>'));
 
         let timestamp = Date.now();
         let toastDivID = "toastDiv" + timestamp;
@@ -243,8 +198,8 @@ function SetMenuHighlight() {
 
         objToast = '' +
             '<div id="' + toastDivID + '">' +
-            '   <div id="' + toastID + '" class="toast cus-toast mt-2 w-auto" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="' + toastDelay + '" data-bs-autohide="' + toastAutohide + '" style="border: none; width: 100%; z-index: 1100;">' +
-            '       <div id="' + toastHeaderID + '" class="toast-header align-items-center cus-no-select text-white ' + backgroundColor + " " + textColor + '" style="line-height: 1rem;">' +
+            '   <div id="' + toastID + '" class="toast cus-toast mt-2 w-auto" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="' + toastDelay + '" data-bs-autohide="' + toastAutohide + '" style="border: none; max-width: unset; z-index: 1100;">' +
+            '       <div id="' + toastHeaderID + '" class="toast-header align-items-center cus-no-select text-white ' + backgroundColor + " " + textColor + '">' +
             '           <i class="' + iconClass + ' text-white pe-2"></i>' +
             '           <strong class="me-auto">' + headerText + '</strong>';
         if (toastAutohide == false) {
@@ -256,16 +211,16 @@ function SetMenuHighlight() {
             '               <i class="fa-solid fa-xmark cus-text-white" title="Close" style="font-size: large;"></i>' +
             '           </button>' +
             '       </div>' +
-            '       <div id="' + toastBodyID + '" class="toast-body bg-white" style="border-radius: 0 0 0.2rem 0.2rem; line-height: 1.25rem; overflow-y: auto;">' +
+            '       <div id="' + toastBodyID + '" class="toast-body bg-white" style="border-radius: 0 0 0.2rem 0.2rem; overflow-y: auto;">' +
             '           <label>' + toastBody + '</label>' +
             '       </div>' +
             '   </div>' +
             '   <script>' +
             '       if (window.screen.width <= 1024) {' +
-            '           document.getElementById("' + toastBodyID + '").style.maxHeight = document.getElementById("header").offsetHeight - document.getElementById("' + toastHeaderID + '").offsetHeight - 5 + "px"; ' +
+            '           document.getElementById("' + toastBodyID + '").style.maxHeight = document.getElementById("header").offsetHeight - document.getElementById("' + toastHeaderID + '").offsetHeight - 14 + "px"; ' +
             '       } ' +
             '       else { ' +
-            '           document.getElementById("' + toastBodyID + '").style.maxHeight = window.screen.height - document.getElementById("' + toastHeaderID + '").offsetHeight - 5 + "px"; ' +
+            '           document.getElementById("' + toastBodyID + '").style.maxHeight = window.screen.height - document.getElementById("' + toastHeaderID + '").offsetHeight - 14 + "px"; ' +
             '       } ';
 
         if (toastAutohide == false) {
@@ -305,7 +260,7 @@ function SetMenuHighlight() {
     makeSnack.snack = function (objSnack) {
         makeSnack("#toast-container").length ||
             (makeSnack("body").prepend('<div id="toast-container" aria-live="polite" aria-atomic="true" class="fixed-top d-flex justify-content-center cus-mobile cus-toast-container" style="height: 0; z-index: 1100;"></div>'),
-                makeSnack("#toast-container").append('<div id="toast-wrapper" class="toast-container cus-toast-wrapper mx-2"></div>'));
+                makeSnack("#toast-container").append('<div id="toast-wrapper" class="toast-container cus-toast-wrapper"></div>'));
 
         let timestamp = Date.now();
         let snackDivID = "snackDiv" + timestamp;
@@ -350,8 +305,8 @@ function SetMenuHighlight() {
 
         objSnack = '' +
             '<div id="' + snackDivID + '">' +
-            '   <div id="' + snackID + '" class="toast cus-snack mt-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="' + snackDelay + '" data-bs-autohide="' + snackAutohide + '" style="border: none; width: 100%; z-index: 1100;">' +
-            '       <div class="toast-header align-items-center cus-no-select text-white ' + backgroundColor + " " + textColor + '" style="border: none; border-radius: 0.2rem; line-height: 1rem;">' +
+            '   <div id="' + snackID + '" class="toast cus-snack mt-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="' + snackDelay + '" data-bs-autohide="' + snackAutohide + '" style="border: none; max-width: unset; min-width: max-content; z-index: 1100;">' +
+            '       <div class="toast-header align-items-center cus-no-select text-white ' + backgroundColor + " " + textColor + '" style="border: none; border-radius: 0.2rem;">' +
             '           <i class="' + iconClass + ' text-white pe-2"></i>' +
             '           <strong class="me-auto">' + headerText + '</strong>' +
             '           <button type="button" class="btn close ms-2 me-0 my-0 p-0" data-bs-dismiss="toast" aria-label="Close">' +

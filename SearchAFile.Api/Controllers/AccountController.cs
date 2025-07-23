@@ -9,18 +9,26 @@ namespace SearchAFile.Api.Controllers;
 [Route("api/[controller]")]
 public class AccountController : ControllerBase
 {
-    private readonly IAuthService _service;
+    private readonly IAuthService _authService;
 
-    public AccountController(IAuthService service)
+    public AccountController(IAuthService authService)
     {
-        _service = service;
+        _authService = authService;
     }
 
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var result = await _service.LoginAsync(request.Email, request.Password);
+        var result = await _authService.LoginAsync(request.Email, request.Password);
         return result.Success ? Ok(result) : Unauthorized(result.ErrorMessage);
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        HttpContext.Session.Clear(); // Clears all session data
+        return Ok(new { Message = "Logged out successfully." });
     }
 }
