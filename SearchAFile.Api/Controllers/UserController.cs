@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Core.Interfaces;
+using SearchAFile.Infrastructure.Services;
 
 namespace SearchAFile.Api.Controllers;
 
@@ -13,13 +14,36 @@ public class UserController : ControllerBase
     public UserController(IUserService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? search) => Ok(await _service.GetAllAsync(search));
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var users = await _service.GetAllAsync();
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            // Optional logging here
+            return StatusCode(500, new { message = "Failed to retrieve users", detail = ex.Message });
+        }
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var item = await _service.GetByIdAsync(id);
-        return item is null ? NotFound() : Ok(item);
+        try
+        {
+            var user = await _service.GetByIdAsync(id);
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to retrieve user", detail = ex.Message });
+        }
     }
 
     [HttpPost]
@@ -39,4 +63,18 @@ public class UserController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id) =>
         await _service.DeleteAsync(id) ? NoContent() : NotFound();
+
+    [HttpGet("emailexists")]
+    public async Task<ActionResult<string?>> EmailExists(Guid companyId, string email, Guid? userId = null)
+    {
+        var exists = await _service.EmailExistsAsync(companyId, email, userId);
+        return Ok(exists);
+    }
+
+    [HttpGet("phoneexists")]
+    public async Task<ActionResult<string?>> PhoneExists(Guid companyId, string phone, Guid? userId = null)
+    {
+        var exists = await _service.PhoneExistsAsync(companyId, phone, userId);
+        return Ok(exists);
+    }
 }

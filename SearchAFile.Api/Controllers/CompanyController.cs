@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Core.Interfaces;
+using SearchAFile.Infrastructure.Services;
 
 namespace SearchAFile.Api.Controllers;
 
@@ -16,14 +17,36 @@ public class CompanyController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? search) => Ok(await _service.GetAllAsync(search));
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var companies = await _service.GetAllAsync();
+            return Ok(companies);
+        }
+        catch (Exception ex)
+        {
+            // Optional logging here
+            return StatusCode(500, new { message = "Failed to retrieve companies", detail = ex.Message });
+        }
+    }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Company>> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id)
     {
-        var company = await _service.GetByIdAsync(id);
-        if (company == null) return NotFound();
-        return Ok(company);
+        try
+        {
+            var company = await _service.GetByIdAsync(id);
+
+            if (company == null)
+                return NotFound();
+
+            return Ok(company);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to retrieve company", detail = ex.Message });
+        }
     }
 
     [HttpPost]

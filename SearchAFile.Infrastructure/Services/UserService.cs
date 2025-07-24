@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SearchAFile.Core.Domain.Entities;
+using SearchAFile.Core.Helpers;
 using SearchAFile.Core.Interfaces;
 using SearchAFile.Infrastructure.Data;
 
@@ -52,5 +54,20 @@ public class UserService : IUserService
 
         _context.Users.Remove(user);
         return await _context.SaveChangesAsync() > 0;
+    }
+    public async Task<string?> EmailExistsAsync(Guid companyId, string email, Guid? userId = null)
+    {
+        return (await _context.Users
+            .FirstOrDefaultAsync(u => userId == null ? true : u.UserId != userId
+                && u.CompanyId == companyId
+                && u.EmailAddress.Trim().ToLower().Equals(email.Trim().ToLower())))?.FullName;
+    }
+    public async Task<string?> PhoneExistsAsync(Guid companyId, string phone, Guid? userId = null)
+    {
+        return (await _context.Users
+            .FirstOrDefaultAsync(u => (userId == null || u.UserId != userId)
+                && u.CompanyId == companyId 
+                && !string.IsNullOrEmpty(phone) 
+                && u.PhoneNumber.Trim().ToLower().Equals(PhoneNumberHelper.CleanPhoneNumber(phone).Trim().ToLower())))?.FullName;
     }
 }

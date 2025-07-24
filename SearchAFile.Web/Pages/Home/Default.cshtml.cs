@@ -34,25 +34,19 @@ public class DefaultModel : PageModel
 
             if (HttpContext.Session.GetObject<SystemInfo>("SystemInfo") == null)
             {
-                var SystemInfos = await _api.GetAsync<IEnumerable<SystemInfo>>("systeminfos");
+                var result = await _api.GetAsync<IEnumerable<SystemInfo>>("systeminfos");
 
-                if (SystemInfos != null
-                    && SystemInfos.Any())
+                if (!result.IsSuccess || result.Data == null)
                 {
+                    throw new Exception(result.ErrorMessage ?? "Unable to initiate the system.");
+                }
 
-                    SystemInfo SystemInfo = SystemInfos.ElementAt(0);
+                SystemInfo SystemInfo = result.Data.ElementAt(0);
 
-                    if (SystemInfo != null)
-                    {
-                        HttpContext.Session.SetObject("SystemInfo", SystemInfo);
-                        HttpContext.Session.SetString("ContactInfo", SystemInfo.ContactName + " at <a href='mailto:" + SystemInfo.ContactEmailAddress + "?subject=" + SystemInfo.SystemName + " Error'>" + SystemInfo.ContactEmailAddress + "</a>");
-                    }
-                    else
-                    {
-                        HttpContext.Session.SetString("Message", "Unable to initialize system.");
-                        HttpContext.Session.SetString("MessageColor", "red");
-                        booSuccess = false;
-                    }
+                if (SystemInfo != null)
+                {
+                    HttpContext.Session.SetObject("SystemInfo", SystemInfo);
+                    HttpContext.Session.SetString("ContactInfo", SystemInfo.ContactName + " at <a href='mailto:" + SystemInfo.ContactEmailAddress + "?subject=" + SystemInfo.SystemName + " Error'>" + SystemInfo.ContactEmailAddress + "</a>");
                 }
                 else
                 {

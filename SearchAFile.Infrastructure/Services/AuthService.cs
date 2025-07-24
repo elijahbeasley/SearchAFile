@@ -48,7 +48,11 @@ public class AuthService : IAuthService
             User = new UserDto
             {
                 UserId = user.UserId,
+                CompanyId = user.CompanyId,
                 EmailAddress = user.EmailAddress,
+                PhoneNumber = user.PhoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 FullName = user.FullName,
                 Role = user.Role,
                 Active = user.Active

@@ -1,16 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
+using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Services;
 
 namespace SearchAFile.Web.Pages.Companies;
 
 public class DeleteModel : PageModel
 {
+    private readonly TelemetryClient TelemetryClient;
     private readonly AuthenticatedApiClient _api;
 
-    public DeleteModel(AuthenticatedApiClient api)
+    public DeleteModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
     {
+        TelemetryClient = telemetryClient;
         _api = api;
     }
 
@@ -19,17 +24,33 @@ public class DeleteModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (id == null)
+        try
+        {
+            if (id == null)
+                return NotFound();
+
+            var result = await _api.GetAsync<Company>($"companies/{id}");
+
+            if (!result.IsSuccess || result.Data == null)
+            {
+                throw new Exception(result.ErrorMessage ?? "Unable to retrieve company.");
+            }
+
+            Company = result.Data;
+
+            return Page();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            TelemetryClient.TrackException(ExceptionTelemetry);
+
+            // Display an error for the user.
+            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
             return NotFound();
-
-        var result = await _api.GetAsync<Company>($"companies/{id}");
-
-        if (result == null)
-            return NotFound();
-
-        Company = result;
-
-        return Page();
+        }
     }
 
     public async Task<IActionResult> OnPostAsync(Guid? id)

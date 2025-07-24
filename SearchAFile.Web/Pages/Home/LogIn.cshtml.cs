@@ -23,12 +23,14 @@ public class LogInModel : PageModel
     private readonly AccountController AccountController;
     private readonly IEmailService IEmailService;
     private readonly AuthClient _loginService;
-    public LogInModel(TelemetryClient TC, IEmailService IES, AccountController AC, AuthClient loginService)
+    private readonly AuthenticatedApiClient _api;
+    public LogInModel(TelemetryClient TC, IEmailService IES, AccountController AC, AuthClient loginService, AuthenticatedApiClient api)
     {
         TelemetryClient = TC;
         IEmailService = IES;
         AccountController = AC;
         _loginService = loginService;
+        _api = api;
     }
 
     public List<SelectListItem> UserSelectList { get; set; }
@@ -47,7 +49,7 @@ public class LogInModel : PageModel
         {
             if (HttpContext.Session.GetObject<UserDto>("User") != null)
             {
-                //return Redirect(SystemFunctions.GetDashboardURL(HttpContext.Session.GetObject<UserDto>("User").Role));
+                return Redirect(SystemFunctions.GetDashboardURL(HttpContext.Session.GetObject<UserDto>("User").Role));
             }
 
             if (!string.IsNullOrEmpty(email))
@@ -100,6 +102,16 @@ public class LogInModel : PageModel
             if (loginResult.Success)
             {
                 UserDto User = HttpContext.Session.GetObject<UserDto>("User");
+
+                // Get the user's company.
+                var result = await _api.GetAsync<ApiResult<Company>>($"companies/{User.CompanyId}");
+
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    throw new Exception(result.ErrorMessage ?? "Unable to initiate the system.");
+                }
+
+                HttpContext.Session.SetObject("Company", result.Data);
 
                 TempData["StartupJavaScript"] = "ShowSnack('success', 'Login Successful!', 7000, true)";
                 return Redirect(SystemFunctions.GetDashboardURL(User.Role));

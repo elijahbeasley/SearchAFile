@@ -13,13 +13,36 @@ public class FileGroupController : ControllerBase
     public FileGroupController(IFileGroupService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? search) => Ok(await _service.GetAllAsync(search));
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var groups = await _service.GetAllAsync();
+            return Ok(groups);
+        }
+        catch (Exception ex)
+        {
+            // Optional logging here
+            return StatusCode(500, new { message = "Failed to retrieve file groups", detail = ex.Message });
+        }
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var item = await _service.GetByIdAsync(id);
-        return item is null ? NotFound() : Ok(item);
+        try
+        {
+            var group = await _service.GetByIdAsync(id);
+
+            if (group == null)
+                return NotFound();
+
+            return Ok(group);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to retrieve file group", detail = ex.Message });
+        }
     }
 
     [HttpPost]

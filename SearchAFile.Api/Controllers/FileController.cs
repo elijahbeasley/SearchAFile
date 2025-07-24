@@ -13,13 +13,36 @@ public class FileController : ControllerBase
     public FileController(IFileService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? search) => Ok(await _service.GetAllAsync(search));
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var files = await _service.GetAllAsync();
+            return Ok(files);
+        }
+        catch (Exception ex)
+        {
+            // Optional logging here
+            return StatusCode(500, new { message = "Failed to retrieve files", detail = ex.Message });
+        }
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var item = await _service.GetByIdAsync(id);
-        return item is null ? NotFound() : Ok(item);
+        try
+        {
+            var file = await _service.GetByIdAsync(id);
+
+            if (file == null)
+                return NotFound();
+
+            return Ok(file);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to retrieve file", detail = ex.Message });
+        }
     }
 
     [HttpPost]

@@ -12,4 +12,6 @@ public interface IUserService
     Task CreateAsync(User user);
     Task<bool> UpdateAsync(User user);
     Task<bool> DeleteAsync(Guid userId);
+    Task<string?> EmailExistsAsync(Guid ComapnyId, string email, Guid? UserId);
+    Task<string?> PhoneExistsAsync(Guid ComapnyId, string phone, Guid? UserId);
 }

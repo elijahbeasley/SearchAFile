@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using SearchAFile.Web.Helpers;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -25,18 +26,23 @@ public class AuthenticatedApiClient
         request.Headers.Add("X-Client-Secret", _clientSecret);
     }
 
-    public async Task<T?> GetAsync<T>(string url)
+    public async Task<ApiResult<T>> GetAsync<T>(string url)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         AddAuthHeaders(request);
 
         var response = await _httpClient.SendAsync(request);
+
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<T>();
+            var data = await response.Content.ReadFromJsonAsync<T>();
+            return ApiResult<T>.Success(data);
         }
-
-        return default;
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            return ApiResult<T>.Failure((int)response.StatusCode, errorContent);
+        }
     }
 
     public async Task<HttpResponseMessage> PostAsync(string url, object data)

@@ -118,7 +118,7 @@
     <script src="~/js/table-sorting.js" asp-append-version="true"></script>
 
     @* Google Maps autofill *@
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=@Configuration["GoogleAutocompleteAPIKey"]&loading=async&libraries=places&callback=initAutocomplete"></script>
+    @* <script async defer src="https://maps.googleapis.com/maps/api/js?key=@Configuration["GoogleAPIKey"]&loading=async&libraries=places&callback=initAutocomplete"></script> *@
     @* <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9U50suCLYH3cTjjGnSsGVk4GfKVHPloM&callback=initAutocomplete&libraries=places&v=weekly"></script> *@
 
     @await RenderSectionAsync("Scripts", required: false)

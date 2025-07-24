@@ -13,13 +13,36 @@ public class SystemInfoController : ControllerBase
     public SystemInfoController(ISystemInfoService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var infos = await _service.GetAllAsync();
+            return Ok(infos);
+        }
+        catch (Exception ex)
+        {
+            // Optional logging here
+            return StatusCode(500, new { message = "Failed to retrieve system infos", detail = ex.Message });
+        }
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var item = await _service.GetByIdAsync(id);
-        return item is null ? NotFound() : Ok(item);
+        try
+        {
+            var info = await _service.GetByIdAsync(id);
+
+            if (info == null)
+                return NotFound();
+
+            return Ok(info);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to retrieve system info", detail = ex.Message });
+        }
     }
 
     [HttpPost]

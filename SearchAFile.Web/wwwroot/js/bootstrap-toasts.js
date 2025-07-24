@@ -212,3 +212,20 @@ function ShowSnack(type, header, delay, autohide) {
         autohide: autohide
     });
 }
+
+function ClearToast() {
+
+    if (document.getElementById("toast-wrapper") != null) {
+
+        let toastList = document.getElementById("toast-wrapper").querySelectorAll(".toast");
+
+        toastList.forEach(function (toast) {
+
+            // Remove the "fade" class from the toast.
+            $('#' + toast.id).toast().removeClass('fade');
+
+            // Remove the toast.
+            $('#' + toast.id).toast('hide');
+        });
+    }
+}
