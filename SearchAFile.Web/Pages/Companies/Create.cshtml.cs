@@ -19,6 +19,9 @@ public class CreateModel : PageModel
 
     public IActionResult OnGet()
     {
+        // Set the page title.
+        HttpContext.Session.SetString("PageTitle", "Create Company");
+
         return Page();
     }
 

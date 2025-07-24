@@ -27,6 +27,9 @@ public class IndexModel : PageModel
     {
         try
         {
+            // Set the page title.
+            HttpContext.Session.SetString("PageTitle", "Maintain Companies");
+
             string url = string.IsNullOrWhiteSpace(search)
                 ? "companies"
                 : $"companies?search={Uri.EscapeDataString(search)}";

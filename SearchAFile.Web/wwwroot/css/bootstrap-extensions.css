@@ -476,3 +476,7 @@ label:has(i) {
     margin: inherit;
     padding: 0 0 0 1rem;
 }
+
+.form-floating:not(:last-of-type) {
+    margin-bottom: 1rem; /* or whatever spacing you want */
+}

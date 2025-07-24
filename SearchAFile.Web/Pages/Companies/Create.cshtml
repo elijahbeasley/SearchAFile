@@ -4,12 +4,6 @@
     ViewData["Title"] = "Create Company";
 }
 
-<style>
-    .form-floating:not(:last-of-type) {
-        margin-bottom: 1rem; /* or whatever spacing you want */
-    }
-</style>
-
 <form method="post" enctype="multipart/form-data">
     <div class="card m-auto" style="max-width: 30rem;">
 
@@ -23,26 +17,26 @@
             <div class="form-floating">
                 <input type="text" asp-for="Company.Company1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.Company1)" />
                 <label asp-for="Company.Company1" class="control-label"></label>
+                <span asp-validation-for="Company.Company1" class="text-danger"></span>
             </div>
-            <span asp-validation-for="Company.Company1" class="text-danger"></span>
 
             <div class="form-floating">
                 <input type="text" asp-for="Company.ContactName" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.ContactName)" />
                 <label asp-for="Company.ContactName" class="control-label"></label>
+                <span asp-validation-for="Company.ContactName" class="text-danger"></span>
             </div>
-            <span asp-validation-for="Company.ContactName" class="text-danger"></span>
 
             <div class="form-floating">
                 <input type="text" asp-for="Company.ContactEmailAddress" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.ContactEmailAddress)" />
                 <label asp-for="Company.ContactEmailAddress" class="control-label"></label>
+                <span asp-validation-for="Company.ContactEmailAddress" class="text-danger"></span>
             </div>
-            <span asp-validation-for="Company.ContactEmailAddress" class="text-danger"></span>
 
             <div class="form-floating">
-                <input type="text" asp-for="Company.ContactPhoneNumber" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.ContactPhoneNumber)" />
+                <input type="text" asp-for="Company.ContactPhoneNumber" class="form-control" placeholder="___-___-____" data-bs-slots="_" />
                 <label asp-for="Company.ContactPhoneNumber" class="control-label"></label>
+                <span asp-validation-for="Company.ContactPhoneNumber" class="text-danger"></span>
             </div>
-            <span asp-validation-for="Company.ContactPhoneNumber" class="text-danger"></span>
         </div>
 
         <div class="card-footer">

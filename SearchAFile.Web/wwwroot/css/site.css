@@ -463,8 +463,9 @@ select:disabled:hover {
     cursor: not-allowed;
 }
 
-label,
-span {
+/* Scope it to your form if you like */
+.form-floating:not(:has(input.input-validation-error)) label,
+.form-floating:not(:has(input.input-validation-error)) span {
     color: var(--primary-text-color);
 }
 
