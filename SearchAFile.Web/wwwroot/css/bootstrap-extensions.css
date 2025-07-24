@@ -238,14 +238,19 @@
 
 /* END Sliding out modal from right-side of screen. END */
 
+/* Apply styles to buttons NOT inside an .input-group */
+body:not(:has(.input-group > .btn)) .btn {
+    /*margin: 0.2rem;*/
+}
+
+/* Apply default margin to all .btns */
 .btn {
     margin: 0.2rem;
 }
 
-.focus-none:focus,
-.cus-no-focus:focus {
-    outline: none !important;
-    box-shadow: none !important;
+/* Remove margin if inside .input-group */
+.input-group .btn {
+    margin: 0;
 }
 
 a.disabled:hover,
@@ -465,4 +470,9 @@ label:has(i) {
 
 .text-teal {
     color: var(--bs-teal);
+}
+
+.toast-body ul {
+    margin: inherit;
+    padding: 0 0 0 1rem;
 }

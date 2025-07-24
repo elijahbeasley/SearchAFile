@@ -13,11 +13,11 @@ public class FileGroupController : ControllerBase
     public FileGroupController(IFileGroupService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(string? search)
     {
         try
         {
-            var groups = await _service.GetAllAsync();
+            var groups = await _service.GetAllAsync(search);
             return Ok(groups);
         }
         catch (Exception ex)

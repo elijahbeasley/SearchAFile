@@ -1,4 +1,4 @@
-﻿namespace SearchAFile.Web.Helpers;
+﻿using System.Net;
 
 public class ApiResult<T>
 {
@@ -8,18 +8,23 @@ public class ApiResult<T>
     public string? ErrorMessage { get; private set; }
     public Dictionary<string, string[]>? Errors { get; private set; }
 
-    public static ApiResult<T> Success(T? data) => new()
+    // ✅ Add this:
+    public HttpResponseMessage? RawResponse { get; private set; }
+
+    public static ApiResult<T> Success(T? data, HttpResponseMessage? response = null) => new()
     {
         IsSuccess = true,
         Data = data,
-        StatusCode = 200
+        StatusCode = (int)(response?.StatusCode ?? HttpStatusCode.OK),
+        RawResponse = response
     };
 
-    public static ApiResult<T> Failure(int statusCode, string? errorMessage, Dictionary<string, string[]>? errors = null) => new()
+    public static ApiResult<T> Failure(int statusCode, string? errorMessage, Dictionary<string, string[]>? errors = null, HttpResponseMessage? response = null) => new()
     {
         IsSuccess = false,
         StatusCode = statusCode,
         ErrorMessage = errorMessage,
-        Errors = errors
+        Errors = errors,
+        RawResponse = response
     };
 }

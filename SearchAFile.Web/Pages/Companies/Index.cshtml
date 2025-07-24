@@ -7,7 +7,7 @@
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
-        <label class="fs-2">@ViewData["Title"]</label>
+        <label class="fs-3">@ViewData["Title"]</label>
         <form method="get">
             <div class="input-group">
                 <input asp-for="search" class="form-control" type="search" placeholder="Search products..." onchange="if (this.value === '') {this.form.submit(); }" />
@@ -16,118 +16,119 @@
         </form>
     </div>
 
-    <div class="card-body">
-        <p>
-            <a asp-page="Create" class="btn btn-outline-success w-100">Create Company</a>
-        </p>
+    <div class="card-body p-0">
 
-        @if (Model.Companies == null)
+        <div class="p-3">
+            <a asp-page="Create" class="btn btn-outline-success w-100">
+                <i class="fa-solid fa-plus-circle"></i>
+                Create Company
+            </a>
+        </div>
+
+        @if (Model.Companies != null
+            && Model.Companies.Any())
         {
-            <div class="table-responsive">
-                <table class="table table-striped m-0">
+            <div style="margin-left: 40px; overflow-x: auto;">
+                <table id="tblData" class="table table-striped m-0">
                     <thead>
-                        <tr style="white-space: nowrap;">
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].Company1)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].ContactName)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].ContactEmailAddress)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].ContactPhoneNumber)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].Address)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].HeaderLogo)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].FooterLogo)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].EmailLogo)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].PrimaryColor)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].SecondaryColor)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].PrimaryTextColor)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].SecondaryTextColor)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].Url)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].Lock)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Companies[0].Active)
-                            </th>
+                        <tr class="fw-bold" style="white-space: nowrap;">
+                            <th class="cus-fixed-col-th border-0"></th>
                             <th></th>
+                            <th class="text-center">
+                                <a href="javascript:SortTable(2,'T', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Companies[0].Active)
+                                    <i id="iSort2" class="fa-duotone fa-solid fa-sort-up cus-sort-icon"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="javascript:SortTable(3,'T', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Companies[0].Company1)
+                                    <i id="iSort3" class="fa-duotone fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="javascript:SortTable(4,'T', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Companies[0].Url)
+                                    <i id="iSort4" class="fa-duotone fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a href="javascript:SortTable(5,'N', 'tblData');" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Active/Inactive">
+                                    @Html.DisplayNameFor(model => model.Companies[0].Lock)
+                                    <i id="iSort6" class="fa-duotone fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                </a>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model.Companies)
                         {
-                            <tr>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.Company1)
+                            string strContactInfo = "<span><b>Email Address:</b> " + item.ContactEmailAddress + "<br><b>Phone Number:</b> " + item.ContactPhoneNumber + "</span>";
+
+                            <tr style="white-space: nowrap;">
+                                <td class="cus-fixed-col-td">
+                                    <div class="dropdown dropend">
+                                        <button type="button" class="btn py-1 m-0" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa-duotone fa-solid fa-ellipsis-vertical" style="font-size: larger;"></i>
+                                        </button>
+                                        <div class="dropdown-menu" style="min-width: unset;">
+                                            <a asp-page="./Details" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="View">
+                                                <i class="fa-duotone fa-solid fa-eye cus-text-primary"></i>
+                                                &nbsp;
+                                                View
+                                            </a>
+                                            <a asp-page="./Edit" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="View">
+                                                <i class="fa-duotone fa-solid fa-pen-to-square text-primary"></i>
+                                                &nbsp;
+                                                Edit
+                                            </a>
+                                            <a asp-page="./Delete" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="View">
+                                                <i class="fa-solid fa-minus-circle text-danger"></i>
+                                                &nbsp;
+                                                Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle py-0" style="width: 0;">
+                                    <a href="~/CompanyFiles/@item.HeaderLogo" target="_blank" style="cursor: pointer;">
+                                        <img alt="logo" src="~/CompanyFiles/@item.HeaderLogo" style="height: 35px;" title="<img src='/CompanyFiles/@item.HeaderLogo' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
+                                    </a>
+                                </td>
+                                <td class="align-middle text-center cus-no-select" style="width: 0;">
+                                    @if (Convert.ToBoolean(item.Active))
+                                    {
+                                        <span class="badge bg-success px-4 w-100">
+                                            Active
+                                            <i class="fa-solid fa-check"></i>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger px-4 w-100">
+                                            Inactive
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </span>
+                                    }
+                                </td>
+                                <td class="align-middle">
+                                    <label title="@strContactInfo" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" style="cursor: context-menu;">
+                                        @item.Company1
+                                        <i class="fa-solid fa-angle-up"></i>
+                                    </label>
                                 </td>
                                 <td>
-                                    @Html.DisplayFor(modelItem => item.ContactName)
+                                    <a href="@item.Url" target="_blank">@item.Url</a>
                                 </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.ContactEmailAddress)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.ContactPhoneNumber)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.Address)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.HeaderLogo)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.FooterLogo)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.EmailLogo)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.PrimaryColor)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.SecondaryColor)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.PrimaryTextColor)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.SecondaryTextColor)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.Url)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.Lock)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.Active)
-                                </td>
-                                <td style="white-space: nowrap;">
-                                    <a asp-page="./Details" asp-route-id="@item.CompanyId" class="btn btn-outline-secondary">Details</a>
-                                    <a asp-page="./Edit" asp-route-id="@item.CompanyId" class="btn btn-outline-primary">Edit</a>
-                                    <a asp-page="./Delete" asp-route-id="@item.CompanyId" class="btn btn-outline-danger">Delete</a>
+                                <td class="text-center">
+                                    @if (Convert.ToBoolean(item.Lock))
+                                    {
+                                        <i class="fa-solid fa-check-circle text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-solid fa-xmark-circle text-danger"></i>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -137,7 +138,7 @@
         }
         else
         {
-            <div class="mb-3 text-center text-secondary">
+            <div class="mb-3 text-center text-secondary cus-no-select">
                 <i>No existing companies</i>
             </div>
         }

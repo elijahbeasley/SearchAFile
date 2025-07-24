@@ -104,7 +104,7 @@ public class LogInModel : PageModel
                 UserDto User = HttpContext.Session.GetObject<UserDto>("User");
 
                 // Get the user's company.
-                var result = await _api.GetAsync<ApiResult<Company>>($"companies/{User.CompanyId}");
+                var result = await _api.GetAsync<Company>($"companies/{User.CompanyId}");
 
                 if (!result.IsSuccess || result.Data == null)
                 {
@@ -127,6 +127,8 @@ public class LogInModel : PageModel
         }
         catch (Exception ex)
         {
+            await _loginService.LogoutAsync();
+
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
             TelemetryClient.TrackException(ExceptionTelemetry);
@@ -134,6 +136,8 @@ public class LogInModel : PageModel
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
             TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+
+            return Redirect("/");
         }
 
         return Page();

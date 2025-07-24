@@ -39,6 +39,8 @@ public class IndexModel : PageModel
             }
 
             Companies = result.Data;
+
+            ModelState.Remove("search");
         }
         catch (Exception ex)
         {

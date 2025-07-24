@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 using System.Security.Claims;
@@ -22,28 +23,28 @@ public class AuthClient
         public string? ErrorMessage { get; set; }
     }
 
-
     public async Task<LoginResult> LoginAsync(string email, string password)
     {
-        var response = await _api.PostAsync("account/login", new
+        var response = await _api.PostAsync<AuthResult>("account/login", new
         {
             Email = email,
             Password = password
         });
 
-        if (!response.IsSuccessStatusCode)
+        if (!response.IsSuccess || response.Data == null)
         {
-            var error = await response.Content.ReadAsStringAsync();
             return new LoginResult
             {
                 Success = false,
-                ErrorMessage = string.IsNullOrWhiteSpace(error) ? "Login failed." : error
+                ErrorMessage = string.IsNullOrWhiteSpace(response.ErrorMessage)
+                    ? "Login failed."
+                    : response.ErrorMessage
             };
         }
 
-        var result = await response.Content.ReadFromJsonAsync<AuthResult>();
+        var result = response.Data;
 
-        if (result == null || !result.Success || result.User == null || string.IsNullOrWhiteSpace(result.Token))
+        if (!result.Success || result.User == null || string.IsNullOrWhiteSpace(result.Token))
         {
             return new LoginResult
             {
@@ -58,12 +59,12 @@ public class AuthClient
 
         // Add claims and sign in
         var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, result.User.UserId.ToString()),
-            new Claim(ClaimTypes.Name, result.User.FullName ?? ""),
-            new Claim(ClaimTypes.Email, result.User.EmailAddress),
-            new Claim(ClaimTypes.Role, result.User.Role ?? "")
-        };
+    {
+        new Claim(ClaimTypes.NameIdentifier, result.User.UserId.ToString()),
+        new Claim(ClaimTypes.Name, result.User.FullName ?? ""),
+        new Claim(ClaimTypes.Email, result.User.EmailAddress),
+        new Claim(ClaimTypes.Role, result.User.Role ?? "")
+    };
 
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 

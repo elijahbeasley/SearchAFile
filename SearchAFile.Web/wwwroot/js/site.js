@@ -25,8 +25,10 @@ function isMobileDevice() {
 /// reveals the body, binds event handlers, and sets up Bootstrap tooltips/popovers.
 /// </summary>
 $(document).ready(function () {
+
     StopLoadingAll();
     SetMenuHighlight();
+
     $('#body').css('opacity', '1');
 
     // Show loading overlay and start polling cookie
@@ -55,16 +57,29 @@ $(document).ready(function () {
 });
 
 /// <summary>
-/// Highlights the current navigation link by comparing pathnames.
+/// Highlights the current navigation link by comparing pathnames, including subpaths.
 /// </summary>
 function SetMenuHighlight() {
     const nav = document.getElementById('nav-bar');
     if (!nav) return;
 
+    const currentPath = window.location.pathname.replace(/\/$/, '').toLowerCase();
+
     nav.querySelectorAll('a.nav_link').forEach(link => {
-        const linkPath = new URL(link.href).pathname;
-        if (linkPath === window.location.pathname) {
-            link.classList.add('active');
+        try {
+            const href = link.getAttribute('href');
+            if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+            const linkPath = new URL(href, window.location.origin).pathname.replace(/\/$/, '').toLowerCase();
+
+            if (
+                currentPath === linkPath ||
+                currentPath.startsWith(linkPath + '/')
+            ) {
+                link.classList.add('active');
+            }
+        } catch (e) {
+            console.warn('Skipping invalid href:', link.getAttribute('href'), e);
         }
     });
 }

@@ -190,7 +190,7 @@ public class AccountSettingsModel : PageModel
             //ModelState.Remove("User.FirstName");
             //ModelState.Remove("User.LastName");
             //ModelState.Remove("User.EmailAddress");
-            //ModelState.Remove("User.Flota");
+            //ModelState.Remove("User.PhoneNumber");
             //ModelState.Remove("User.WhatsApp");
         }
         catch (Exception ex)
@@ -299,7 +299,7 @@ public class AccountSettingsModel : PageModel
 
             //ModelState.Remove("User.FirstName");
             //ModelState.Remove("User.LastName");
-            //ModelState.Remove("User.Flota");
+            //ModelState.Remove("User.PhoneNumber");
             //ModelState.Remove("User.WhatsApp");
             //ModelState.Remove("User.EmailAddress");
             //ModelState.Remove("User.City");

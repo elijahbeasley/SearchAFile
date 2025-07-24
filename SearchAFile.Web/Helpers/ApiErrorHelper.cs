@@ -12,21 +12,15 @@ public static class ApiErrorHelper
         public string? Detail { get; set; }
     }
 
-    public static async Task AddErrorsToModelStateAsync(HttpResponseMessage response, ModelStateDictionary modelState, string? modelPrefix = null)
+    public static Task AddErrorsToModelStateAsync<T>(ApiResult<T> result, ModelStateDictionary modelState, string? modelPrefix = null)
     {
-        if (response == null || modelState == null) return;
+        if (result == null || modelState == null || result.IsSuccess)
+            return Task.CompletedTask;
 
-        var content = await response.Content.ReadAsStringAsync();
-
-        var errorObj = JsonSerializer.Deserialize<ApiErrorResponse>(content, new JsonSerializerOptions
+        // Add model-specific validation errors
+        if (result.Errors != null)
         {
-            PropertyNameCaseInsensitive = true
-        });
-
-        // Handle ModelState errors
-        if (errorObj?.Errors != null && errorObj.Errors.Count > 0)
-        {
-            foreach (var kvp in errorObj.Errors)
+            foreach (var kvp in result.Errors)
             {
                 foreach (var message in kvp.Value)
                 {
@@ -34,31 +28,24 @@ public static class ApiErrorHelper
                         ? kvp.Key
                         : $"{modelPrefix}.{kvp.Key}";
 
-                    modelState.AddModelError(key, message);
+                    // Avoid duplicates
+                    if (!modelState.ContainsKey(key) || !modelState[key].Errors.Any(e => e.ErrorMessage == message))
+                    {
+                        modelState.AddModelError(key, message);
+                    }
                 }
             }
-
-            return;
         }
 
-        // Handle general error messages
-        var generalError = JsonSerializer.Deserialize<GeneralErrorResponse>(content, new JsonSerializerOptions
+        // Add general message fallback
+        if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
         {
-            PropertyNameCaseInsensitive = true
-        });
-
-        if (!string.IsNullOrWhiteSpace(generalError?.Message))
-        {
-            modelState.AddModelError(string.Empty, generalError.Message);
+            modelState.AddModelError(string.Empty, result.ErrorMessage);
         }
 
-        if (!string.IsNullOrWhiteSpace(generalError?.Detail))
-        {
-            modelState.AddModelError(string.Empty, generalError.Detail);
-        }
+        return Task.CompletedTask;
     }
-
-    private class ApiErrorResponse
+    public class ApiErrorResponse
     {
         public Dictionary<string, string[]> Errors { get; set; } = new();
     }

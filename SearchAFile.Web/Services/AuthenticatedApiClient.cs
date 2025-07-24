@@ -26,6 +26,50 @@ public class AuthenticatedApiClient
         request.Headers.Add("X-Client-Secret", _clientSecret);
     }
 
+    //public async Task<ApiResult<T>> GetAsync<T>(string url)
+    //{
+    //    var request = new HttpRequestMessage(HttpMethod.Get, url);
+    //    AddAuthHeaders(request);
+
+    //    var response = await _httpClient.SendAsync(request);
+    //    var content = await response.Content.ReadAsStringAsync();
+
+    //    try
+    //    {
+    //        if (response.IsSuccessStatusCode)
+    //        {
+    //            // Try to deserialize directly into T (your actual object)
+    //            var data = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            });
+
+    //            return ApiResult<T>.Success(data);
+    //        }
+    //        else
+    //        {
+    //            // Try to extract error from JSON like: { message: "...", detail: "..." }
+    //            var errorObj = JsonSerializer.Deserialize<ApiErrorResponse>(content, new JsonSerializerOptions
+    //            {
+    //                PropertyNameCaseInsensitive = true
+    //            });
+
+    //            return ApiResult<T>.Failure((int)response.StatusCode, errorObj?.Message ?? "Unknown error", null);
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return ApiResult<T>.Failure((int)response.StatusCode, $"Deserialization error: {ex.Message}");
+    //    }
+    //}
+
+    //private class ApiErrorResponse
+    //{
+    //    public string? Message { get; set; }
+    //    public Dictionary<string, string[]>? Errors { get; set; }
+    //}
+
+
     public async Task<ApiResult<T>> GetAsync<T>(string url)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -45,21 +89,41 @@ public class AuthenticatedApiClient
         }
     }
 
-    public async Task<HttpResponseMessage> PostAsync(string url, object data)
+    public async Task<ApiResult<T>> PostAsync<T>(string url, object data)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, url);
         AddAuthHeaders(request);
+        request.Content = JsonContent.Create(data);
 
-        var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+        var response = await _httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (response.IsSuccessStatusCode)
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
-        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            return ApiResult<T>.Success(result);
+        }
 
-        return await _httpClient.SendAsync(request);
+        // Try to pull out validation or general error messages
+        try
+        {
+            var errorObj = JsonSerializer.Deserialize<ApiErrorHelper.ApiErrorResponse>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return ApiResult<T>.Failure((int)response.StatusCode, null, errorObj?.Errors);
+        }
+        catch
+        {
+            return ApiResult<T>.Failure((int)response.StatusCode, "Failed to parse API error.");
+        }
     }
+
     public async Task<HttpResponseMessage> PostAsync(string url)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, url);

@@ -17,11 +17,11 @@ public class CompanyController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(string? search)
     {
         try
         {
-            var companies = await _service.GetAllAsync();
+            var companies = await _service.GetAllAsync(search);
             return Ok(companies);
         }
         catch (Exception ex)

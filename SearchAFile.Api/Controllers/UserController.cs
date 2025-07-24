@@ -14,11 +14,11 @@ public class UserController : ControllerBase
     public UserController(IUserService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(string? search)
     {
         try
         {
-            var users = await _service.GetAllAsync();
+            var users = await _service.GetAllAsync(search);
             return Ok(users);
         }
         catch (Exception ex)

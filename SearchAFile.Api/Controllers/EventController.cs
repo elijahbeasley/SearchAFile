@@ -14,11 +14,11 @@ public class EventController : ControllerBase
     public EventController(IEventService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(string? search)
     {
         try
         {
-            var events = await _service.GetAllAsync();
+            var events = await _service.GetAllAsync(search);
             return Ok(events);
         }
         catch (Exception ex)

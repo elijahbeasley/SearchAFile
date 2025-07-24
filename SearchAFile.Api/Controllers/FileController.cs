@@ -13,11 +13,11 @@ public class FileController : ControllerBase
     public FileController(IFileService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(string? search)
     {
         try
         {
-            var files = await _service.GetAllAsync();
+            var files = await _service.GetAllAsync(search);
             return Ok(files);
         }
         catch (Exception ex)

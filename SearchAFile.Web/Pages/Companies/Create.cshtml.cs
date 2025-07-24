@@ -27,15 +27,30 @@ public class CreateModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        var response = await _api.PostAsync("companies", Company);
+        //if (!ModelState.IsValid)
+        //{
+        //    return Page();
+        //}
+        //var response = await _api.PostAsync("companies", Company);
 
-        if (!response.IsSuccessStatusCode)
+        //if (!response.IsSuccessStatusCode)
+        //{
+        //    await ApiErrorHelper.AddErrorsToModelStateAsync(response, ModelState, "Company");
+        //    return Page();
+        //}
+
+        var result = await _api.PostAsync<Company>("companies", Company);
+
+        if (!result.IsSuccess)
         {
-            await ApiErrorHelper.AddErrorsToModelStateAsync(response, ModelState, "Company");
+            bool boo = ModelState.IsValid;
+            await ApiErrorHelper.AddErrorsToModelStateAsync(result, ModelState, "Company");
+            boo = ModelState.IsValid;
             return Page();
         }
-        TempData["MessageColor"] = "text-success";
-        TempData["Message"] = "Product created successfully!";
+
+        TempData["StartupJavaScript"] = "ShowSnack('success', 'Product successfully created', 7000, true)";
+
         return RedirectToPage("./Index");
     }
 }
