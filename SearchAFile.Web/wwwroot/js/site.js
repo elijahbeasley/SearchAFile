@@ -1,792 +1,162 @@
-﻿// Initialize bootstrap popovers.
-$(function () {
-    $('[data-bs-toggle="popover"]').popover()
-})
+﻿/// <summary>Maximum allowed file size</summary>
+//const MaxFileSize = 5242880; // 5 MB
+//const MaxFileSize = 10485760; // 10 MB
+const MaxFileSize = 26214400; // 25 MB
+//const MaxFileSize = 104857600; // 100 MB
 
-// Initialize bootatrap tool tips.
-$(function () {
-    $('[data-bs-toggle="tooltip"]').tooltip()
-})
+/// <summary>Base URL of the current page (protocol + host + pathname).</summary>
+const PageURL = window.location.protocol + '//' + window.location.host + window.location.pathname;
 
-// Get parameters from query strings.
+/// <summary>True if on a mobile device, false otherwise.</summary>
+const is_mobile = isMobileDevice();
+const focus_on_mobile = true;
+
+/// <summary>
+/// Checks if the user is on a mobile device based on the browser's user agent.
+/// </summary>
+/// <returns>True if it’s a mobile device; otherwise, false.</returns>
+function isMobileDevice() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+}
+
+/// <summary>
+/// Initializes the page: stops all loaders, highlights the active menu item,
+/// reveals the body, binds event handlers, and sets up Bootstrap tooltips/popovers.
+/// </summary>
+$(document).ready(function () {
+    StopLoadingAll();
+    SetMenuHighlight();
+    $('#body').css('opacity', '1');
+
+    // Show loading overlay and start polling cookie
+    $('.cus-show-loading').on('click', function () {
+        $('#divLoading').show();
+        setCookie('show-loading', '0', 1); // mark “loading” state
+        startDownloadCheck();
+    });
+
+    // Desktop-only: initialize Bootstrap tooltips and popovers
+    if (!is_mobile) {
+        document.querySelectorAll('[data-bs-toggle="tooltip"], [data-bs-toggle="popover"]').forEach(el => {
+            const mode = el.getAttribute('data-bs-toggle');
+            if (mode === 'tooltip') new bootstrap.Tooltip(el);
+            else if (mode === 'popover') new bootstrap.Popover(el);
+        });
+    }
+
+    // Execute any server-provided startup script (beware of eval risks)
+    const startupScript = $('#StartupJavaScript').text().trim();
+    if (startupScript) {
+        /* eslint-disable no-eval */
+        eval(startupScript);
+        /* eslint-enable no-eval */
+    }
+});
+
+/// <summary>
+/// Highlights the current navigation link by comparing pathnames.
+/// </summary>
+function SetMenuHighlight() {
+    const nav = document.getElementById('nav-bar');
+    if (!nav) return;
+
+    nav.querySelectorAll('a.nav_link').forEach(link => {
+        const linkPath = new URL(link.href).pathname;
+        if (linkPath === window.location.pathname) {
+            link.classList.add('active');
+        }
+    });
+}
+
+/// <summary>
+/// Retrieves a query-string parameter by name.
+/// </summary>
+/// <param name="name">Parameter name.</param>
+/// <param name="url">URL to parse (defaults to current location).</param>
+/// <returns>The parameter value, empty string if present without value, or null if absent.</returns>
 function getParameterByName(name, url = window.location.href) {
-
-    name = name.replace(/[\[\]]/g, '\\$&');
-
-    let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'), results = regex.exec(url);
-
+    name = name.replace(/[[\]]/g, '\\$&');
+    const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`);
+    const results = regex.exec(url);
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-// BEGIN ***** For the page loading icon, ***** BEGIN
-
-let setCookie = function (name, value, expiracy) {
-
-    let exdate = new Date();
-
-    exdate.setTime(exdate.getTime() + expiracy * 500);
-
-    let c_value = escape(value) + ((expiracy == null) ? "" : "; expires=" + exdate.toUTCString());
-
-    document.cookie = name + "=" + c_value + '; path=/';
-};
-
-let getCookie = function (name) {
-
-    let i, x, y, ARRcookies = document.cookie.split(";");
-
-    for (i = 0; i < ARRcookies.length; i++) {
-
-        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
-        y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-        x = x.replace(/^\s+|\s+$/g, "");
-
-        if (x == name) {
-
-            return y ? decodeURI(unescape(y.replace(/\+/g, ' '))) : y; //;//unescape(decodeURI(y));
-        }
-    }
-};
-
-$('.cus-show-loading').click(function () {
-
-    $('#divLoading').show();
-
-    setCookie('show-loading', 0, 100); //Expiration could be anything... As long as we reset the value
-    setTimeout(checkDownloadCookie, 500); //Initiate the loop to check the cookie.
-});
-
+// --- Download-complete polling logic ---
 let downloadTimeout;
 
-let checkDownloadCookie = function () {
+/// <summary>
+/// Kicks off the cookie-polling loop to detect when loading is done.
+/// </summary>
+function startDownloadCheck() {
+    clearTimeout(downloadTimeout);
+    checkDownloadCookie();
+}
 
-    if (getCookie("show-loading") == 1) {
-
-        setCookie("show-loading", "false", 100); //Expiration could be anything... As long as we reset the value
-
+/// <summary>
+/// Polls the 'show-loading' cookie every 500ms.  
+/// When it flips to '1', hides the overlay and resets the cookie to '0'.
+/// </summary>
+function checkDownloadCookie() {
+    if (getCookie('show-loading') === '1') {
+        setCookie('show-loading', '0', 1);  // reset for next time
         $('#divLoading').hide();
-    }
-    else {
-
-        downloadTimeout = setTimeout(checkDownloadCookie, 500); //Re-run this function in 1 second.
-    }
-};
-// END ***** For the page loading icon, ***** END
-
-let PageIsLoaded = true;
-
-function StartLoading(divID) {
-
-    if (!PageIsLoaded) {
-
-        $('#' + divID).block({ overlayCSS: { 'cursor': 'unset', 'opacity': '0.2' }, message: $('#imgLoading'), css: { 'background-color': 'transparent', 'border': 'none', 'cursor': 'unset' } });
+    } else {
+        downloadTimeout = setTimeout(checkDownloadCookie, 500);
     }
 }
 
-function StartLoadingModal(divID) {
-
-    $('#' + divID).block({ overlayCSS: { 'background-color': 'gainsboro', 'border-radius': '0.2rem', 'cursor': 'unset', 'opacity': '1', 'height': '100%' }, message: $('#imgLoading'), css: { 'background-color': 'transparent', 'border': 'none', 'cursor': 'unset' } });
-}
-
-function StopLoading(divID) {
-
-    PageIsLoaded = true;
-    $('#' + divID).unblock();
-}
-
-function StopLoadingAll() {
-
-    PageIsLoaded = true;
-    $('.blockUI').each(function () {
-
-        $(this).parent().unblock();
-    });
-}
-
-const PageURL = window.location.protocol + '//' + window.location.host + window.location.pathname;
-
-$(document).ready(function () {
-
-    if (document.location.href.includes('?')) {
-
-        window.history.replaceState({}, document.title, PageURL);
-    }
-
-    if ($("#StartupJavaScript").text() != "") { // Yes.
-
-        // Execute the javascript function(s).
-        eval($("#StartupJavaScript").text());
-    }
-
-    SetMenuHighlight();
-});
-
-function SetMenuHighlight() {
-
-    if (document.getElementById('nav-bar') != null) {
-
-        let objElementList = document.getElementById('nav-bar').querySelectorAll('a');
-
-        for (let i = 0, l = objElementList.length; i < l; i++) {
-
-            if (objElementList[i].classList.contains('nav_link')
-                && PageURL == objElementList[i].href) {
-
-                objElementList[i].classList.add('active');
-            }
-        }
-    }
-}
-
-(function (makeToast) {
-    makeToast.toast = function (objToast) {
-        makeToast("#toast-container").length ||
-            (makeToast("body").prepend('<div id="toast-container" aria-live="polite" aria-atomic="true" class="fixed-top d-flex justify-content-center cus-mobile cus-toast-container" style="height: 0; z-index: 1100;"></div>'),
-                makeToast("#toast-container").append('<div id="toast-wrapper" class="toast-container cus-toast-wrapper ms-2 me-2" style="max-width: 1024px; min-width: 300px;"></div>'));
-
-        let timestamp = Date.now();
-        let toastDivID = "toastDiv" + timestamp;
-        let toastID = "toast" + timestamp;
-        let toastHeaderID = "toastHeader" + timestamp;
-        let toastBodyID = "toastBody" + timestamp;
-        let intervalID = "interval" + timestamp;
-        let minutesID = "minutes" + timestamp;
-        let subtitleID = "subtitle" + timestamp;
-        let scriptID = "script" + timestamp;
-
-        let backgroundColor = "";
-        let textColor = "";
-        let subtitleColor = "text-muted";
-        let iconClass = "";
-
-        // Type
-        let toastType = "info";
-        if (objToast.type !== "" || objToast.type != null) { toastType = objToast.type.toLowerCase(); }
-        // Header
-        let headerText = "Notice!";
-        if (objToast.title !== "") { headerText = objToast.title; }
-        // Body
-        let toastBody = "";
-        if (objToast.content !== "") { toastBody = objToast.content; }
-        // Delay
-        let toastDelay = 7000;
-        if (objToast.delay !== "") { toastDelay = objToast.delay; }
-        // Autohide
-        let toastAutohide = true;
-        if (objToast.autohide !== "") { toastAutohide = objToast.autohide; }
-
-        switch (toastType) {
-            case "info":
-            case "":
-                backgroundColor = "bg-info";
-                iconClass = "fas fa-info-circle";
-                break;
-            case "success":
-                backgroundColor = "bg-success";
-                iconClass = "fas fa-check-circle";
-                break;
-            case "warning":
-                backgroundColor = "bg-warning";
-                iconClass = "fas fa-exclamation-circle";
-                break;
-            case "danger":
-                backgroundColor = "bg-danger"
-                iconClass = "fas fa-xmark-circle";
-        }
-
-        objToast = '' +
-            '<div id="' + toastDivID + '">' +
-            '   <div id="' + toastID + '" class="toast cus-toast mt-2 w-auto" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="' + toastDelay + '" data-bs-autohide="' + toastAutohide + '" style="border: none; max-width: unset; z-index: 1100;">' +
-            '       <div id="' + toastHeaderID + '" class="toast-header align-items-center cus-no-select text-white ' + backgroundColor + " " + textColor + '">' +
-            '           <i class="' + iconClass + ' text-white pe-2"></i>' +
-            '           <strong class="me-auto">' + headerText + '</strong>';
-        if (toastAutohide == false) {
-            objToast += '           <small class="' + subtitleColor + ' ps-2"><span id="' + minutesID + '" hidden>0</span><span id="' + subtitleID + '" class="text-white" style="white-space: nowrap;">less than a minute ago</span></small>';
-        }
-
-        objToast += '' +
-            '           <button type="button" class="btn close ms-2 me-0 my-0 p-0" data-bs-dismiss="toast" aria-label="Close">' +
-            '               <i class="fa-solid fa-xmark cus-text-white" title="Close" style="font-size: large;"></i>' +
-            '           </button>' +
-            '       </div>' +
-            '       <div id="' + toastBodyID + '" class="toast-body bg-white" style="border-radius: 0 0 0.2rem 0.2rem; overflow-y: auto;">' +
-            '           <label>' + toastBody + '</label>' +
-            '       </div>' +
-            '   </div>' +
-            '   <script>' +
-            '       if (window.screen.width <= 1024) {' +
-            '           document.getElementById("' + toastBodyID + '").style.maxHeight = document.getElementById("header").offsetHeight - document.getElementById("' + toastHeaderID + '").offsetHeight - 14 + "px"; ' +
-            '       } ' +
-            '       else { ' +
-            '           document.getElementById("' + toastBodyID + '").style.maxHeight = window.screen.height - document.getElementById("' + toastHeaderID + '").offsetHeight - 14 + "px"; ' +
-            '       } ';
-
-        if (toastAutohide == false) {
-            objToast += '' +
-                '      let ' + intervalID + ' = setInterval(function () { ' + scriptID + '(); }, 60000);' +
-                '      function ' + scriptID + '() {' +
-                '          if (document.getElementById("' + minutesID + '") != null) ' +
-                '          { ' +
-                '               let minute = document.getElementById("' + minutesID + '").innerText;' +
-                '               minute = Number(minute) + 1;' +
-                '               document.getElementById("' + minutesID + '").innerText = minute;' +
-                '               if (minute == 1) {' +
-                '                   document.getElementById("' + subtitleID + '").innerText = minute + " minute ago"' +
-                '               }' +
-                '               else {' +
-                '                   document.getElementById("' + subtitleID + '").innerText = minute + " minutes ago"' +
-                '               }' +
-                '           } ' +
-                '       }';
-        }
-
-        objToast += '' +
-            // Method that runs when the toast is hidden.
-            '       $("#' + toastID + '").on("hidden.bs.toast", function () {' +
-            // Remove the entire div from the DOM.
-            '           $("#' + toastDivID + '").remove();' +
-            '      })' +
-            '   <\/script>' +
-            '</div>';
-
-        makeToast("#toast-wrapper").prepend(objToast);
-        makeToast("#toast-wrapper .toast:first").toast("show")
-    }
-})(jQuery);
-
-(function (makeSnack) {
-    makeSnack.snack = function (objSnack) {
-        makeSnack("#toast-container").length ||
-            (makeSnack("body").prepend('<div id="toast-container" aria-live="polite" aria-atomic="true" class="fixed-top d-flex justify-content-center cus-mobile cus-toast-container" style="height: 0; z-index: 1100;"></div>'),
-                makeSnack("#toast-container").append('<div id="toast-wrapper" class="toast-container cus-toast-wrapper"></div>'));
-
-        let timestamp = Date.now();
-        let snackDivID = "snackDiv" + timestamp;
-        let snackID = "snack" + timestamp;
-
-        let backgroundColor = "";
-        let textColor = "";
-        let closeColor = "";
-        let iconClass = "";
-
-        // Type
-        let snackType = "info";
-        if (objSnack.type !== "" || objSnack.type != null) { snackType = objSnack.type.toLowerCase(); }
-        // Header
-        let headerText = "Notice!";
-        if (objSnack.title !== "") { headerText = objSnack.title; }
-        // Delay
-        let snackDelay = 5000;
-        if (objSnack.delay !== "") { snackDelay = objSnack.delay; }
-        // Autohide
-        let snackAutohide = true;
-        if (objSnack.autohide !== "") { snackAutohide = objSnack.autohide; }
-
-        switch (snackType) {
-            case "info":
-            case "":
-                backgroundColor = "bg-info";
-                iconClass = "fas fa-info-circle";
-                break;
-            case "success":
-                backgroundColor = "bg-success";
-                iconClass = "fas fa-check-circle";
-                break;
-            case "warning":
-                backgroundColor = "bg-warning";
-                iconClass = "fas fa-exclamation-circle";
-                break;
-            case "danger":
-                backgroundColor = "bg-danger"
-                iconClass = "fas fa-xmark-circle";
-        }
-
-        objSnack = '' +
-            '<div id="' + snackDivID + '">' +
-            '   <div id="' + snackID + '" class="toast cus-snack mt-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="' + snackDelay + '" data-bs-autohide="' + snackAutohide + '" style="border: none; max-width: unset; min-width: max-content; z-index: 1100;">' +
-            '       <div class="toast-header align-items-center cus-no-select text-white ' + backgroundColor + " " + textColor + '" style="border: none; border-radius: 0.2rem;">' +
-            '           <i class="' + iconClass + ' text-white pe-2"></i>' +
-            '           <strong class="me-auto">' + headerText + '</strong>' +
-            '           <button type="button" class="btn close ms-2 me-0 my-0 p-0" data-bs-dismiss="toast" aria-label="Close">' +
-            '               <i class="fa-solid fa-xmark cus-text-white" title="Close" style="font-size: large;"></i>' +
-            '           </button>' +
-            '       </div>' +
-            '   </div>' +
-            '   <script>' +
-            // Method that runs when the snack is hidden.
-            '       $("#' + snackID + '").on("hidden.bs.toast", function () {' +
-            // Remove the entire div from the DOM.
-            '           $("#' + snackDivID + '").remove();' +
-            '      })' +
-            '   <\/script>' +
-            '</div>';
-
-        makeSnack("#toast-wrapper").prepend(objSnack);
-        makeSnack("#toast-wrapper .toast:first").toast("show")
-    }
-})(jQuery);
-
-function ShowNotification(type, snackText, header, body, delay, autohide) {
-
-    ShowToast(type, header, body);
-    ShowSnack(type, snackText, delay, autohide);
-}
-
-function ShowToast(type, header, body, delay, autohide) {
-
-    $.toast({
-        type: type,
-        title: header,
-        content: body,
-        delay: delay,
-        autohide: autohide
-    });
-}
-
-function ShowSnack(type, header, delay, autohide) {
-
-    $.snack({
-        type: type,
-        title: header,
-        delay: delay,
-        autohide: autohide
-    });
-}
-
-// Declare the timeout ID
-let timeoutID;
-
-function ShowMessage(strMessage, strColor, intDisapear, booScrollToTop) {
-
-    // Check what color should be displayed.
-    switch (strColor.toLowerCase()) {
-        case 'primary':
-            strColor = 'alert-primary';
-            break;
-        case 'secondary':
-            strColor = 'alert-secondary';
-            break;
-        case 'success':
-            strColor = 'alert-success';
-            break;
-        case 'danger':
-            strColor = 'alert-danger';
-            break;
-        case 'warning':
-            strColor = 'alert-warning';
-            break;
-        case 'info':
-            strColor = 'alert-info';
-            break;
-        case 'green':
-            strColor = 'alert-success';
-            break;
-        case 'red':
-            strColor = 'alert-danger';
-            break;
-        case 'yellow':
-            strColor = 'alert-warning';
-            break;
-        default:
-            strColor = 'alert-info';
-            break;
-    }
-
-    // Write the alert into the message div.
-    document.getElementById("divMessage").innerHTML = '<div id="Alert" class="container mt-1 alert ' + strColor + ' alert-dismissible fade show fixed-top" role="alert">' + strMessage + '<button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>';
-
-    // Clear out the the previous timeout.
-    clearTimeout(timeoutID);
-
-    // Is a disappearing time set?
-    if (intDisapear > 0) { // Yes.
-        // Set the timeout ID.
-        timeoutID = setTimeout(function () { $("#Alert").alert('close'); }, intDisapear);
-    }
-
-    // Should the page scroll to the top?
-    if (booScrollToTop === true) { // Yes.
-        // Scroll to the top of the page.
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-}
-
-function ClearToast() {
-
-    if (document.getElementById("toast-wrapper") != null) {
-
-        let toastList = document.getElementById("toast-wrapper").querySelectorAll(".toast");
-
-        toastList.forEach(function (toast) {
-
-            // Remove the "fade" class from the toast.
-            $('#' + toast.id).toast().removeClass('fade');
-
-            // Remove the toast.
-            $('#' + toast.id).toast('hide');
-        });
-    }
-}
-
-// BEGIN ***** Sort Table Data ***** BEGIN
-
-let TableLastSortedColumn = 1;
-
-// Sort Table
-function SortTable() {
-
-    let sortColumn = parseInt(arguments[0]);
-    let type = arguments.length > 1 ? arguments[1] : 'T';
-    let table = document.getElementById(arguments[2]);
-    let dateformat = arguments.length > 3 ? arguments[3] : '';
-    let tbody = table.getElementsByTagName("tbody")[0];
-    let rows = tbody.getElementsByTagName("tr");
-    let arrayOfRows = new Array();
-
-    type = type.toUpperCase();
-    dateformat = dateformat.toLowerCase();
-
-    for (let i = 0, len = rows.length; i < len; i++) {
-
-        arrayOfRows[i] = new Object;
-        arrayOfRows[i].oldIndex = i;
-
-        let celltext = rows[i].getElementsByTagName("td")[sortColumn].innerHTML.replace(/<[^>]*>/g, "");
-
-        if (type == 'D') {
-
-            arrayOfRows[i].value = GetDateSortingKey(dateformat, celltext);
-        }
-        else {
-
-            let re = type == "N" ? /[^\.\-\+\d]/g : /[^a-zA-Z0-9]/g;
-
-            arrayOfRows[i].value = celltext.replace(re, "").substr(0, 25).toLowerCase();
-        }
-    }
-
-    // BEGIN ***** Added by EMB ***** BEGIN
-    jQuery('#' + table.id + ' .cus-sort-icon').each(function () {
-
-        if ($(this).css('color') == 'rgb(0, 123, 255)'
-            || $(this).css('color') == 'rgb(0, 86, 179)') {
-
-            TableLastSortedColumn = this.id.substr(5, this.id.length - 1);
-        }
-
-        if ($(this).hasClass('fa-sort-down')
-            && sortColumn != TableLastSortedColumn) {
-
-            $(this).removeClass('fa-sort-down');
-            $(this).addClass('fa-sort-up');
-        }
-
-        $(this).css('color', 'gray');
-    });
-
-    let icon = $('#' + table.id + ' #iSort' + sortColumn);
-
-    icon.css('color', 'unset');
-    // END ***** Added by EMB ***** END
-
-    if (sortColumn == TableLastSortedColumn) {
-
-        // BEGIN ***** Added by EMB ***** BEGIN
-        if (icon.hasClass('fa-sort-down')) {
-
-            icon.removeClass('fa-sort-down');
-            icon.addClass('fa-sort-up');
-        }
-        else {
-
-            icon.removeClass('fa-sort-up');
-            icon.addClass('fa-sort-down');
-        }
-        // END ***** Added by EMB ***** END
-
-        arrayOfRows.reverse();
-    }
-
-    else {
-
-        // BEGIN ***** Added by EMB ***** BEGIN
-        if (icon.hasClass('fa-sort-down')) {
-
-            icon.removeClass('fa-sort-down');
-            icon.addClass('fa-sort-up');
-        }
-        // END ***** Added by EMB ***** END
-
-        TableLastSortedColumn = sortColumn;
-
-        switch (type) {
-            case "N":
-                arrayOfRows.sort(CompareRowOfNumbers);
-                break;
-
-            case "D":
-                arrayOfRows.sort(CompareRowOfNumbers);
-                break;
-            default:
-                arrayOfRows.sort(CompareRowOfText);
-        }
-    }
-    let newTableBody = document.createElement("tbody");
-
-    for (let i = 0, len = arrayOfRows.length; i < len; i++) {
-
-        newTableBody.appendChild(rows[arrayOfRows[i].oldIndex].cloneNode(true));
-    }
-
-    table.replaceChild(newTableBody, tbody);
-}
-
-// Compare Row Of Text
-function CompareRowOfText(a, b) {
-    let aval = a.value;
-    let bval = b.value;
-
-    return (aval == bval ? 0 : (aval > bval ? 1 : -1));
-}
-
-// Compare Row Of Numbers
-function CompareRowOfNumbers(a, b) {
-    let aval = /\d/.test(a.value) ? parseFloat(a.value) : 0;
-    let bval = /\d/.test(b.value) ? parseFloat(b.value) : 0;
-    return (aval == bval ? 0 : (aval > bval ? 1 : -1));
-}
-
-
-// Get Date Sorting Key
-function GetDateSortingKey(format, text) {
-    if (format.length < 1) {
-
-        return "";
-    }
-
-    format = format.toLowerCase();
-    text = text.toLowerCase();
-    text = text.replace(/^[^a-z0-9]*/, "");
-    text = text.replace(/[^a-z0-9]*$/, "");
-
-    if (text.length < 1) {
-
-        return "";
-    }
-
-    text = text.replace(/[^a-z0-9]+/g, ",");
-
-    let date = text.split(",");
-
-    if (date.length < 3) {
-
-        return "";
-    }
-    let d = 0, m = 0, y = 0;
-
-    for (let i = 0; i < 3; i++) {
-
-        let ts = format.substr(i, 1);
-
-        if (ts == "d") {
-
-            d = date[i];
-        }
-        else if (ts == "m") {
-
-            m = date[i];
-        }
-        else if (ts == "y") {
-
-            y = date[i];
-        }
-    }
-    d = d.replace(/^0/, "");
-    if (d < 10) {
-
-        d = "0" + d;
-    }
-    if (/[a-z]/.test(m)) {
-
-        m = m.substr(0, 3);
-
-        switch (m) {
-            case "jan":
-                m = String(1);
-                break;
-
-            case "feb":
-                m = String(2);
-                break;
-
-            case "mar":
-                m = String(3);
-                break;
-
-            case "apr":
-                m = String(4);
-                break;
-
-            case "may":
-                m = String(5);
-                break;
-
-            case "jun":
-                m = String(6);
-                break;
-
-            case "jul":
-                m = String(7);
-                break;
-
-            case "aug":
-                m = String(8);
-                break;
-
-            case "sep":
-                m = String(9);
-                break;
-
-            case "oct":
-                m = String(10);
-                break;
-
-            case "nov":
-                m = String(11);
-                break;
-
-            case "dec":
-                m = String(12);
-                break;
-
-            default:
-                m = String(0);
-        }
-    }
-
-    m = m.replace(/^0/, "");
-
-    if (m < 10) {
-
-        m = "0" + m;
-    }
-    y = parseInt(y);
-
-    if (y < 100) {
-
-        y = parseInt(y) + 2000;
-    }
-
-    return "" + String(y) + "" + String(m) + "" + String(d) + "";
-}
-
-// END ***** Sort Table Data ***** END
-
-function GetRemainingTime(datRepeatTime) {
-
-    let total = Date.parse(datRepeatTime) - Date.parse(new Date());
-    let seconds = Math.floor((total / 1000) % 60);
-    let minutes = Math.floor((total / 1000 / 60) % 60);
-    let hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-    let days = Math.floor(total / (1000 * 60 * 60 * 24));
-
-    return { total, days, hours, minutes, seconds };
-}
-
-function InitializeRepeatingFunction(strFunctionName, intDays, intHours, intMinutes, intSeconds) {
-
-    let datRepeatTime = new Date(Date.parse(new Date()) + ((intDays * 24 * 60 * 60) + (intHours * 60 * 60) + (intMinutes * 60) + intSeconds) * 1000);
-
-    function UpdateClock() {
-
-        let arrRemainingTime = GetRemainingTime(datRepeatTime);
-
-        if (arrRemainingTime.total <= 0) {
-
-            clearInterval(objTimeInterval);
-
-            eval(strFunctionName);
-
-            InitializeRepeatingFunction(strFunctionName, intDays, intHours, intMinutes, intSeconds);
-        }
-    }
-
-    UpdateClock();
-    let objTimeInterval = setInterval(UpdateClock, 1000);
-}
-
-//function CreateHeightObserver(element, arrElements) {
-
-//    let timestamp = Date.now();
-
-//    alert(element);
-//    alert(arrElements);
-
-//    eval(
-//        'const HeightObserver' + timestamp + ' = new ResizeObserver(entries => { ' +
-
-//            'jQuery.each(' + arrElements + ', function () { ' +
-//            '    $(this).css("height", $('+ element + ').css("height")) ' +
-//            ' });' +
-//        '}); ' +
-
-//        'HeightObserver.observe(' + element + ');'
-//    );
-//}
-
-// This code empowers all input tags having a placeholder and data-bs-slots attribute
+// --- Input slot-mask formatter ---
 document.addEventListener('DOMContentLoaded', () => {
-    for (const el of document.querySelectorAll("[placeholder][data-bs-slots]")) {
-        const pattern = el.getAttribute("placeholder"),
-            slots = new Set(el.dataset.slots || "_"),
-            prev = (j => Array.from(pattern, (c, i) => slots.has(c) ? j = i + 1 : j))(0),
-            first = [...pattern].findIndex(c => slots.has(c)),
-            accept = new RegExp(el.dataset.accept || "\\d", "g"),
-            clean = input => {
-                input = input.match(accept) || [];
-                return Array.from(pattern, c =>
-                    input[0] === c || slots.has(c) ? input.shift() || c : c
-                );
-            },
-            format = () => {
-                const [i, j] = [el.selectionStart, el.selectionEnd].map(i => {
-                    i = clean(el.value.slice(0, i)).findIndex(c => slots.has(c));
-                    return i < 0 ? prev[prev.length - 1] : back ? prev[i - 1] || first : i;
-                });
-                el.value = clean(el.value).join``;
-                el.setSelectionRange(i, j);
-                back = false;
-            };
+    document.querySelectorAll('[placeholder][data-bs-slots]').forEach(el => {
+        const pattern = el.getAttribute('placeholder');
+        const slots = new Set((el.dataset.slots || '_').split(''));
+        const accept = new RegExp(el.dataset.accept || '\\d', 'g');
+        const prev = pattern.split('').map((c, i) => slots.has(c) ? i + 1 : 0);
+        const first = pattern.split('').findIndex(c => slots.has(c));
+
         let back = false;
-        el.addEventListener("keydown", (e) => back = e.key === "Backspace");
-        el.addEventListener("input", format);
-        el.addEventListener("focus", format);
-        el.addEventListener("blur", () => el.value === pattern && (el.value = ""));
-    }
+        const clean = value => {
+            const input = value.match(accept) || [];
+            return pattern.split('').map(c => slots.has(c) ? input.shift() || c : c);
+        };
+
+        const format = () => {
+            const [start, end] = [el.selectionStart, el.selectionEnd].map(pos => {
+                const cleaned = clean(el.value.slice(0, pos));
+                const idx = cleaned.findIndex(c => slots.has(c));
+                return idx < 0 ? prev[prev.length - 1] : (back ? prev[idx - 1] || first : idx);
+            });
+            el.value = clean(el.value).join('');
+            el.setSelectionRange(start, end);
+            back = false;
+        };
+
+        el.addEventListener('keydown', e => back = e.key === 'Backspace');
+        el.addEventListener('input', format);
+        el.addEventListener('focus', format);
+        el.addEventListener('blur', () => { if (el.value === pattern) el.value = ''; });
+    });
 });
 
-function OnKeyUpAfter(input, functionName, ms) {
-
-    //setup before functions
-    let typingTimer;                //timer identifier
-    let doneTypingInterval = ms;  //time in ms 
-
-    //on keyup, start the countdown
-    input.on('keyup', function () {
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(functionName, doneTypingInterval);
-    });
-
-    //on keydown, clear the countdown 
-    input.on('keydown', function () {
-        clearTimeout(typingTimer);
-    });
+/// <summary>
+/// Debounces a callback so it only fires `ms` milliseconds after typing stops.
+/// </summary>
+/// <param name="input">jQuery-wrapped input element.</param>
+/// <param name="callback">Function to invoke.</param>
+/// <param name="ms">Delay in milliseconds.</param>
+function OnKeyUpAfter(input, callback, ms) {
+    let timer;
+    input.on('keyup', () => {
+        clearTimeout(timer);
+        timer = setTimeout(callback, ms);
+    }).on('keydown', () => clearTimeout(timer));
 }
 
+/// <summary>Map of characters to their HTML-escaped equivalents.</summary>
 const entityMap = {
-
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
@@ -797,9 +167,297 @@ const entityMap = {
     '=': '&#x3D;'
 };
 
-function escapeHtml(string) {
-
-    return String(string).replace(/[&<>"'`=\/]/g, function (s) {
-        return entityMap[s];
-    });
+/// <summary>
+/// Escapes HTML special characters in a string for safe insertion.
+/// </summary>
+/// <param name="str">Input string.</param>
+/// <returns>HTML-escaped string.</returns>
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"'`=\/]/g, s => entityMap[s]);
 }
+
+/**
+ * <summary>
+ * Initializes Google Maps Places Autocomplete on the input with ID "txtAutocomplete",
+ * then populates the textarea with ID "txtAddress" once the user selects a place.
+ * 
+ * This version:
+ *   - Defaults to U.S. ("us"), Dominican Republic ("do"), and Argentina ("ar").
+ *   - If Geolocation succeeds, reverse‐geocodes to find the user's ISO country code
+ *     and appends it if not already in the default set.
+ *   - If Geolocation fails or is denied, simply uses ["us","do","ar"].
+ * </summary>
+ *
+ * <remarks>
+ * - The input must be an <input> element; otherwise the function returns immediately.
+ * - The textarea must be a <textarea> element; otherwise the function returns immediately.
+ * - If the user selects a place without valid address_components, a warning message is shown.
+ * - Uses the legacy Autocomplete class (google.maps.places.Autocomplete). If you migrate
+ *   to PlaceAutocompleteElement, the componentRestrictions logic remains the same.
+ * </remarks>
+ */
+function initAutocomplete() {
+    // 1) Grab references to the input and textarea
+    const input = document.getElementById("txtAutocomplete");
+    const addressTextarea = document.getElementById("txtAddress");
+
+    // 2) Guard: ensure that 'input' exists and is an <input>
+    if (!input || !(input instanceof HTMLInputElement)) {
+        //console.warn("initAutocomplete: '#txtAutocomplete' not found or not an <input>.");
+        return;
+    }
+
+    // 3) Guard: ensure that 'addressTextarea' exists and is a <textarea>
+    if (!addressTextarea || !(addressTextarea instanceof HTMLTextAreaElement)) {
+        //console.warn("initAutocomplete: '#txtAddress' not found or not a <textarea>.");
+        return;
+    }
+
+    // 4) Helper to create the Autocomplete with a given array of country codes
+    const createAutocompleteWithCountries = (countryArray) => {
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+            types: ["address"],
+            componentRestrictions: { country: countryArray }
+        });
+
+        // 5) Attach place_changed listener to populate the textarea
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+
+            if (!place.address_components) {
+                addressTextarea.value = "Address not found. Please try again.";
+                return;
+            }
+
+            // Helper to pull out a specific component by type
+            const getComponent = (type) => {
+                const comp = place.address_components.find((c) =>
+                    c.types.includes(type)
+                );
+                return comp ? comp.long_name : "";
+            };
+
+            // 6) Extract each piece of the address
+            const streetNumber = getComponent("street_number");
+            const route = getComponent("route");
+            const addressLine1 = `${streetNumber} ${route}`.trim();
+
+            const subpremise = getComponent("subpremise"); // apt/suite if any
+            const addressLine2 = subpremise ? `Apt/Suite ${subpremise}` : "";
+
+            const city = getComponent("locality") || getComponent("sublocality");
+            const state = getComponent("administrative_area_level_1");
+            const postalCode = getComponent("postal_code");
+            const country = getComponent("country");
+
+            // 7) Build the multi-line string, omitting an empty second line
+            const formattedAddress =
+                addressLine1 +
+                (addressLine2 !== "" ? `\n${addressLine2}` : "") +
+                `\n${city}, ${state} ${postalCode}\n${country}`;
+
+            // 8) Populate the textarea
+            addressTextarea.value = formattedAddress;
+        });
+    };
+
+    // 9) Define our default fallback countries: US, DO, AR
+    const defaultCountries = ["us", "do", "ar"];
+
+    // 10) Try to detect the user's country via Geolocation + reverse‐geocode
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode(
+                    { location: { lat: pos.coords.latitude, lng: pos.coords.longitude } },
+                    (results, status) => {
+                        let userCountryCode = null;
+
+                        if (status === "OK" && Array.isArray(results) && results.length) {
+                            // Find the first address_component whose types include "country"
+                            for (const result of results) {
+                                const countryComp = result.address_components.find((c) =>
+                                    c.types.includes("country")
+                                );
+                                if (countryComp) {
+                                    userCountryCode = countryComp.short_name.toLowerCase(); // e.g. "ca", "gb", "fr"
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Always start with US, DO, AR
+                        const allowed = [...defaultCountries];
+                        // If userCountryCode is not null and not already in our array, add it
+                        if (userCountryCode && !allowed.includes(userCountryCode)) {
+                            allowed.push(userCountryCode);
+                        }
+
+                        // Finally, build Autocomplete with the combined array
+                        createAutocompleteWithCountries(allowed);
+                    }
+                );
+            },
+            (error) => {
+                // Geolocation denied or failed → fall back to US, DO, AR
+                console.warn("Geolocation denied/failed. Using defaults: US, DO, AR.", error);
+                createAutocompleteWithCountries(defaultCountries);
+            },
+            {
+                maximumAge: 300_000,   // accept cached position up to 5 minutes old
+                timeout: 10_000,    // wait up to 10s for position
+                enableHighAccuracy: false
+            }
+        );
+    } else {
+        // Browser doesn't support Geolocation → fall back to US, DO, AR
+        console.warn("No geolocation support. Using defaults: US, DO, AR.");
+        createAutocompleteWithCountries(defaultCountries);
+    }
+}
+
+// Animate Counter
+// Select all elements with the class 'cus-load-number' and iterate over them
+$('.cus-load-number').each(function () {
+    let $element = $(this); // Store the current jQuery element
+    let targetNumber = parseInt($element.text().trim(), 10); // Extract and convert text to an integer
+
+    // Check if the extracted value is a valid integer
+    if (!isNaN(targetNumber) && Number.isInteger(targetNumber)) {
+        // If valid, call the animateCounter function
+        animateCounter(0, targetNumber, 1000, $element);
+    } else {
+        console.warn(`Skipping animation: Element with ID '${$element.attr('id')}' does not contain a valid integer.`);
+    }
+});
+
+/**
+ * Function to animate a counter from start to end within a given duration.
+ * @param {number} start - The starting number (usually 0).
+ * @param {number} end - The target number to count up to.
+ * @param {number} duration - Duration of the animation in milliseconds.
+ * @param {jQuery} $element - The jQuery-wrapped element to update.
+ */
+function animateCounter(start, end, duration, $element) {
+    let startTime = null; // Track start time for smooth animation
+
+    function step(currentTime) {
+        if (!startTime) startTime = currentTime; // Set start time on first frame
+        let progress = (currentTime - startTime) / duration; // Calculate progress (0 to 1)
+        let currentValue = Math.floor(start + (end - start) * progress); // Interpolate value
+
+        // Ensure it doesn't exceed the target number
+        $element.text(currentValue >= end ? end : currentValue);
+
+        if (progress < 1) {
+            requestAnimationFrame(step); // Continue animation
+        }
+    }
+
+    requestAnimationFrame(step); // Start animation
+}
+function startReloadCountdown(seconds) {
+    let countdown = seconds;
+
+    // Create a div to display the countdown message if it doesn't exist
+    let countdownDiv = document.getElementById('reloadCountdown');
+    if (!countdownDiv) {
+        countdownDiv = document.createElement('div');
+        countdownDiv.id = 'reloadCountdown';
+        countdownDiv.style.position = 'fixed';
+        countdownDiv.style.bottom = '20px';
+        countdownDiv.style.right = '20px';
+        countdownDiv.style.background = 'rgba(0, 0, 0, 0.75)';
+        countdownDiv.style.color = 'white';
+        countdownDiv.style.padding = '10px 15px';
+        countdownDiv.style.borderRadius = '5px';
+        countdownDiv.style.fontSize = '16px';
+        countdownDiv.style.zIndex = '10000';
+        document.body.appendChild(countdownDiv);
+    }
+
+    // Update the countdown every second
+    let interval = setInterval(() => {
+        countdownDiv.innerHTML = `Reloading page in ${countdown}...`;  // Template literals used here
+        countdown--;
+
+        if (countdown < 0) {
+            clearInterval(interval);
+            window.top.location.reload(); // Reload the page
+        }
+    }, 1000);
+}
+
+/**
+ * Calculates the available distance in pixels between the bottom of the first element
+ * and the top of the second element, considering optional padding.
+ *
+ * @param {string} element1 - The first element.
+ * @param {string} element2 - The second element.
+ * @param {number} [offset=5] - Optional padding to subtract from the final distance.
+ * @returns {number} The distance in pixels between the two elements.
+ */
+function calculateDistanceBetweenElements(element1, element2, offset = 0) {
+    // Get the size of 1rem in pixels
+    var remInPixels = parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    // Get the bottom position of the first element (element1)
+    let elem1Bottom = $(element1).offset().top + $(element1).outerHeight() + remInPixels;
+
+    // Get the top position of the second element (element2)
+    let elem2Top = $(element2).offset().top - remInPixels;
+
+    // Calculate the distance between the two elements and subtract the offset
+    let distance = elem2Top - elem1Bottom - offset;
+
+    // Return the calculated distance
+    return distance;
+}
+
+/**
+ * Keyboard navigation for all Bootstrap 5 dropdowns
+ * Supports:
+ * - [Tab] into the dropdown
+ * - [Arrow Up/Down] to move between items
+ * - [Enter] to select the focused item
+ */
+
+$(document).on('keydown', '.dropdown-menu .dropdown-item', function (e) {
+    const $items = $(this).closest('.dropdown-menu').find('.dropdown-item:visible');
+    const index = $items.index(this);
+
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            if (index < $items.length - 1) {
+                $items.eq(index + 1).focus();
+            } else {
+                $items.eq(0).focus(); // wrap to top
+            }
+            break;
+
+        case 'ArrowUp':
+            e.preventDefault();
+            if (index > 0) {
+                $items.eq(index - 1).focus();
+            } else {
+                $items.eq($items.length - 1).focus(); // wrap to bottom
+            }
+            break;
+
+        case 'Enter':
+            e.preventDefault();
+            $(this).click(); // trigger selection
+            break;
+    }
+});
+
+// Optional: auto-focus first item when dropdown opens
+$(document).on('shown.bs.dropdown', function (e) {
+    const $menu = $(e.target).find('.dropdown-menu:visible');
+    const $firstItem = $menu.find('.dropdown-item:visible').first();
+    if ($firstItem.length) {
+        setTimeout(() => $firstItem.focus(), 0); // short delay to allow DOM to settle
+    }
+});

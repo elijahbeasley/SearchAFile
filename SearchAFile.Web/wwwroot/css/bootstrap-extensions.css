@@ -1,5 +1,468 @@
-﻿.form-floating > label::after {
+﻿@media (min-width: 576px) {
+    .w-sm-25, w-25 {
+        width: 25% !important;
+    }
+
+    .w-sm-50, w-50 {
+        width: 50% !important;
+    }
+
+    .w-sm-75, w-75 {
+        width: 75% !important;
+    }
+
+    .w-sm-100, w-100 {
+        width: 100% !important;
+    }
+
+    .w-sm-auto, w-auto {
+        width: auto !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .w-md-25 {
+        width: 25% !important;
+    }
+
+    .w-md-50 {
+        width: 50% !important;
+    }
+
+    .w-md-75 {
+        width: 75% !important;
+    }
+
+    .w-md-100 {
+        width: 100% !important;
+    }
+
+    .w-md-auto {
+        width: auto !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .w-lg-25 {
+        width: 25% !important;
+    }
+
+    .w-lg-50 {
+        width: 50% !important;
+    }
+
+    .w-lg-75 {
+        width: 75% !important;
+    }
+
+    .w-lg-100 {
+        width: 100% !important;
+    }
+
+    .w-lg-auto {
+        width: auto !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .w-xl-25 {
+        width: 25% !important;
+    }
+
+    .w-xl-50 {
+        width: 50% !important;
+    }
+
+    .w-xl-75 {
+        width: 75% !important;
+    }
+
+    .w-xl-100 {
+        width: 100% !important;
+    }
+
+    .w-xl-auto {
+        width: auto !important;
+    }
+}
+
+@media (min-width: 1400px) {
+    .w-xxl-25 {
+        width: 25% !important;
+    }
+
+    .w-xxl-50 {
+        width: 50% !important;
+    }
+
+    .w-xxl-75 {
+        width: 75% !important;
+    }
+
+    .w-xxl-100 {
+        width: 100% !important;
+    }
+
+    .w-xxl-auto {
+        width: auto !important;
+    }
+}
+
+.row [class*='col-'] {
+    flex-grow: 1 !important;
+    transition: all 400ms ease-in-out !important;
+    /*animation: growEffect 400ms ease-in-out 500ms forwards !important;*/
+}
+
+.popover-body {
+    padding: 0.25rem 1rem;
+}
+
+    .popover-body:has(img) {
+        padding: 0;
+    }
+
+.dropdown-menu {
+    padding: 0;
+}
+
+.dropdown-divider {
+    margin: 0;
+}
+
+.dropdown-item {
+    margin: 0 !important;
+}
+
+.jumbotron {
+    padding: 1rem 1rem;
+    margin-bottom: 2rem;
+    background-color: #e9ecef;
+    border-radius: 0.3rem;
+}
+
+.navbar-nav .nav-link {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.navbar-light .navbar-nav .nav-link:hover, .navbar-light .navbar-nav .nav-link:focus {
+    background-color: var(--primary-color);
+    color: var(--secondary-text-color);
+    border-radius: .2rem;
+}
+
+/* BEGIN Sliding out modal from right-side of screen. BEGIN */
+
+.modal-dialog-slideout {
+    min-height: 100%;
+    margin: 0 0 0 auto;
+    background: #fff;
+}
+
+.modal.fade .modal-dialog.modal-dialog-slideout {
+    -webkit-transform: translate(100%,0)scale(1);
+    transform: translate(100%,0)scale(1);
+}
+
+.modal.fade.show .modal-dialog.modal-dialog-slideout {
+    -webkit-transform: translate(0,0);
+    transform: translate(0,0);
+    display: flex;
+    align-items: stretch;
+    -webkit-box-align: stretch;
+    height: 100%;
+}
+
+    .modal.fade.show .modal-dialog.modal-dialog-slideout .modal-body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+.modal-dialog-slideout .modal-content {
+    border: 0;
+}
+
+.modal-dialog-slideout .modal-header, .modal-dialog-slideout .modal-footer {
+    height: 69px;
+    display: block;
+}
+
+    .modal-dialog-slideout .modal-header h5 {
+        float: left;
+    }
+
+/* Slideout Left */
+
+.modal-dialog-slideout-left {
+    min-height: 100%;
+    margin: 0 auto 0 0;
+    background: #fff;
+}
+
+.modal.fade .modal-dialog.modal-dialog-slideout-left {
+    -webkit-transform: translate(-100%,0)scale(1);
+    transform: translate(-100%,0)scale(1);
+}
+
+.modal.fade.show .modal-dialog.modal-dialog-slideout-left {
+    -webkit-transform: translate(0,0);
+    transform: translate(0,0);
+    display: flex;
+    align-items: stretch;
+    -webkit-box-align: stretch;
+    height: 100%;
+}
+
+    .modal.fade.show .modal-dialog.modal-dialog-slideout-left .modal-body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+.modal-dialog-slideout-left .modal-content {
+    border: 0;
+}
+
+.modal-dialog-slideout-left .modal-header, .modal-dialog-slideout-left .modal-footer {
+    height: 69px;
+    display: block;
+}
+
+    .modal-dialog-slideout-left .modal-header h5 {
+        float: left;
+    }
+
+/*.form-floating > label {
+    font-size: smaller !important;
+}*/
+
+/* END Sliding out modal from right-side of screen. END */
+
+.btn {
+    margin: 0.2rem;
+}
+
+.focus-none:focus,
+.cus-no-focus:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+a.disabled:hover,
+a:disabled:hover {
+    cursor: not-allowed !important;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.btn:disabled,
+button.disabled,
+button:disabled,
+a:disabled,
+a.disabled {
+    cursor: not-allowed !important;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Need this for tooltips and popovers inside of a label */
+label:has(i) {
+    pointer-events: all !important;
+}
+
+.nav-link {
+    font-weight: bold;
+    font-size: unset;
+    min-width: max-content !important;
+}
+
+.nav-link:hover > span.badge.cus-bg-primary {
+    background-color: var(--secondary-text-color) !important;
+    color: var(--primary-color) !important;
+    transition: 0s !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: none !important;
+}
+
+.btn-link {
+    margin: 0;
+    padding: 0;
+}
+
+    .btn-link:focus {
+        box-shadow: none !important;
+    }
+
+/* This is needed so that floating select lists aren't cut off at the very bottom. */
+.form-floating > .form-select {
+    padding-top: 1.4rem;
+    padding-bottom: 0.4rem;
+}
+
+.modal-long {
+    min-height: -webkit-fill-available;
+}
+
+.tooltip-inner {
+    /*max-width: 100% !important;*/
+}
+
+/* .custom-tooltip {
+        --bs-tooltip-bg: var(--bs-primary);
+        --bs-tooltip-color: var(--bs-dark);
+        --bs-tooltip-font-size: $font-size-lg;
+    } */
+
+.custom-tooltip {
+    --bs-tooltip-bg: var(--primary-text-color);
+}
+
+    .custom-tooltip.tooltip.show {
+        opacity: 1;
+    }
+
+    .custom-tooltip.tooltip-inner {
+        background-color: white;
+        border: 1.5px solid black;
+        color: black;
+        /* box-shadow: 0px 0px 4px #000; */
+        opacity: 1 !important;
+    }
+
+    .custom-tooltip.tooltip.bs-tooltip-right .tooltip-arrow:before {
+        border-right-color: black !important;
+    }
+
+    .custom-tooltip.tooltip.bs-tooltip-left .tooltip-arrow:before {
+        border-left-color: black !important;
+    }
+
+    .custom-tooltip.tooltip.bs-tooltip-bottom .tooltip-arrow:before {
+        border-bottom-color: black !important;
+    }
+
+    .custom-tooltip.tooltip.bs-tooltip-top .tooltip-arrow:before {
+        border-top-color: black !important;
+    }
+
+.form-check input:not(:disabled) {
+    cursor: pointer; /* Change cursor for enabled input */
+}
+
+.form-check:has(input:not(:disabled)) {
+    cursor: pointer; /* Change cursor for the entire .form-check div when input is enabled */
+}
+
+.form-check input:disabled {
+    cursor: not-allowed; /* Change cursor for the disabled input */
+}
+
+.form-check:has(input:disabled) {
+    cursor: not-allowed; /* Change cursor for the entire .form-check div */
+}
+
+.form-floating > label::after {
     background-color: transparent !important;
     border-radius: 0 !important;
     content: none !important;
+}
+
+.tooltip.cus-tooltip-light {
+    --bs-tooltip-bg: #ffffff; /* Solid white background */
+    --bs-tooltip-color: var(--bs-body-color); /* Normal body text color */
+    --bs-tooltip-padding-x: 1rem;
+    --bs-tooltip-padding-y: 0.75rem;
+    --bs-tooltip-font-size: 1rem;
+    --bs-tooltip-border-radius: 0.5rem;
+    --bs-tooltip-box-shadow: 0 .5rem 1rem rgba(0, 0, 0, 0.15); /* Soft popover-like shadow */
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.25rem !important;
+    background-color: #ffffff !important; /* Ensure the background is solid white */
+    opacity: 1 !important; /* Ensure no transparency */
+}
+
+    /* Ensure the arrow has the same border and background */
+    .tooltip.cus-tooltip-light .tooltip-inner {
+        text-align: left; /* Force text to left align */
+        white-space: nowrap;
+        width: 100%;
+        max-width: unset;
+    }
+
+    /* Ensure the arrow has the same border and background */
+    .tooltip.cus-tooltip-light .tooltip-arrow {
+        border-top-color: red !important; /* White arrow */
+        border-right-color: transparent !important;
+        border-bottom-color: transparent !important;
+        border-left-color: transparent !important;
+        border-width: 5px !important;
+    }
+
+/* Colors */
+
+/* Background Color */
+.bg-indigo {
+    background-color: var(--bs-indigo);
+}
+
+.bg-orange {
+    background-color: var(--bs-orange);
+}
+
+.bg-pink {
+    background-color: var(--bs-pink);
+}
+
+.bg-purple {
+    background-color: var(--bs-purple);
+}
+
+.bg-teal {
+    background-color: var(--bs-teal);
+}
+
+/* Borders */
+.border-indigo {
+    border-color: var(--bs-indigo);
+}
+
+.border-orange {
+    border-color: var(--bs-orange);
+}
+
+.border-pink {
+    border-color: var(--bs-pink);
+}
+
+.border-purple {
+    border-color: var(--bs-purple);
+}
+
+.border-teal {
+    border-color: var(--bs-teal);
+}
+
+/* Text */
+.text-indigo {
+    color: var(--bs-indigo);
+}
+
+.text-orange {
+    color: var(--bs-orange);
+}
+
+.text-pink {
+    color: var(--bs-pink);
+}
+
+.text-purple {
+    color: var(--bs-purple);
+}
+
+.text-teal {
+    color: var(--bs-teal);
 }

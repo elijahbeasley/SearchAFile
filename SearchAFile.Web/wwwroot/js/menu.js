@@ -1,4 +1,5 @@
 ﻿document.addEventListener("DOMContentLoaded", () => {
+
     const toggle = document.getElementById("header-toggle"),
         nav = document.getElementById("nav-bar"),
         bodypd = document.getElementById("body-pd"),
@@ -53,4 +54,5 @@
         linkColor.forEach(x => x.classList.remove("active"));
         this.classList.add("active");
     }));
+
 });

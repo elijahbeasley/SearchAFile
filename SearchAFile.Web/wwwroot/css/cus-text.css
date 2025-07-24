@@ -1,0 +1,94 @@
+﻿.cus-text-primary,
+.cus-text-primary-no-hover {
+    color: var(--primary-color) !important;
+}
+
+    .cus-text-primary:hover {
+        filter: brightness(85%);
+    }
+
+
+.cus-text-secondary,
+.cus-text-secondary-no-hover {
+    color: var(--secondary-color) !important;
+}
+
+    .cus-text-secondary:hover {
+        filter: brightness(85%);
+    }
+
+
+.cus-text-success {
+    color: #28a745 !important;
+}
+
+    .cus-text-success:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-info {
+    color: #17a2b8 !important;
+}
+
+    .cus-text-info:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-warning {
+    color: #ffc107 !important;
+}
+
+    .cus-text-warning:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-danger {
+    color: #dc3545 !important;
+}
+
+    .cus-text-danger:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-light {
+    color: #f8f9fa !important;
+}
+
+    .cus-text-light:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-dark {
+    color: #343a40 !important;
+}
+
+    .cus-text-dark:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-white,
+.cus-text-white-no-hover {
+    color: white !important;
+}
+
+    .cus-text-white:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-primary-text,
+.cus-text-primary-text-no-hover {
+    color: var(--primary-text-color) !important;
+}
+
+    .cus-text-primary-text:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-secondary-text,
+.cus-text-secondary-text-no-hover {
+    color: var(--secondary-text-color) !important;
+}
+
+    .cus-text-secondary-text:hover {
+        filter: brightness(85%);
+    }

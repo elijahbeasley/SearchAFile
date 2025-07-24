@@ -9,9 +9,7 @@
     // helper to render each nav link
     void NavLink(string href, string icon, string label, string title = null)
     {
-        <a href="@href"
-           class="nav_link cus-text-secondary-text"
-           title="@(title ?? label)">
+        <a href="@href" class="nav_link cus-text-secondary-text" title="@(title ?? label)">
             <i class="@icon nav_icon" style="width:25px;"></i>
             <span class="nav_name">@label</span>
         </a>
@@ -48,37 +46,32 @@
                     @switch (Model.User.Role)
                     {
                         case "System Admin":
-                            NavLink("~/SystemAdmins/Dashboard", "fa-solid fa-house", "Dashboard");
-                            NavLink("~/MaintainCompanys/List", "fa-regular fa-building", "Companys");
-                            NavLink("~/MaintainUsers/List", "fa-solid fa-users", "Users");
-                            NavLink("~/SystemAdmins/SystemSettings", "fa-solid fa-gears", "System Settings");
-                            NavLink("~/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
-                            NavLink("~/Common/LogIn", "fa-solid fa-sign-in", "Log In");
+                            NavLink("/SystemAdmins/Dashboard", "fa-solid fa-house", "Dashboard");
+                            NavLink("/MaintainCompanys/List", "fa-regular fa-building", "Companys");
+                            NavLink("/MaintainUsers/List", "fa-solid fa-users", "Users");
+                            NavLink("/SystemAdmins/SystemSettings", "fa-solid fa-gears", "System Settings");
+                            NavLink("/Admins/CompanySettings", "fa-solid fa-users-gear", "Company Settings");
+                            NavLink("/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
+                            NavLink("/Common/Impersonate", "fa-solid fa-sign-in", "Impersonate");
                             break;
 
                         case "Admin":
                             NavLink("~/Admins/Dashboard", "fa-solid fa-house", "Dashboard");
-                            NavLink("~/MaintainReferralSources/List", "fa-solid fa-person-walking-arrow-right", "Referral Sources");
-                            NavLink("~/MaintainServiceTypes/List", "fa-solid fa-handshake-angle", "Services");
-                            NavLink("~/MaintainSpecialClassifications/List", "fa-solid fa-id-badge", "Special Classifications");
-                            NavLink("~/MaintainTherapists/List", "fa-solid fa-person-chalkboard", "Therapists");
-                            NavLink("~/MaintainUsers/List", "fa-solid fa-users", "Users");
-                            NavLink("~/MaintainVictimizationTypes/List", "fa-solid fa-person-falling-burst", "Victimization Types");
+                            NavLink("~/MaintainFileGroups/Index", "fa-solid fa-folder-open", "Files");
                             NavLink("~/Admins/CompanySettings", "fa-regular fa-building", "Company Settings");
                             NavLink("~/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
                             if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
                             {
-                                NavLink("~/Common/LogIn", "fa-solid fa-sign-in", "Log In");
+                                NavLink("~/Common/Impersonate", "fa-solid fa-sign-in", "Impersonate");
                             }
                             break;
 
                         case "Employee":
                             NavLink("~/Users/Dashboard", "fa-solid fa-home", "Dashboard");
-                            NavLink("~/MaintainClients/List", "fa-solid fa-people-group", "Clients");
                             NavLink("~/Common/AccountSettings", "fa-solid fa-user-cog", "Account Settings");
                             if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
                             {
-                                NavLink("~/Common/LogIn", "fa-solid fa-sign-in", "Log In");
+                                NavLink("~/Common/Impersonate", "fa-solid fa-sign-in", "Impersonate");
                             }
                             break;
                     }

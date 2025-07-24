@@ -1,0 +1,87 @@
+﻿/* Primary */
+.cus-btn-primary {
+    --bs-btn-color: #fff; /* text color */
+    --bs-btn-bg: var(--primary-color); /* background */
+    --bs-btn-border-color: var(--primary-color); /* border */
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--primary-color); /* keep same on hover */
+    --bs-btn-hover-border-color: var(--primary-color); /* same on hover */
+    --bs-btn-focus-shadow-rgb: 49,132,253; /* optional: you can pick a shadow color or leave default */
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--primary-color);
+    --bs-btn-active-border-color: var(--primary-color);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: var(--primary-color);
+    --bs-btn-disabled-border-color: var(--primary-color);
+    color: var(--bs-btn-color);
+    background-color: var(--bs-btn-bg);
+    border: 1px solid var(--bs-btn-border-color);
+}
+
+    .cus-btn-primary:hover,
+    .cus-btn-primary:focus,
+    .cus-btn-primary:active,
+    .cus-btn-primary.disabled,
+    .cus-btn-primary:disabled {
+        filter: brightness(85%);
+    }
+
+/* Secondary */
+.cus-btn-secondary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--secondary-color);
+    --bs-btn-border-color: var(--secondary-color);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--secondary-color);
+    --bs-btn-hover-border-color: var(--secondary-color);
+    --bs-btn-focus-shadow-rgb: 108,117,125; /* optional: secondary grayish tone */
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--secondary-color);
+    --bs-btn-active-border-color: var(--secondary-color);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: var(--secondary-color);
+    --bs-btn-disabled-border-color: var(--secondary-color);
+    color: var(--bs-btn-color);
+    background-color: var(--bs-btn-bg);
+    border: 1px solid var(--bs-btn-border-color);
+}
+
+    .cus-btn-secondary:hover,
+    .cus-btn-secondary:focus,
+    .cus-btn-secondary:active,
+    .cus-btn-secondary.disabled,
+    .cus-btn-secondary:disabled {
+        filter: brightness(85%);
+    }
+
+.cus-btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+    .cus-btn-outline-primary:hover {
+        color: #fff;
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .cus-btn-outline-primary:focus, .cus-btn-outline-primary.focus {
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5);
+    }
+
+    .cus-btn-outline-primary.disabled, .cus-btn-outline-primary:disabled {
+        color: var(--primary-color);
+        background-color: transparent;
+    }
+
+    .cus-btn-outline-primary:not(:disabled):not(.disabled):active, .cus-btn-outline-primary:not(:disabled):not(.disabled).active,
+    .show > .cus-btn-outline-primary.dropdown-toggle {
+        color: #fff;
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+        .cus-btn-outline-primary:not(:disabled):not(.disabled):active:focus, .cus-btn-outline-primary:not(:disabled):not(.disabled).active:focus,
+        .show > .cus-btn-outline-primary.dropdown-toggle:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5);
+        }
