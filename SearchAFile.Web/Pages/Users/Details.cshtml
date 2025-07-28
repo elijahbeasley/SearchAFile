@@ -1,0 +1,103 @@
+﻿@page
+@model SearchAFile.Web.Pages.Users.DetailsModel
+
+<div class="card">
+
+    <div class="card-header d-flex align-items-center">
+        <a class="pe-2" href="~/UserFiles/@(string.IsNullOrEmpty(Model.User.HeadshotPath) ? "Generic.jpg" : Model.User.HeadshotPath)" target="_blank" title="View Headshot">
+            <img src="~/UserFiles/@(string.IsNullOrEmpty(Model.User.HeadshotPath) ? "Generic.jpg" : Model.User.HeadshotPath)" style="border-radius: 50%; height: 75px; width: 75px;" />
+        </a>
+        <label class="fs-5 ms-auto">
+            <i class="fa-solid fa-eye cus-text-primary-no-hover"></i> @Model.User.FullName
+        </label>
+    </div>
+
+    <div class="card-body cus-bootstrap-table-striped p-0">
+
+        <div class="row align-items-center m-0">
+            <div class="cus-col col-sm-6">
+                <div class="form-floating">
+                    <div class="form-control div-disabled">
+                        @if (Model.User.Active)
+                        {
+                            <span class="badge bg-success cus-no-select w-100">
+                                Active
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger cus-no-select w-100">
+                                Inactive
+                                <i class="fa-solid fa-xmark"></i>
+                            </span>
+                        }
+                    </div>
+                    <label asp-for="User.Active" class="control-label"></label>
+                </div>
+            </div>
+            <div class="cus-col col-sm-6">
+                <div class="form-floating">
+                    <div class="form-control div-disabled">
+                        <span class="badge bg-success cus-no-select px-4 w-100 @(Model.User.Role.Equals("System Admin") ? "bg-danger" : Model.User.Role.Equals("Admin") ? "bg-warning" : "cus-bg-primary")">
+                            @Model.User.Role
+                        </span>
+                    </div>
+                    <label asp-for="User.Role" class="control-label">
+                        @Html.DisplayNameFor(model => model.User.Role)
+                        <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your employees" data-bs-placement="top" data-bs-toggle="tooltip"></i>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-center m-0">
+            <div class="cus-col col-sm-6">
+                <div class="form-floating">
+                    <input type="text" asp-for="User.FirstName" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.FirstName)" disabled />
+                    <label asp-for="User.FirstName" class="control-label"></label>
+                </div>
+            </div>
+            <div class="cus-col col-sm-6">
+                <div class="form-floating">
+                    <input type="text" asp-for="User.LastName" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.LastName)" disabled />
+                    <label asp-for="User.LastName" class="control-label"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-center m-0">
+            <div class="cus-col col-sm-4">
+                <div class="form-floating">
+                    <input type="text" asp-for="User.EmailAddress" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.EmailAddress)" disabled />
+                    <label asp-for="User.EmailAddress" class="control-label"></label>
+                </div>
+            </div>
+            <div class="cus-col col-sm-4">
+                <div class="form-floating">
+                    <input type="text" asp-for="User.PhoneNumber" class="form-control" placeholder="(___) ___-____" data-bs-slots="_" disabled />
+                    <label asp-for="User.PhoneNumber" class="control-label"></label>
+                </div>
+            </div>
+            <div class="cus-col col-sm-4">
+                <button class="btn btn-success w-100" type="button" disabled>
+                    Change Password
+                    <i class="fa-solid fa-lock"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card-footer text-center">
+        <a asp-page="./Index" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to List
+        </a>
+        <a asp-page="./Edit" asp-route-id="@Model.User.UserId" class="btn btn-primary">
+            Edit
+            <i class="fa-solid fa-pen-to-square"></i>
+        </a>
+    </div>
+
+</div>

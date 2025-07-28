@@ -54,6 +54,7 @@ public class AuthService : IAuthService
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 FullName = user.FullName,
+                HeadshotPath = user.HeadshotPath,
                 Role = user.Role,
                 Active = user.Active
             }

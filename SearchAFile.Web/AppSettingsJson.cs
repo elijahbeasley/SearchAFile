@@ -4,7 +4,7 @@ public static class AppSettingsJson
 {
     public static IConfigurationRoot GetAppSettings()
     {
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Companyion";
 
         return new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())

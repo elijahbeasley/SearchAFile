@@ -1,9 +1,6 @@
-﻿using SearchAFile.Web.Helpers;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SearchAFile.Web.Services;
 
@@ -13,139 +10,116 @@ public class AuthenticatedApiClient
     private readonly string _clientId;
     private readonly string _clientSecret;
 
-    public AuthenticatedApiClient(HttpClient httpClient, IConfiguration configuration)
+    public AuthenticatedApiClient(HttpClient httpClient, IConfiguration config)
     {
         _httpClient = httpClient;
-        _clientId = configuration["ApiAuth:ClientId"] ?? throw new ArgumentNullException("ClientId not configured");
-        _clientSecret = configuration["ApiAuth:ClientSecret"] ?? throw new ArgumentNullException("ClientSecret not configured");
+        _clientId = config["ApiAuth:ClientId"] ?? throw new ArgumentNullException("ClientId");
+        _clientSecret = config["ApiAuth:ClientSecret"] ?? throw new ArgumentNullException("ClientSecret");
     }
 
+    /// <summary>Adds custom headers to the request.</summary>
     private void AddAuthHeaders(HttpRequestMessage request)
     {
         request.Headers.Add("X-Client-Id", _clientId);
         request.Headers.Add("X-Client-Secret", _clientSecret);
     }
 
-    //public async Task<ApiResult<T>> GetAsync<T>(string url)
-    //{
-    //    var request = new HttpRequestMessage(HttpMethod.Get, url);
-    //    AddAuthHeaders(request);
+    /// <summary>Handles deserialization and error extraction from an HTTP response.</summary>
+    private async Task<ApiResult<T>> HandleResponseAsync<T>(HttpResponseMessage response)
+    {
+        var content = await response.Content.ReadAsStringAsync();
 
-    //    var response = await _httpClient.SendAsync(request);
-    //    var content = await response.Content.ReadAsStringAsync();
+        if (response.IsSuccessStatusCode)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                // No content to deserialize (e.g., 204 No Content)
+                return ApiResult<T>.Success(default, response);
+            }
 
-    //    try
-    //    {
-    //        if (response.IsSuccessStatusCode)
-    //        {
-    //            // Try to deserialize directly into T (your actual object)
-    //            var data = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-    //            {
-    //                PropertyNameCaseInsensitive = true
-    //            });
+            try
+            {
+                var data = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
-    //            return ApiResult<T>.Success(data);
-    //        }
-    //        else
-    //        {
-    //            // Try to extract error from JSON like: { message: "...", detail: "..." }
-    //            var errorObj = JsonSerializer.Deserialize<ApiErrorResponse>(content, new JsonSerializerOptions
-    //            {
-    //                PropertyNameCaseInsensitive = true
-    //            });
+                return ApiResult<T>.Success(data, response);
+            }
+            catch (Exception ex)
+            {
+                return ApiResult<T>.Failure((int)response.StatusCode, $"Failed to deserialize success response: {ex.Message}", null, response);
+            }
+        }
 
-    //            return ApiResult<T>.Failure((int)response.StatusCode, errorObj?.Message ?? "Unknown error", null);
-    //        }
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        return ApiResult<T>.Failure((int)response.StatusCode, $"Deserialization error: {ex.Message}");
-    //    }
-    //}
+        // error handling
+        try
+        {
+            var errorObj = JsonSerializer.Deserialize<ApiErrorResponse>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
-    //private class ApiErrorResponse
-    //{
-    //    public string? Message { get; set; }
-    //    public Dictionary<string, string[]>? Errors { get; set; }
-    //}
+            return ApiResult<T>.Failure((int)response.StatusCode, errorObj?.Message ?? "Unknown error", errorObj?.Errors, response);
+        }
+        catch
+        {
+            return ApiResult<T>.Failure((int)response.StatusCode, "Failed to parse API error.", null, response);
+        }
+    }
 
+    private class ApiErrorResponse
+    {
+        public string? Message { get; set; }
+        public string? Detail { get; set; }
+        public Dictionary<string, string[]>? Errors { get; set; }
+    }
+
+    // ----------------------------
+    // HTTP METHODS
+    // ----------------------------
 
     public async Task<ApiResult<T>> GetAsync<T>(string url)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         AddAuthHeaders(request);
-
         var response = await _httpClient.SendAsync(request);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var data = await response.Content.ReadFromJsonAsync<T>();
-            return ApiResult<T>.Success(data);
-        }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            return ApiResult<T>.Failure((int)response.StatusCode, errorContent);
-        }
+        return await HandleResponseAsync<T>(response);
     }
 
     public async Task<ApiResult<T>> PostAsync<T>(string url, object data)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = JsonContent.Create(data)
+        };
         AddAuthHeaders(request);
-        request.Content = JsonContent.Create(data);
-
         var response = await _httpClient.SendAsync(request);
-        var content = await response.Content.ReadAsStringAsync();
-
-        if (response.IsSuccessStatusCode)
-        {
-            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return ApiResult<T>.Success(result);
-        }
-
-        // Try to pull out validation or general error messages
-        try
-        {
-            var errorObj = JsonSerializer.Deserialize<ApiErrorHelper.ApiErrorResponse>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return ApiResult<T>.Failure((int)response.StatusCode, null, errorObj?.Errors);
-        }
-        catch
-        {
-            return ApiResult<T>.Failure((int)response.StatusCode, "Failed to parse API error.");
-        }
+        return await HandleResponseAsync<T>(response);
     }
 
-    public async Task<HttpResponseMessage> PostAsync(string url)
+    public async Task<ApiResult<T>> PostAsync<T>(string url) =>
+        await PostAsync<T>(url, new { });
+
+    public async Task<ApiResult<T>> PutAsync<T>(string url, object data)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        var request = new HttpRequestMessage(HttpMethod.Put, url)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json")
+        };
         AddAuthHeaders(request);
-        return await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request);
+        return await HandleResponseAsync<T>(response);
     }
 
-    public async Task<HttpResponseMessage> PutAsync<T>(string url, T data)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Put, url);
-        AddAuthHeaders(request);
+    public async Task<ApiResult<T>> PutAsync<T>(string url) =>
+        await PutAsync<T>(url, new { });
 
-        request.Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
-
-        return await _httpClient.SendAsync(request);
-    }
-
-    public async Task<HttpResponseMessage> DeleteAsync(string url)
+    public async Task<ApiResult<T>> DeleteAsync<T>(string url)
     {
         var request = new HttpRequestMessage(HttpMethod.Delete, url);
         AddAuthHeaders(request);
-
-        return await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request);
+        return await HandleResponseAsync<T>(response);
     }
 }

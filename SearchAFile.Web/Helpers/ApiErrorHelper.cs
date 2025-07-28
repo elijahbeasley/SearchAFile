@@ -1,80 +1,48 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.Net.Http;
-using System.Text.Json;
-
-namespace SearchAFile.Web.Helpers;
+using System.Text;
 
 public static class ApiErrorHelper
 {
-    private class GeneralErrorResponse
+    /// <summary>Returns a readable string for an ApiResult error, including model validation.</summary>
+    public static string GetErrorString<T>(ApiResult<T> result)
     {
-        public string? Message { get; set; }
-        public string? Detail { get; set; }
-    }
+        if (result == null)
+            return "An unknown error occurred.";
 
-    public static Task AddErrorsToModelStateAsync<T>(ApiResult<T> result, ModelStateDictionary modelState, string? modelPrefix = null)
-    {
-        if (result == null || modelState == null || result.IsSuccess)
-            return Task.CompletedTask;
+        var sb = new StringBuilder();
 
-        // Add model-specific validation errors
+        if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
+            sb.AppendLine(result.ErrorMessage);
+
         if (result.Errors != null)
         {
-            foreach (var kvp in result.Errors)
+            foreach (var (field, messages) in result.Errors)
             {
-                foreach (var message in kvp.Value)
-                {
-                    var key = string.IsNullOrWhiteSpace(modelPrefix)
-                        ? kvp.Key
-                        : $"{modelPrefix}.{kvp.Key}";
-
-                    // Avoid duplicates
-                    if (!modelState.ContainsKey(key) || !modelState[key].Errors.Any(e => e.ErrorMessage == message))
-                    {
-                        modelState.AddModelError(key, message);
-                    }
-                }
+                foreach (var msg in messages)
+                    sb.AppendLine($"{field}: {msg}");
             }
         }
 
-        // Add general message fallback
+        return sb.Length > 0 ? sb.ToString().Trim() : "An error occurred.";
+    }
+
+    public static void AddErrorsToModelState<T>(ApiResult<T> result, ModelStateDictionary modelState, string? modelPrefix = null)
+    {
+        if (result == null || modelState == null || result.Errors == null)
+            return;
+
+        foreach (var kvp in result.Errors)
+        {
+            var key = string.IsNullOrWhiteSpace(modelPrefix) ? kvp.Key : $"{modelPrefix}.{kvp.Key}";
+            foreach (var error in kvp.Value)
+            {
+                modelState.AddModelError(key, error);
+            }
+        }
+
         if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
         {
             modelState.AddModelError(string.Empty, result.ErrorMessage);
-        }
-
-        return Task.CompletedTask;
-    }
-    public class ApiErrorResponse
-    {
-        public Dictionary<string, string[]> Errors { get; set; } = new();
-    }
-
-    public static async Task<string> ExtractApiErrorAsync(HttpResponseMessage response)
-    {
-        if (response == null)
-            return "An unknown error occurred.";
-
-        var content = await response.Content.ReadAsStringAsync();
-
-        try
-        {
-            var generalError = JsonSerializer.Deserialize<GeneralErrorResponse>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            if (!string.IsNullOrWhiteSpace(generalError?.Message))
-                return generalError.Message;
-
-            if (!string.IsNullOrWhiteSpace(generalError?.Detail))
-                return generalError.Detail;
-
-            return "An unexpected error occurred.";
-        }
-        catch
-        {
-            return "Failed to parse API error response.";
         }
     }
 }

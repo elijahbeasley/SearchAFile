@@ -30,19 +30,19 @@ public partial class SystemInfo
     public required string ContactPhoneNumber { get; set; }
 
     [Required]
-    [StringLength(30)]
+    [StringLength(50)]
     public required string Favicon { get; set; }
 
     [Required]
-    [StringLength(30)]
+    [StringLength(50)]
     public required string HeaderLogo { get; set; }
 
     [Required]
-    [StringLength(30)]
+    [StringLength(50)]
     public required string FooterLogo { get; set; }
 
     [Required]
-    [StringLength(30)]
+    [StringLength(50)]
     public required string EmailLogo { get; set; }
 
     [Required]

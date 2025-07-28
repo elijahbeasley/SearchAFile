@@ -52,27 +52,48 @@ public class CompanyController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Company company)
     {
-        await _service.CreateAsync(company);
-        return CreatedAtAction(nameof(GetById), new { id = company.CompanyId }, company);
+        try
+        {
+            await _service.CreateAsync(company);
+            return CreatedAtAction(nameof(GetById), new { id = company.CompanyId }, company);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to create company", detail = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] Company company)
     {
-        if (id != company.CompanyId) return BadRequest();
+        try
+        {
+            if (id != company.CompanyId) return BadRequest();
 
-        var result = await _service.UpdateAsync(company);
-        if (!result) return NotFound();
+            var result = await _service.UpdateAsync(company);
+            if (!result) return NotFound();
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to update company", detail = ex.Message });
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var result = await _service.DeleteAsync(id);
-        if (!result) return NotFound();
+        try
+        {
+            var result = await _service.DeleteAsync(id);
+            if (!result) return NotFound();
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to delete company", detail = ex.Message });
+        }
     }
 }

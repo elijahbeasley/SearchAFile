@@ -4,6 +4,7 @@ using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Core.Helpers;
 using SearchAFile.Core.Interfaces;
 using SearchAFile.Infrastructure.Data;
+using System.Numerics;
 
 namespace SearchAFile.Infrastructure.Services;
 
@@ -60,6 +61,8 @@ public class UserService : IUserService
         return (await _context.Users
             .FirstOrDefaultAsync(u => userId == null ? true : u.UserId != userId
                 && u.CompanyId == companyId
+                && !string.IsNullOrEmpty(u.EmailAddress)
+                && !string.IsNullOrEmpty(email)
                 && u.EmailAddress.Trim().ToLower().Equals(email.Trim().ToLower())))?.FullName;
     }
     public async Task<string?> PhoneExistsAsync(Guid companyId, string phone, Guid? userId = null)
@@ -67,7 +70,8 @@ public class UserService : IUserService
         return (await _context.Users
             .FirstOrDefaultAsync(u => (userId == null || u.UserId != userId)
                 && u.CompanyId == companyId 
-                && !string.IsNullOrEmpty(phone) 
-                && u.PhoneNumber.Trim().ToLower().Equals(PhoneNumberHelper.CleanPhoneNumber(phone).Trim().ToLower())))?.FullName;
+                && !string.IsNullOrEmpty(u.PhoneNumber)
+                && !string.IsNullOrEmpty(phone)
+                && u.PhoneNumber.Trim().ToLower().Equals(phone.Trim().ToLower())))?.FullName;
     }
 }

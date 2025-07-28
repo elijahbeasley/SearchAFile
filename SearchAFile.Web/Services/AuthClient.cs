@@ -85,7 +85,12 @@ public class AuthClient
         // Optional: call the API logout endpoint
         try
         {
-            await _api.PostAsync("account/logout");
+            var result = await _api.PostAsync<object>("account/logout");
+
+            if (!result.IsSuccess)
+            {
+                throw new Exception(result.ErrorMessage ?? "Unable to delete user.");
+            }
         }
         catch
         {

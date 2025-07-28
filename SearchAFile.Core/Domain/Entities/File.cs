@@ -20,7 +20,7 @@ public partial class File
     [StringLength(50)]
     public string? File1 { get; set; }
 
-    [StringLength(30)]
+    [StringLength(50)]
     public string? Path { get; set; }
 
     [Column(TypeName = "datetime")]

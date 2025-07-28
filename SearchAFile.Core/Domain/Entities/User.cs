@@ -15,14 +15,16 @@ public partial class User
     public Guid UserId { get; set; }
 
     [Column("CompanyID")]
-    [Required]
+    [Required(ErrorMessage = "Company is required.")]
     public required Guid CompanyId { get; set; }
 
-    [Required]
+    [DisplayName("First Name")]
+    [Required(ErrorMessage = "First name is required.")]
     [StringLength(25)]
     public required string FirstName { get; set; }
 
-    [Required]
+    [DisplayName("Last Name")]
+    [Required(ErrorMessage = "Last name is required.")]
     [StringLength(25)]
     public required string LastName { get; set; }
 
@@ -30,20 +32,26 @@ public partial class User
 
     public string FullNameReverse => $"{LastName ?? ""}, {FirstName ?? ""}".Trim();
 
-    [Required]
+    [DisplayName("Email Address")]
+    [Required(ErrorMessage = "Email address is required.")]
+    [RegularExpression(@"^([A-z0-9]|\.){2,}@[A-z0-9]{2,}.[A-z0-9]{2,}$", ErrorMessage = "Invalid email address entered. Please enter an email address in the format: 'aaa@bbb.ccc'.")]
     [StringLength(50)]
     public required string EmailAddress { get; set; }
 
-    [Required]
+    [DisplayName("Phone Number")]
+    [Required(ErrorMessage = "Phone number is required.")]
+    [RegularExpression(@"^\(\d{3}\) \d{3}-\d{4}$", ErrorMessage = "Phone number must be in the format (###) ###-####.")]
     [StringLength(20)]
     public required string PhoneNumber { get; set; }
 
-    [Required]
+    [DisplayName("Current Password")]
+    [RegularExpression(@"^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$", ErrorMessage = "Invalid password entered. Password must be between 8 and 30 characters long, contain at least one upper case letter, at least one lower case letter, and at least one number.")]
+    [Required(ErrorMessage = "Password is required.")]
     [StringLength(200)]
     public required string Password { get; set; }
 
     [Column("ResetURL")]
-    [StringLength(30)]
+    [StringLength(50)]
     public string? ResetUrl { get; set; }
 
     [Column("ResetPIN")]
@@ -53,20 +61,22 @@ public partial class User
     [Column(TypeName = "datetime")]
     public DateTime? ResetExpiration { get; set; }
 
+    [DisplayName("Email Verified")]
     public bool EmailVerified { get; set; }
 
     [Column("EmailVerificationURL")]
     public Guid EmailVerificationUrl { get; set; }
 
-    [StringLength(30)]
+    [StringLength(50)]
+    [DisplayName("Headshot")]
     public string? HeadshotPath { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Role is required.")]
     [StringLength(20)]
     public required string Role { get; set; }
 
     [DisplayName("Status")]
-    [Required]
+    [Required(ErrorMessage = "Status is required.")]
     public required bool Active { get; set; }
 
     [ForeignKey("CompanyId")]

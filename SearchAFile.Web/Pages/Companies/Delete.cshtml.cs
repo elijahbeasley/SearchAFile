@@ -10,12 +10,12 @@ namespace SearchAFile.Web.Pages.Companies;
 
 public class DeleteModel : PageModel
 {
-    private readonly TelemetryClient TelemetryClient;
+    private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
 
     public DeleteModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
     {
-        TelemetryClient = telemetryClient;
+        _telemetryClient = telemetryClient;
         _api = api;
     }
 
@@ -26,17 +26,23 @@ public class DeleteModel : PageModel
     {
         try
         {
+            // Set the page title.
+            HttpContext.Session.SetString("PageTitle", "Delete Company");
+
             if (id == null)
                 return NotFound();
 
             var result = await _api.GetAsync<Company>($"companies/{id}");
 
             if (!result.IsSuccess || result.Data == null)
-            {
-                throw new Exception(result.ErrorMessage ?? "Unable to retrieve company.");
-            }
+                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to retrieve company.");
 
             Company = result.Data;
+
+            if (!string.IsNullOrEmpty(Company.Address))
+            {
+                Company.Address = Company.Address.Replace("<br>", Environment.NewLine);
+            }
 
             return Page();
         }
@@ -44,7 +50,7 @@ public class DeleteModel : PageModel
         {
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
@@ -55,22 +61,31 @@ public class DeleteModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(Guid? id)
     {
-        if (id == null)
-            return NotFound();
-
-        var response = await _api.DeleteAsync($"companies/{id}");
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            TempData["MessageColor"] = "text-danger";
-            TempData["Message"] = "Error deleting company.";
+            if (id == null)
+                return NotFound();
+
+            var result = await _api.DeleteAsync<object>($"companies/{id}");
+
+            if (!result.IsSuccess)
+                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to delete company.");
+
+            TempData["StartupJavaScript"] = "ShowSnack('success', 'Company successfully deleted.', 7000, true)";
+
+            return RedirectToPage("./Index");
+        }
+        catch (Exception ex)
+        {
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
+
+            // Display an error for the user.
+            string strExceptionMessage = "Company NOT successfully deleted. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
 
             return Page();
         }
-
-        TempData["MessageColor"] = "text-success";
-        TempData["Message"] = "Company successfully deleted.";
-
-        return RedirectToPage("./Index");
     }
 }

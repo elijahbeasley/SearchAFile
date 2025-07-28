@@ -125,6 +125,7 @@ a.nav_logo {
 .nav_logo-name {
     color: var(--white-color);
     font-weight: 700;
+    margin-top: 0.5rem;
 }
 
 .nav_link {

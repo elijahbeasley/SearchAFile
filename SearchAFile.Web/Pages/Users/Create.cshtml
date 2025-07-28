@@ -1,0 +1,339 @@
+﻿@page
+@using SearchAFile.Core.Domain.Entities
+@model SearchAFile.Web.Pages.Users.CreateModel
+
+<form method="post" enctype="multipart/form-data">
+
+    <div asp-validation-summary="ModelOnly" class="text-danger" hidden></div>
+
+    <div class="card">
+
+        <div class="card-header d-flex align-items-center">
+            <div class="cus-hover-image-container pe-2" onclick="$('#divUploadImage').modal('show');" title="Upload Headshot" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" style="width: max-content;">
+                <img id="imgNewImage" class="cus-hover-image" src="~/UserFiles/Generic.jpg" style="border-radius: 50%; height: 75px; width: 75px;" />
+                <div class="cus-hover-image-middle">
+                    <div class="cus-hover-image-text">
+                        <i class="fa-solid fa-upload fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <label class="fs-5 ms-auto"><i class="fa-solid fa-plus-circle text-success"></i>
+                @if (HttpContext.Session.GetObject<UserDto>("User").Role.Equals("System Admin")) 
+                {
+                    <text>Create @(HttpContext.Session.GetObject<Company>("Company").Company1) User</text>
+                    
+                }
+                else
+                {
+                    <text>Create User</text>
+                }
+            </label>
+        </div>
+
+        <div class="card-body cus-bootstrap-table-striped p-0">
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <select asp-for="User.Active" class="form-select">
+                            <option value="" hidden>- Status -</option>
+                            <option value="True">Active</option>
+                            <option value="False">Inactive</option>
+                        </select>
+                        <label asp-for="User.Active" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="User.Active" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <select asp-for="User.Role" class="form-select">
+                            <option value="" hidden>- Role -</option>
+                            @if (HttpContext.Session.GetObject<UserDto>("User").Role.Equals("System Admin"))
+                            {
+                                <option value="System Admin">System Admin</option>
+                            }
+                            <option value="Admin">Admin</option>
+                            <option value="User">User</option>
+                        </select>
+                        <label asp-for="User.Role" class="control-label" show-asterisk="true">
+                            @Html.DisplayNameFor(model => model.User.Role)
+                            <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your employees" data-bs-placement="top" data-bs-toggle="tooltip"></i>
+                        </label>
+                        <span asp-validation-for="User.Role" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" asp-for="User.FirstName" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.FirstName)" />
+                        <label asp-for="User.FirstName" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="User.FirstName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" asp-for="User.LastName" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.LastName)" />
+                        <label asp-for="User.LastName" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="User.LastName" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-4">
+                    <div class="form-floating">
+                        <input type="text" asp-for="User.EmailAddress" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.EmailAddress)" />
+                        <label asp-for="User.EmailAddress" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="User.EmailAddress" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-4">
+                    <div class="form-floating">
+                        <input type="text" asp-for="User.PhoneNumber" class="form-control" placeholder="(___) ___-____" data-bs-slots="_" />
+                        <label asp-for="User.PhoneNumber" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="User.PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-4">
+                    <div class="form-floating">
+                        <input type="password" asp-for="User.Password" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.Password)" />
+                        <label asp-for="User.Password" class="control-label" show-asterisk="true">Password</label>
+                        <span asp-validation-for="User.Password" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-footer text-center">
+            <a asp-page="./Index" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to List
+            </a>
+            <button type="submit" class="btn btn-success">
+                Create
+                <i class="fa-solid fa-save"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="divUploadImage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content card">
+
+                <div class="card-header d-flex align-items-center cus-no-select fs-6" style="background-color: var(--primary-color); border-bottom: 2px solid var(--secondary-color);">
+                    <label class="cus-card-header h-auto cus-text-secondary-text-no-hover">
+                        <i class="fa-solid fa-upload fs-5 me-1 cus-text-secondary-text-no-hover"></i>
+                        Upload Image
+                    </label>
+                    <button type="button" class="btn p-0 m-0 ms-auto cus-text-secondary-text" data-bs-dismiss="modal" onclick="CancelUpload(); window.top.ClearToast(); window.top.ShowSnack('warning', 'Operation cancelled. No data was affected.', 3000, true);" style="line-height: 1;" title="Cancel">
+                        <i class="fa-solid fa-xmark fs-4"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body card-body cus-bootstrap-table-striped p-0">
+
+                    <div class="row align-items-center m-0">
+                        <div class="cus-col col-sm-5 col-md-5 col-lg-3 col-xl-3 fw-bold">
+                            <label asp-for="User.HeadshotPath"></label>
+                            <i class="fa-solid fa-circle-question cus-text-primary" data-bs-boundary="viewport" data-bs-container="body" title="Allowed File Types" data-bs-content="<ul class='cus-popover-list'><li>png</li><li>jpeg</li><li>jpg</li></ul>" data-bs-html="true" data-bs-placement="top" data-bs-toggle="popover" onclick="$(this).popover('show');" onmouseleave="$(this).popover('hide');" style="cursor: pointer;"></i>
+                        </div>
+                        <div class="cus-col col-sm-7 col-md-7 col-lg-9 col-xl-9">
+                            <input id="Headshot" class="form-control" type="file" asp-for="IFormFile" onchange="SelectFile(this);">
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center m-0">
+                        <div class="cus-col col-sm-5 col-md-5 col-lg-3 col-xl-3 fw-bold">
+                            <label>Preview</label>
+                        </div>
+                        <div class="cus-col col-sm-7 col-md-7 col-lg-9 col-xl-9" style="max-width: var(--control-max-width);">
+                            <img id="imgPreview" height="100" width="100" style="border-radius: 50%;" src="@SystemFunctions.EmptyImageSource" />
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-footer text-center cus-no-select">
+                    <button id="btnUploadImage" class="btn btn-outline-success" type="button" onclick="UploadImage();" style="min-width: 20%;" title="Save">
+                        <span id="lblSubmitUpload" style="color: unset;">
+                            Upload
+                            <i class="fa-solid fa-upload"></i>
+                        </span>
+                        <img id="imgSubmitUpload" src="~/SystemFiles/loading.gif" style="display: none;" height="20px" width="20px" />
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal" onclick="CancelUpload(); window.top.ClearToast();" style="min-width: 20%;" title="Cancel">
+                        Cancel
+                        <i class="fa-solid fa-ban"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+
+        $('#divUploadImage').on('keypress', function (event) {
+
+            let keycode = (event.keyCode ? event.keyCode : event.which);
+
+            if (keycode == '13') {
+
+                event.preventDefault();
+                $('#btnUploadImage').click();
+            }
+        });
+
+        $('#divUploadImage').on('hidden.bs.modal', function (e) {
+
+            $('#lblSubmitUpload').show();
+            $('#imgSubmitUpload').hide();
+        })
+
+        function UploadImage() {
+
+            // Clear out the messages.
+            window.top.ClearToast();
+
+            // Is the form valid?
+            if ($('#Headshot').val() == '') {
+
+                $('#Headshot').addClass('input-validation-error');
+
+                // Output the errors.
+                window.top.ShowToast('danger', 'The following errors have occured', '<ul><li>A file is required.</li></ul>', 0, false)
+            }
+            else {
+
+                $('#lblSubmitUpload').toggle();
+                $('#imgSubmitUpload').toggle();
+
+                // Display the file.
+                $("#imgNewImage").prop('src', $("#imgPreview").prop('src'));
+
+                $('#divUploadImage').modal('hide');
+            }
+        }
+
+        function CalculateFileSizes() {
+
+            var totalFileSize = 0;
+            var totalFileSizeMB = 0;
+
+            $('input:file').each(function () {
+
+                if (this.files[0] != null) {
+
+                    totalFileSize += this.files[0].size;
+                }
+            });
+
+            if (totalFileSize > 0) {
+
+                // 1024
+                totalFileSizeMB = totalFileSize / Math.pow(1024, 2);
+            }
+
+            $('#lblTotalFileSize').text(totalFileSizeMB.toFixed(2) + 'MB')
+        }
+
+        function ClearFile(e) {
+
+            $('#imgPreview').prop('src', '@SystemFunctions.EmptyImageSource');
+
+            $(e).find('input:file').val('');
+            $(e).parent('div').find('input:text').val('');
+            $(e).parent('div').find('input:text').prop('title', '');
+            CalculateFileSizes();
+        }
+
+        function SelectFile(e) {
+
+            let errors = '';
+
+            if (e.files[0].size > MaxFileSize) {
+
+                errors += '<li>Invalid file selected. File size must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB.</li>';
+            }
+
+            let fileExtension = ['png', 'jpeg', 'jpg'];
+
+            if ($.inArray($(e).val().split('.').pop().toLowerCase(), fileExtension) == -1) {
+
+                errors += '<li>Invalid file selected. File must be of type: ' + fileExtension.join(', ') + '.</li>';
+            }
+
+            if (errors == '') {
+
+                let totalFileSize = 0;
+
+                $('input:file').each(function () {
+
+                    if (this.files[0] != null) {
+
+                        totalFileSize += this.files[0].size;
+                    }
+                });
+
+                if (totalFileSize > MaxFileSize) {
+
+                    let totalFileSizeMB = totalFileSize - e.files[0].size;
+
+                    if (totalFileSize > 0) {
+
+                        // 1024
+                        totalFileSizeMB = totalFileSizeMB / Math.pow(1024, 2);
+                    }
+
+                    errors += '<li>Invalid file selected. The total file size(s) must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB. The current file size(s) is ' + totalFileSizeMB.toFixed(2) + 'MB.</li>';
+                }
+            }
+
+            if (errors !== '') {
+
+                $('#Headshot').addClass('input-validation-error');
+                $(e).val('');
+                $(e).parent('div').parent('div').find('input:text').val('');
+                $(e).parent('div').parent('div').find('input:text').prop('title', '');
+
+                window.top.ClearToast();
+                window.top.ShowToast('danger', 'The following errors have occured', '<ul>' + errors + '</ul>', 0, false);
+            }
+            else {
+
+                $('#Headshot').removeClass('input-validation-error');
+                $(e).parent('div').parent('div').find('input:text').val(e.files[0].name);
+                $(e).parent('div').parent('div').find('input:text').prop('title', e.files[0].name);
+
+                // Display the file.
+                var reader = new FileReader();
+                reader.onload = function (element) {
+                    $("#imgPreview").prop('src', element.target.result);
+                }
+                reader.readAsDataURL($(e)[0].files[0]);
+            }
+
+            CalculateFileSizes();
+        }
+
+        function CancelUpload() {
+
+            $('#Headshot').val('');
+            $('#Headshot').removeClass('input-validation-error');
+            $('#imgPreview').prop('src', '@SystemFunctions.EmptyImageSource');
+            //$('#imgNewImage').prop('src', '/UserFiles/Generic.jpg');
+        }
+
+    </script>
+
+}

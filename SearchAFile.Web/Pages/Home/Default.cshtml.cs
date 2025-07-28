@@ -10,11 +10,11 @@ namespace SearchAFile.Pages.Home;
 
 public class DefaultModel : PageModel
 {
-    private readonly TelemetryClient TelemetryClient;
+    private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
-    public DefaultModel(TelemetryClient TC, AuthenticatedApiClient api)
+    public DefaultModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
     {
-        TelemetryClient = TC;
+        _telemetryClient = telemetryClient;
         _api = api;
     }
     public async Task<IActionResult> OnGetAsync()
@@ -50,8 +50,6 @@ public class DefaultModel : PageModel
                 }
                 else
                 {
-                    HttpContext.Session.SetString("Message", "Unable to initialize system.");
-                    HttpContext.Session.SetString("MessageColor", "red");
                     booSuccess = false;
                 }
             }
@@ -62,7 +60,7 @@ public class DefaultModel : PageModel
 
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");

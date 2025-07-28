@@ -1,0 +1,194 @@
+﻿@page
+@using SearchAFile.Core.Domain.Entities
+@model SearchAFile.Web.Pages.Users.IndexModel
+
+@if (HttpContext.Session.GetObject<UserDto>("User").Role.Equals("System Admin"))
+{
+    <div class="py-3">
+        <div class="form-floating mx-auto" style="max-width: 30rem;">
+            <select class="form-select" asp-items="@(HttpContext.Session.GetObject<List<SelectListItem>>("Companies"))" onchange="ChangeCompany(this.value);"></select>
+            <label class="control-label">Companies</label>
+        </div>
+    </div>
+}
+
+<div class="card">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <label class="fs-3 pe-3">Users</label>
+        <form method="get">
+            <div class="input-group">
+                <input asp-for="search" class="form-control" type="search" placeholder="Search users..." onchange="if (this.value === '') {this.form.submit(); }" />
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+
+        <div class="p-3">
+            <a asp-page="Create" class="btn btn-outline-success w-100">
+                <i class="fa-solid fa-plus-circle"></i>
+                Create User
+            </a>
+        </div>
+
+        @if (Model.Users != null
+            && Model.Users.Any())
+        {
+            <div style="margin-left: 40px; overflow-x: auto;">
+                <table id="tblData" class="table table-striped m-0">
+                    <thead>
+                        <tr class="fw-bold" style="white-space: nowrap;">
+                            <th class="cus-fixed-col-th border-0"></th>
+                            <th></th>
+                            <th class="text-center">
+                                <a href="javascript:SortTable(2,'T', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Users[0].Active)
+                                    <i id="iSort2" class="fa-solid fa-sort-up cus-sort-icon"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="javascript:SortTable(3,'T', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Users[0].FullName)
+                                    <i id="iSort3" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="javascript:SortTable(4,'T', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Users[0].EmailAddress)
+                                    <i id="iSort4" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="javascript:SortTable(5,'T', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Users[0].PhoneNumber)
+                                    <i id="iSort3" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a href="javascript:SortTable(6,'N', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Users[0].Role)
+                                    <i id="iSort6" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Users)
+                        {
+                            <tr style="white-space: nowrap;">
+                                <td class="cus-fixed-col-td">
+                                    <div class="dropdown dropend">
+                                        <button type="button" class="btn py-1 m-0" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa-solid fa-ellipsis-vertical" style="font-size: larger;"></i>
+                                        </button>
+                                        <div class="dropdown-menu" style="min-width: unset;">
+                                            <a asp-page="./Details" asp-route-id="@item.UserId" class="btn dropdown-item" title="Details">
+                                                <i class="fa-solid fa-eye cus-text-primary"></i>
+                                                &nbsp;
+                                                Details
+                                            </a>
+                                            <a asp-page="./Edit" asp-route-id="@item.UserId" class="btn dropdown-item" title="Edit">
+                                                <i class="fa-solid fa-pen-to-square text-primary"></i>
+                                                &nbsp;
+                                                Edit
+                                            </a>
+                                            @if (!HttpContext.Session.GetObject<UserDto>("User").UserId.Equals(item.UserId))
+                                            {
+                                                <a asp-page="./Delete" asp-route-id="@item.UserId" class="btn dropdown-item" title="Delete">
+                                                    <i class="fa-solid fa-trash text-danger"></i>
+                                                    &nbsp;
+                                                    Delete
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle py-0" style="width: 0;">
+                                    @if (string.IsNullOrEmpty(item.HeadshotPath)) 
+                                    {
+                                        <a href="~/UserFiles/Generic.jpg" target="_blank" style="cursor: pointer;">
+                                            <img alt="headshot" src="~/UserFiles/Generic.jpg" style="height: 35px;" title="<img src='/UserFiles/Generic.jpg' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="~/UserFiles/@item.HeadshotPath" target="_blank" style="cursor: pointer;">
+                                            <img alt="headshot" onerror="this.onerror=null;this.src='/UserFiles/Generic.jpg';" src="~/UserFiles/@item.HeadshotPath" style="height: 35px;" title="<img src='/UserFiles/@item.HeadshotPath' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
+                                        </a>
+                                    }
+                                </td>
+                                <td class="align-middle text-center cus-no-select" style="width: 0;">
+                                    @if (Convert.ToBoolean(item.Active))
+                                    {
+                                        <span class="badge bg-success px-4 w-100">
+                                            Active
+                                            <i class="fa-solid fa-check"></i>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger px-4 w-100">
+                                            Inactive
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </span>
+                                    }
+                                </td>
+                                <td class="align-middle">
+                                    <label>@item.FullName</label>
+                                </td>
+                                <td>
+                                    <a href="mailto:@item.EmailAddress">@item.EmailAddress</a>
+                                </td>
+                                <td class="align-middle">
+                                    <label>@item.PhoneNumber</label>
+                                </td>
+                                <td class="text-center cus-no-select" style="width: 0;">
+                                    <span class="badge bg-success cus-no-select px-4 w-100 @(item.Role.Equals("System Admin") ? "bg-danger" : item.Role.Equals("Admin") ? "bg-warning" : "cus-bg-primary")">
+                                        @item.Role
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="mb-3 text-center text-secondary cus-no-select">
+                <i>No existing users</i>
+            </div>
+        }
+
+    </div>
+
+</div>
+
+@section Scripts{
+
+    @if (HttpContext.Session.GetObject<UserDto>("User").Role.Equals("System Admin"))
+    {
+        <script type="text/javascript">
+
+            function ChangeCompany(id) {
+
+                $.ajax({
+                    url: '/Account/ChangeCompany',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    //data: id,
+                    data: JSON.stringify(id),
+                    success: function (response) {
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        window.top.ShowToast('danger', 'Error', xhr.responseText, 0, false);
+                    }
+                });
+            }
+
+        </script>
+    }
+}

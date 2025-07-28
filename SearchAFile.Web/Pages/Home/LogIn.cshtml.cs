@@ -7,11 +7,11 @@ using MimeKit;
 using Newtonsoft.Json;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
-using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Interfaces;
 using SearchAFile.Web.Services;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.Design;
 using System.Web;
 
 namespace SearchAFile.Pages.Home;
@@ -19,14 +19,14 @@ namespace SearchAFile.Pages.Home;
 [BindProperties(SupportsGet = true)]
 public class LogInModel : PageModel
 {
-    private readonly TelemetryClient TelemetryClient;
+    private readonly TelemetryClient _telemetryClient;
     private readonly AccountController AccountController;
     private readonly IEmailService IEmailService;
     private readonly AuthClient _loginService;
     private readonly AuthenticatedApiClient _api;
-    public LogInModel(TelemetryClient TC, IEmailService IES, AccountController AC, AuthClient loginService, AuthenticatedApiClient api)
+    public LogInModel(TelemetryClient telemetryClient, IEmailService IES, AccountController AC, AuthClient loginService, AuthenticatedApiClient api)
     {
-        TelemetryClient = TC;
+        _telemetryClient = telemetryClient;
         IEmailService = IES;
         AccountController = AC;
         _loginService = loginService;
@@ -60,10 +60,6 @@ public class LogInModel : PageModel
             // Set the page title.
             HttpContext.Session.SetString("PageTitle", "Log In");
 
-            // Set the message.
-            HttpContext.Session.SetString("Message", "Use your emaill address and password to log in below.");
-            HttpContext.Session.SetString("MessageColor", "default");
-
             ModelState.Remove("EmailAddress");
             ModelState.Remove("Password");
             HttpContext.Session.Remove("ResetUserID");
@@ -72,7 +68,7 @@ public class LogInModel : PageModel
         {
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
@@ -93,7 +89,7 @@ public class LogInModel : PageModel
                 strMessage = "<ul><li>" + string.Join("</li><li>", ModelState.Values
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)) + "</li></ul>";
-                TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'The following errors have occured', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 0, false)";
+                TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'The following errors have occured', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 0, false)";
                 return Page();
             }
 
@@ -103,15 +99,47 @@ public class LogInModel : PageModel
             {
                 UserDto User = HttpContext.Session.GetObject<UserDto>("User");
 
-                // Get the user's company.
-                var result = await _api.GetAsync<Company>($"companies/{User.CompanyId}");
-
-                if (!result.IsSuccess || result.Data == null)
+                // If the user is a system admin, save all companies to a session variable.
+                if (User.Role.Equals("System Admin"))
                 {
-                    throw new Exception(result.ErrorMessage ?? "Unable to initiate the system.");
-                }
+                    // Get the user's company.
+                    var result = await _api.GetAsync<List<Company>>("companies");
 
-                HttpContext.Session.SetObject("Company", result.Data);
+                    if (!result.IsSuccess || result.Data == null)
+                    {
+                        throw new Exception(result.ErrorMessage ?? "Unable to retrieve the companies.");
+                    }
+
+                    Company? Company = result.Data.FirstOrDefault(c => c.CompanyId == User.CompanyId);
+
+                    if (Company == null)
+                    {
+                        throw new Exception(result.ErrorMessage ?? "Companies did not contain the user's company.");
+                    }
+
+                    List<SelectListItem> Companies = result.Data.Select(c => new SelectListItem
+                    {
+                        Text = c.Company1,
+                        Value = c.CompanyId.ToString(),
+                        Selected = c.CompanyId == User.CompanyId
+                    }).ToList();
+
+                    // Store in session
+                    HttpContext.Session.SetObject("Companies", Companies);
+                    HttpContext.Session.SetObject("Company", Company);
+                }
+                else
+                {
+                    // Get the user's company.
+                    var result = await _api.GetAsync<Company>($"companies/{User.CompanyId}");
+
+                    if (!result.IsSuccess || result.Data == null)
+                    {
+                        throw new Exception(result.ErrorMessage ?? "Unable to get the user's company.");
+                    }
+
+                    HttpContext.Session.SetObject("Company", result.Data);
+                }
 
                 TempData["StartupJavaScript"] = "ShowSnack('success', 'Login Successful!', 7000, true)";
                 return Redirect(SystemFunctions.GetDashboardURL(User.Role));
@@ -131,7 +159,7 @@ public class LogInModel : PageModel
 
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
@@ -236,7 +264,7 @@ public class LogInModel : PageModel
 
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
         }
 
         return new JsonResult(JsonConvert.SerializeObject(CustomJsonObject));

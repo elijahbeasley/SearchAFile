@@ -10,12 +10,12 @@ namespace SearchAFile.Web.Pages.Companies;
 
 public class IndexModel : PageModel
 {
-    private readonly TelemetryClient TelemetryClient;
+    private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
 
     public IndexModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
     {
-        TelemetryClient = telemetryClient;
+        _telemetryClient = telemetryClient;
         _api = api;
     }
 
@@ -49,7 +49,7 @@ public class IndexModel : PageModel
         {
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");

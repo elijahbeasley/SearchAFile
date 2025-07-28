@@ -8,10 +8,10 @@ namespace SearchAFile.Pages.Home;
 
 public class SessionTimeoutModel : PageModel
 {
-    private readonly TelemetryClient TelemetryClient;
-    public SessionTimeoutModel(TelemetryClient TC)
+    private readonly TelemetryClient _telemetryClient;
+    public SessionTimeoutModel(TelemetryClient telemetryClient)
     {
-        TelemetryClient = TC;
+        _telemetryClient = telemetryClient;
     }
     public void OnGet()
     {
@@ -19,16 +19,12 @@ public class SessionTimeoutModel : PageModel
         {
             // Set the page title.
             HttpContext.Session.SetString("PageTitle", "Session Timeout");
-
-            // Set the message.
-            HttpContext.Session.SetString("MessageColor", "red");
-            HttpContext.Session.SetString("Message", "Your session has expired.");
         }
         catch (Exception ex)
         {
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");

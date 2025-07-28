@@ -33,7 +33,7 @@ public partial class Company
 
     [DisplayName("Contact Phone Number")]
     [Required(ErrorMessage = "Contact phone number is required.")]
-    [RegularExpression(@"^\d{3}-\d{3}-\d{4}$", ErrorMessage = "Contact phone number must be in the format ###-###-####.")]
+    [RegularExpression(@"^\(\d{3}\) \d{3}-\d{4}$", ErrorMessage = "Contact phone number must be in the format (###) ###-####.")]
     [StringLength(20)]
     public string? ContactPhoneNumber { get; set; }
 
@@ -41,51 +41,53 @@ public partial class Company
     public string? Address { get; set; }
 
     [DisplayName("Header Logo")]
-    [Required(ErrorMessage = "Header logo is required.")]
-    [StringLength(30)]
+    //[Required(ErrorMessage = "Header logo is required.")]
+    [StringLength(50)]
     public required string HeaderLogo { get; set; }
 
     [DisplayName("Footer Logo")]
-    [Required(ErrorMessage = "Footer logo is required.")]
-    [StringLength(30)]
+    //[Required(ErrorMessage = "Footer logo is required.")]
+    [StringLength(50)]
     public required string FooterLogo { get; set; }
 
     [DisplayName("Email Logo")]
-    [Required(ErrorMessage = "Email logo is required.")]
-    [StringLength(30)]
+    //[Required(ErrorMessage = "Email logo is required.")]
+    [StringLength(50)]
     public required string EmailLogo { get; set; }
 
     [DisplayName("Primary Color")]
     [Required(ErrorMessage = "Primary color is required.")]
     [StringLength(50)]
-    public required string PrimaryColor { get; set; }
+    public required string? PrimaryColor { get; set; }
 
     [DisplayName("Secondary Color")]
     [Required(ErrorMessage = "Secondary color is required.")]
     [StringLength(50)]
-    public required string SecondaryColor { get; set; }
+    public required string? SecondaryColor { get; set; }
 
     [DisplayName("Primary Text Color")]
     [Required(ErrorMessage = "Primary text color is required.")]
     [StringLength(50)]
-    public required string PrimaryTextColor { get; set; }
+    public required string? PrimaryTextColor { get; set; }
 
     [DisplayName("Secondary Text Color")]
     [Required(ErrorMessage = "Secondary text color is required.")]
     [StringLength(50)]
-    public required string SecondaryTextColor { get; set; }
+    public required string? SecondaryTextColor { get; set; }
 
     [DisplayName("URL")]
     [Column("URL")]
+    [RegularExpression(@"^(https?:\/\/)?(www\.)?([a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/\S*)?$", ErrorMessage = "Please enter a valid URL.")]
     [Required(ErrorMessage = "Url is required.")]
     [StringLength(500)]
-    public required string Url { get; set; }
+    public required string? Url { get; set; }
 
     [DisplayName("Locked")]
     [Required(ErrorMessage = "Locked is required.")]
     public bool? Lock { get; set; }
 
     [DisplayName("Status")]
+    [Required(ErrorMessage = "Status is required.")]
     public bool? Active { get; set; }
 
     [InverseProperty("Company")]

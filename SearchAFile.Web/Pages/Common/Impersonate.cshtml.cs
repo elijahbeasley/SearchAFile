@@ -21,13 +21,13 @@ namespace SearchAFile.Pages.Common;
 [BindProperties(SupportsGet = true)]
 public class ImpersonateModel : PageModel
 {
-    //private readonly TelemetryClient TelemetryClient;
+    //private readonly TelemetryClient _telemetryClient;
     //private readonly AuthenticatedApiClient _api;
     //private readonly AccountController AccountController;
 
-    //public ImpersonateModel(TelemetryClient TC, AuthenticatedApiClient api, AccountController AC)
+    //public ImpersonateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, AccountController AC)
     //{
-    //    TelemetryClient = TC;
+    //    _telemetryClient = telemetryClient;
     //    _api = api;
     //    AccountController = AC;
     //}
@@ -51,9 +51,6 @@ public class ImpersonateModel : PageModel
     //        // Set the page title.
     //        HttpContext.Session.SetString("PageTitle", "Impersonate User");
 
-    //        // Set the message.
-    //        HttpContext.Session.SetString("Message", "Impersonate a specific staff member.");
-
     //        await BuildStaffSelectList();
 
     //        ModelState.Remove("StaffID");
@@ -62,7 +59,7 @@ public class ImpersonateModel : PageModel
     //    {
     //        // Log the exception to Application Insights.
     //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        TelemetryClient.TrackException(ExceptionTelemetry);
+    //        _telemetryClient.TrackException(ExceptionTelemetry);
 
     //        // Display an error for the user.
     //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
@@ -87,7 +84,7 @@ public class ImpersonateModel : PageModel
     //        if (Staff == null)
     //        {
     //            strMessage = "Unable to log in as selected user with ID " + StaffID + ".";
-    //            TempData["StartupJavaScript"] = "ShowSnack('warning', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 10000, false)";
+    //            TempData["StartupJavaScript"] = "ShowSnack('warning', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 10000, false)";
     //        }
     //        else
     //        {
@@ -116,7 +113,7 @@ public class ImpersonateModel : PageModel
     //            }
 
     //            strMessage = "You are now impersonating " + Staff.FirstName + " " + Staff.LastName + ".";
-    //            TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 7000, true)";
+    //            TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true)";
 
     //            return Redirect(SystemFunctions.GetDashboardURL(Staff.Role));
     //        }
@@ -125,7 +122,7 @@ public class ImpersonateModel : PageModel
     //    {
     //        // Log the exception to Application Insights.
     //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        TelemetryClient.TrackException(ExceptionTelemetry);
+    //        _telemetryClient.TrackException(ExceptionTelemetry);
 
     //        // Display an error for the user.
     //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
@@ -154,7 +151,7 @@ public class ImpersonateModel : PageModel
     //    {
     //        // Log the exception to Application Insights.
     //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        TelemetryClient.TrackException(ExceptionTelemetry);
+    //        _telemetryClient.TrackException(ExceptionTelemetry);
 
     //        // Display an error for the user.
     //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
@@ -186,7 +183,7 @@ public class ImpersonateModel : PageModel
     //    {
     //        // Log the exception to Application Insights.
     //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        TelemetryClient.TrackException(ExceptionTelemetry);
+    //        _telemetryClient.TrackException(ExceptionTelemetry);
 
     //        // Display an error for the user.
     //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");

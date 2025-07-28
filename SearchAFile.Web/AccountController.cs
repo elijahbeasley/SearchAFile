@@ -28,7 +28,7 @@ public class AccountController : Controller
             if (User == null)
             {
                 strMessage = "Unable to end user impersonation. User is null.";
-                TempData["StartupJavaScript"] = "ShowSnack('warning', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 10000, false)";
+                TempData["StartupJavaScript"] = "ShowSnack('warning', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 10000, false)";
 
                 return Redirect(CurrentPage);
             }
@@ -63,7 +63,7 @@ public class AccountController : Controller
                 // Reset the AllowUserImpersonation session variable. 
                 _httpContextAccessor.HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
 
-                TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 7000, true)";
+                TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true)";
 
                 return Redirect(SystemFunctions.GetDashboardURL(User.Role));
             }

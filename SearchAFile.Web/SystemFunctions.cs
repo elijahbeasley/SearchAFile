@@ -10,7 +10,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights;
-using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Helpers;
 

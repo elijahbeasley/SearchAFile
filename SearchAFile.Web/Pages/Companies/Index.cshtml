@@ -1,13 +1,10 @@
 ﻿@page
 @model SearchAFile.Web.Pages.Companies.IndexModel
-@{
-    ViewData["Title"] = "Companies";
-}
 
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
-        <label class="fs-3 pe-3">@ViewData["Title"]</label>
+        <label class="fs-3 pe-3">Companies</label>
         <form method="get">
             <div class="input-group">
                 <input asp-for="search" class="form-control" type="search" placeholder="Search companies..." onchange="if (this.value === '') {this.form.submit(); }" />
@@ -37,25 +34,25 @@
                             <th class="text-center">
                                 <a href="javascript:SortTable(2,'T', 'tblData');">
                                     @Html.DisplayNameFor(model => model.Companies[0].Active)
-                                    <i id="iSort2" class="fa-duotone fa-solid fa-sort-up cus-sort-icon"></i>
+                                    <i id="iSort2" class="fa-solid fa-sort-up cus-sort-icon"></i>
                                 </a>
                             </th>
                             <th>
                                 <a href="javascript:SortTable(3,'T', 'tblData');">
                                     @Html.DisplayNameFor(model => model.Companies[0].Company1)
-                                    <i id="iSort3" class="fa-duotone fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                    <i id="iSort3" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                             <th>
                                 <a href="javascript:SortTable(4,'T', 'tblData');">
                                     @Html.DisplayNameFor(model => model.Companies[0].Url)
-                                    <i id="iSort4" class="fa-duotone fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                    <i id="iSort4" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                             <th class="text-center">
-                                <a href="javascript:SortTable(5,'N', 'tblData');" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Active/Inactive">
+                                <a href="javascript:SortTable(5,'N', 'tblData');">
                                     @Html.DisplayNameFor(model => model.Companies[0].Lock)
-                                    <i id="iSort6" class="fa-duotone fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                    <i id="iSort6" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                         </tr>
@@ -69,21 +66,21 @@
                                 <td class="cus-fixed-col-td">
                                     <div class="dropdown dropend">
                                         <button type="button" class="btn py-1 m-0" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fa-duotone fa-solid fa-ellipsis-vertical" style="font-size: larger;"></i>
+                                            <i class="fa-solid fa-ellipsis-vertical" style="font-size: larger;"></i>
                                         </button>
                                         <div class="dropdown-menu" style="min-width: unset;">
-                                            <a asp-page="./Details" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="View">
-                                                <i class="fa-duotone fa-solid fa-eye cus-text-primary"></i>
+                                            <a asp-page="./Details" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="Details">
+                                                <i class="fa-solid fa-eye cus-text-primary"></i>
                                                 &nbsp;
-                                                View
+                                                Details
                                             </a>
-                                            <a asp-page="./Edit" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="View">
-                                                <i class="fa-duotone fa-solid fa-pen-to-square text-primary"></i>
+                                            <a asp-page="./Edit" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="Edit">
+                                                <i class="fa-solid fa-pen-to-square text-primary"></i>
                                                 &nbsp;
                                                 Edit
                                             </a>
-                                            <a asp-page="./Delete" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="View">
-                                                <i class="fa-solid fa-minus-circle text-danger"></i>
+                                            <a asp-page="./Delete" asp-route-id="@item.CompanyId" class="btn dropdown-item" title="Delete">
+                                                <i class="fa-solid fa-trash text-danger"></i>
                                                 &nbsp;
                                                 Delete
                                             </a>
@@ -120,14 +117,20 @@
                                 <td>
                                     <a href="@item.Url" target="_blank">@item.Url</a>
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center cus-no-select" style="width: 0;">
                                     @if (Convert.ToBoolean(item.Lock))
                                     {
-                                        <i class="fa-solid fa-check-circle text-success"></i>
+                                        <span class="badge bg-success px-4 w-100">
+                                            Locked
+                                            <i class="fa-solid fa-check-circle"></i>
+                                        </span>
                                     }
                                     else
                                     {
-                                        <i class="fa-solid fa-xmark-circle text-danger"></i>
+                                        <span class="badge bg-warning px-4 w-100">
+                                            Unlocked
+                                            <i class="fa-solid fa-xmark-circle"></i>
+                                        </span>
                                     }
                                 </td>
                             </tr>

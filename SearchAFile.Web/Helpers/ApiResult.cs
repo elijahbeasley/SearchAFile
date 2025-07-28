@@ -7,8 +7,6 @@ public class ApiResult<T>
     public int StatusCode { get; private set; }
     public string? ErrorMessage { get; private set; }
     public Dictionary<string, string[]>? Errors { get; private set; }
-
-    // ✅ Add this:
     public HttpResponseMessage? RawResponse { get; private set; }
 
     public static ApiResult<T> Success(T? data, HttpResponseMessage? response = null) => new()

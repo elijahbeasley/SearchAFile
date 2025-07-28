@@ -1,4 +1,5 @@
 ﻿@media (min-width: 576px) {
+
     .w-sm-25, w-25 {
         width: 25% !important;
     }
@@ -21,6 +22,7 @@
 }
 
 @media (min-width: 768px) {
+
     .w-md-25 {
         width: 25% !important;
     }
@@ -43,6 +45,7 @@
 }
 
 @media (min-width: 992px) {
+
     .w-lg-25 {
         width: 25% !important;
     }
@@ -65,6 +68,7 @@
 }
 
 @media (min-width: 1200px) {
+
     .w-xl-25 {
         width: 25% !important;
     }
@@ -87,6 +91,7 @@
 }
 
 @media (min-width: 1400px) {
+
     .w-xxl-25 {
         width: 25% !important;
     }

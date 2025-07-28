@@ -1,108 +1,287 @@
 ﻿@page
 @model SearchAFile.Web.Pages.Companies.EditModel
-@{
-    ViewData["Title"] = "Edit Company";
-}
 
 <form method="post" enctype="multipart/form-data">
-    <div class="card m-auto" style="max-width: 30rem;">
+
+    <input asp-for="Company.CompanyId" hidden />
+    <div asp-validation-summary="ModelOnly" class="text-danger" hidden></div>
+
+    <div class="card">
 
         <div class="card-header">
-            <label class="fs-3">@ViewData["Title"]</label>
+            <label class="fs-5"><i class="fa-solid fa-pen-to-square text-primary"></i> @Model.Company.Company1</label>
         </div>
 
-        <div class="card-body">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Company.CompanyId" />
-            <div class="form-group">
-                <label asp-for="Company.Company1" class="control-label"></label>
-                <input asp-for="Company.Company1" class="form-control" />
-                <span asp-validation-for="Company.Company1" class="text-danger"></span>
+        <div class="card-body cus-bootstrap-table-striped p-0">
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <select asp-for="Company.Active" class="form-select">
+                            <option value="" hidden>- Status -</option>
+                            <option value="True">Active</option>
+                            <option value="False">Inactive</option>
+                        </select>
+                        <label asp-for="Company.Active" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.Active" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <select asp-for="Company.Lock" class="form-select">
+                            <option value="" hidden>- Lock/Unlock -</option>
+                            <option value="True">Locked</option>
+                            <option value="False">Unlocked</option>
+                        </select>
+                        <label asp-for="Company.Lock" class="control-label">
+                            @Html.DisplayNameFor(model => model.Company.Lock)
+                            <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your employees" data-bs-placement="top" data-bs-toggle="tooltip"></i>
+                        </label>
+                        <span asp-validation-for="Company.Lock" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Company.ContactName" class="control-label"></label>
-                <input asp-for="Company.ContactName" class="form-control" />
-                <span asp-validation-for="Company.ContactName" class="text-danger"></span>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" asp-for="Company.Company1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.Company1)" />
+                        <label asp-for="Company.Company1" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.Company1" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" asp-for="Company.Url" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.Url)" />
+                        <label asp-for="Company.Url" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.Url" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Company.ContactEmailAddress" class="control-label"></label>
-                <input asp-for="Company.ContactEmailAddress" class="form-control" />
-                <span asp-validation-for="Company.ContactEmailAddress" class="text-danger"></span>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-4">
+                    <div class="form-floating">
+                        <input type="text" asp-for="Company.ContactName" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.ContactName)" />
+                        <label asp-for="Company.ContactName" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.ContactName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-4">
+                    <div class="form-floating">
+                        <input type="text" asp-for="Company.ContactEmailAddress" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.ContactEmailAddress)" />
+                        <label asp-for="Company.ContactEmailAddress" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.ContactEmailAddress" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-4">
+                    <div class="form-floating">
+                        <input type="text" asp-for="Company.ContactPhoneNumber" class="form-control" placeholder="(___) ___-____" data-bs-slots="_" />
+                        <label asp-for="Company.ContactPhoneNumber" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.ContactPhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Company.ContactPhoneNumber" class="control-label"></label>
-                <input asp-for="Company.ContactPhoneNumber" class="form-control" />
-                <span asp-validation-for="Company.ContactPhoneNumber" class="text-danger"></span>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-12">
+                    <div class="form-floating">
+                        <textarea asp-for="Company.Address" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.Address)" style="height: 6.1rem;"></textarea>
+                        <label asp-for="Company.Address" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.Address" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Company.Address" class="control-label"></label>
-                <input asp-for="Company.Address" class="form-control" />
-                <span asp-validation-for="Company.Address" class="text-danger"></span>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-3">
+                    <div class="form-floating">
+                        <input type="color" asp-for="Company.PrimaryColor" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.PrimaryColor)" />
+                        <label asp-for="Company.PrimaryColor" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.PrimaryColor" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-3">
+                    <div class="form-floating">
+                        <input type="color" asp-for="Company.SecondaryColor" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.SecondaryColor)" />
+                        <label asp-for="Company.SecondaryColor" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.SecondaryColor" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-3">
+                    <div class="form-floating">
+                        <input type="color" asp-for="Company.PrimaryTextColor" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.PrimaryTextColor)" />
+                        <label asp-for="Company.PrimaryTextColor" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.PrimaryTextColor" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-3">
+                    <div class="form-floating">
+                        <input type="color" asp-for="Company.SecondaryTextColor" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.SecondaryTextColor)" />
+                        <label asp-for="Company.SecondaryTextColor" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Company.SecondaryTextColor" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Company.HeaderLogo" class="control-label"></label>
-                <input asp-for="Company.HeaderLogo" class="form-control" />
-                <span asp-validation-for="Company.HeaderLogo" class="text-danger"></span>
+
+            <div class="row align-items-top m-0">
+                <div class="cus-col col-sm-4">
+                    <div class="mb-2">
+                        <label asp-for="Company.HeaderLogo"></label>
+                        <input id="EmailLogo" class="form-control" type="file" asp-for="IFormFileHeaderLogo" onchange="SelectFile(this, 'HeaderLogo');">
+                        <span asp-validation-for="IFormFileHeaderLogo" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-center" style="height: 75px;">
+                        <img id="HeaderLogoPreview" class="d-block" style="max-height: 75px; max-width: 100%;" src="~/CompanyFiles/@Model.Company.HeaderLogo">
+                    </div>
+                </div>
+                <div class="cus-col col-sm-4">
+                    <div class="mb-2">
+                        <label asp-for="Company.FooterLogo"></label>
+                        <input class="form-control" type="file" asp-for="IFormFileFooterLogo" onchange="SelectFile(this, 'FooterLogo');">
+                        <span asp-validation-for="IFormFileFooterLogo" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-center" style="height: 75px;">
+                        <img id="FooterLogoPreview" class="d-block" style="max-height: 75px; max-width: 100%;" src="~/CompanyFiles/@Model.Company.FooterLogo">
+                    </div>
+                </div>
+                <div class="cus-col col-sm-4">
+                    <div class="mb-2">
+                        <label asp-for="Company.EmailLogo"></label>
+                        <input class="form-control" type="file" asp-for="IFormFileEmailLogo" onchange="SelectFile(this, 'EmailLogo');">
+                        <span asp-validation-for="IFormFileEmailLogo" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-center" style="height: 75px;">
+                        <img id="EmailLogoPreview" class="d-block" style="max-height: 75px; max-width: 100%;" src="~/CompanyFiles/@Model.Company.EmailLogo">
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Company.FooterLogo" class="control-label"></label>
-                <input asp-for="Company.FooterLogo" class="form-control" />
-                <span asp-validation-for="Company.FooterLogo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company.EmailLogo" class="control-label"></label>
-                <input asp-for="Company.EmailLogo" class="form-control" />
-                <span asp-validation-for="Company.EmailLogo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company.PrimaryColor" class="control-label"></label>
-                <input asp-for="Company.PrimaryColor" class="form-control" />
-                <span asp-validation-for="Company.PrimaryColor" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company.SecondaryColor" class="control-label"></label>
-                <input asp-for="Company.SecondaryColor" class="form-control" />
-                <span asp-validation-for="Company.SecondaryColor" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company.PrimaryTextColor" class="control-label"></label>
-                <input asp-for="Company.PrimaryTextColor" class="form-control" />
-                <span asp-validation-for="Company.PrimaryTextColor" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company.SecondaryTextColor" class="control-label"></label>
-                <input asp-for="Company.SecondaryTextColor" class="form-control" />
-                <span asp-validation-for="Company.SecondaryTextColor" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company.Url" class="control-label"></label>
-                <input asp-for="Company.Url" class="form-control" />
-                <span asp-validation-for="Company.Url" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company.Lock" class="control-label"></label>
-                <input asp-for="Company.Lock" class="form-control" />
-                <span asp-validation-for="Company.Lock" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Company.Active" class="control-label"></label>
-                <input asp-for="Company.Active" class="form-control" />
-                <span asp-validation-for="Company.Active" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
+
         </div>
 
-        <div class="card-footer">
-            <a asp-page="./Index" class="btn btn-outline-secondary">Back to List</a>
-            &nbsp;
-            <input type="submit" value="Save" class="btn btn-success" />
+        <div class="card-footer text-center">
+            <a asp-page="./Index" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to List
+            </a>
+            <button type="submit" class="btn btn-success">
+                Save
+                <i class="fa-solid fa-save"></i>
+            </button>
         </div>
 
     </div>
+
 </form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+
+        function CalculateFileSizes() {
+
+            var totalFileSize = 0;
+            var totalFileSizeMB = 0;
+
+            $('input:file').each(function () {
+
+                if (this.files[0] != null) {
+
+                    totalFileSize += this.files[0].size;
+                }
+            });
+
+            if (totalFileSize > 0) {
+
+                // 1024
+                totalFileSizeMB = totalFileSize / Math.pow(1024, 2);
+            }
+
+            $('#lblTotalFileSize').text(totalFileSizeMB.toFixed(2) + 'MB')
+        }
+
+        function ClearFile(e, id) {
+
+            $('#' + id + 'Preview').prop('src', '@SystemFunctions.EmptyImageSource');
+
+            $(e).find('input:file').val('');
+            $(e).parent('div').find('input:text').val('');
+            $(e).parent('div').find('input:text').prop('title', '');
+            CalculateFileSizes();
+        }
+
+        function SelectFile(e, id) {
+
+            let errors = '';
+
+            if (e.files[0].size > MaxFileSize) {
+
+                errors += '<li>Invalid file selected. File size must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB.</li>';
+            }
+
+            let fileExtension = ['png', 'jpeg', 'jpg'];
+
+            if ($.inArray($(e).val().split('.').pop().toLowerCase(), fileExtension) == -1) {
+
+                errors += '<li>Invalid file selected. File must be of type: ' + fileExtension.join(', ') + '.</li>';
+            }
+
+            if (errors == '') {
+
+                let totalFileSize = 0;
+
+                $('input:file').each(function () {
+
+                    if (this.files[0] != null) {
+
+                        totalFileSize += this.files[0].size;
+                    }
+                });
+
+                if (totalFileSize > MaxFileSize) {
+
+                    let totalFileSizeMB = totalFileSize - e.files[0].size;
+
+                    if (totalFileSize > 0) {
+
+                        // 1024
+                        totalFileSizeMB = totalFileSizeMB / Math.pow(1024, 2);
+                    }
+
+                    errors += '<li>Invalid file selected. The total file size(s) must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB. The current file size(s) is ' + totalFileSizeMB.toFixed(2) + 'MB.</li>';
+                }
+            }
+
+            if (errors !== '') {
+
+                $('#' + id).addClass('input-validation-error');
+                $(e).val('');
+                $(e).parent('div').parent('div').find('input:text').val('');
+                $(e).parent('div').parent('div').find('input:text').prop('title', '');
+
+                window.top.ClearToast();
+                window.top.ShowToast('danger', 'The following errors have occured', '<ul>' + errors + '</ul>', 0, false);
+            }
+            else {
+
+                $('#' + id).removeClass('input-validation-error');
+                $(e).parent('div').parent('div').find('input:text').val(e.files[0].name);
+                $(e).parent('div').parent('div').find('input:text').prop('title', e.files[0].name);
+
+                // Display the file.
+                var reader = new FileReader();
+                reader.onload = function (element) {
+                    $('#' + id + 'Preview').prop('src', element.target.result);
+                }
+                reader.readAsDataURL($(e)[0].files[0]);
+            }
+
+            CalculateFileSizes();
+        }
+
+    </script>
+
 }

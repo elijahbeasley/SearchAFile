@@ -9,10 +9,10 @@ namespace SearchAFile.Web.Pages.SystemAdmins;
 
 public class DashboardModel : PageModel
 {
-    private readonly TelemetryClient TelemetryClient;
-    public DashboardModel(TelemetryClient TC)
+    private readonly TelemetryClient _telemetryClient;
+    public DashboardModel(TelemetryClient telemetryClient)
     {
-        TelemetryClient = TC;
+        _telemetryClient = telemetryClient;
     }
     public void OnGet()
     {
@@ -22,15 +22,12 @@ public class DashboardModel : PageModel
             HttpContext.Session.SetString("PageTitle", "Dashboard");
 
             UserDto User = HttpContext.Session.GetObject<UserDto>("User");
-
-            // Set the message.
-            HttpContext.Session.SetString("Message", "Hello " + User.FullName + "!");
         }
         catch (Exception ex)
         {
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");

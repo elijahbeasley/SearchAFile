@@ -92,13 +92,13 @@
                     <div class="cus-col col-md-6">
                         <div class="form-floating">
                             <input asp-for="User.FirstName" type="text" class="form-control" disabled placeholder="John" autocomplete="new-password" />
-                            <label asp-for="User.FirstName" class="fw-bold">@Html.DisplayNameFor(model => model.User.FirstName)<span class="text-danger">*</span></label>
+                            <label asp-for="User.FirstName" class="fw-bold" show-asterisk="true"></label>
                         </div>
                     </div>
                     <div class="cus-col col-md-6">
                         <div class="form-floating">
                             <input asp-for="User.LastName" type="text" class="form-control" disabled placeholder="Smith" autocomplete="new-password" />
-                            <label asp-for="User.LastName" class="fw-bold">@Html.DisplayNameFor(model => model.User.LastName)<span class="text-danger">*</span></label>
+                            <label asp-for="User.LastName" class="fw-bold" show-asterisk="true"></label>
                         </div>
                     </div>
                 </div>
@@ -107,19 +107,19 @@
                     <div class="cus-col col-md-4">
                         <div class="form-floating">
                             <input id="txtEmailAddress" asp-for="User.EmailAddress" type="email" class="form-control" disabled placeholder="name@example.com" autocomplete="new-password" />
-                            <label asp-for="User.EmailAddress" class="fw-bold">@Html.DisplayNameFor(model => model.User.EmailAddress)<span class="text-danger">*</span></label>
+                            <label asp-for="User.EmailAddress" class="fw-bold" show-asterisk="true"></label>
                         </div>
                     </div>
                     <div class="cus-col col-md-4">
                         <div class="form-floating">
-                            <input id="txtPhoneNumber" asp-for="User.PhoneNumber" type="text" class="form-control" disabled placeholder="___-___-____" data-bs-slots="_" />
-                            <label asp-for="User.PhoneNumber" class="fw-bold">@Html.DisplayNameFor(model => model.User.PhoneNumber)</label>
+                            <input id="txtPhoneNumber" asp-for="User.PhoneNumber" type="text" class="form-control" disabled placeholder="(___) ___-____" data-bs-slots="_" />
+                            <label asp-for="User.PhoneNumber" class="fw-bold" show-asterisk="true"></label>
                         </div>
                     </div>
                     <div class="cus-col col-md-4">
                         <button type="button" class="btn btn-success w-100" onclick="ChangePassword();">
                             Change Password
-                            <i class="fa-duotone fa-solid fa-lock"></i>
+                            <i class="fa-solid fa-lock"></i>
                         </button>
                     </div>
                 </div>
@@ -127,20 +127,20 @@
             </div>
 
             <div class="card-footer text-center cus-no-select">
-                <button id="btnModify" type="button" class="btn btn-outline-primary" onclick="Modify();" style="min-width: 20%;">
+                <button id="btnModify" type="button" class="btn btn-outline-primary" onclick="Modify();" style="min-width: 15%;">
                     Modify
-                    <i class="fa-duotone fa-solid fa-pen-to-square"></i>
+                    <i class="fa-solid fa-pen-to-square"></i>
                 </button>
-                <button id="btnSave" type="submit" asp-page-handler="Modify" class="btn btn-outline-success" onclick="Save();" style="display: none; min-width: 20%;">
+                <button id="btnSave" type="submit" asp-page-handler="Modify" class="btn btn-outline-success" onclick="Save();" style="display: none; min-width: 15%;">
                     <span id="lblSubmit" style="color: unset;">
                         Save
-                        <i class="fa-duotone fa-regular fa-save"></i>
+                        <i class="fa-solid fa-save"></i>
                     </span>
                     <img id="imgSubmit" src="~/SystemFiles/loading.gif" style="display: none; height: 20px; width: 20px;" />
                 </button>
-                <button id="btnCancel" type="reset" class="btn btn-outline-danger" onclick="Cancel();" style="display: none; min-width: 20%;">
+                <button id="btnCancel" type="reset" class="btn btn-outline-danger" onclick="Cancel();" style="display: none; min-width: 15%;">
                     Cancel
-                    <i class="fa-duotone fa-solid fa-ban"></i>
+                    <i class="fa-solid fa-ban"></i>
                 </button>
             </div>
 
@@ -156,7 +156,7 @@
                             <i class="fa-solid fa-upload fs-5 me-1 cus-text-secondary-text-no-hover"></i>
                             Upload New Headshot
                         </label>
-                        <button type="button" class="btn p-0 m-0 ms-auto cus-text-secondary-text" data-bs-dismiss="modal" onclick="CancelUpload(); window.top.ClearToast(); window.top.ShowSnack('warning', 'Operation cancelled. No data was affected.', 3000, true);" style="line-height: 1;" title="Cancel">
+                        <button type="button" class="btn p-0 m-0 ms-auto cus-text-secondary-text" data-bs-dismiss="modal" onclick="CancelUpload();" style="line-height: 1;" title="Cancel">
                             <i class="fa-solid fa-xmark fs-4"></i>
                         </button>
                     </div>
@@ -195,14 +195,14 @@
                     <div class="card-footer text-center cus-no-select">
                         <button id="btnUploadImage" class="btn btn-outline-success" type="submit" asp-page-handler="UploadImage" onclick="return UploadImage();" style="min-width: 25%;">
                             <span id="lblSubmitUpload" style="color: unset;">
-                                Save
-                                <i class="fa-duotone fa-regular fa-save"></i>
+                                Upload
+                                <i class="fa-solid fa-upload"></i>
                             </span>
                             <img id="imgSubmitUpload" src="~/SystemFiles/loading.gif" style="display: none; height: 20px; width: 20px;" />
                         </button>
-                        <button class="btn btn-outline-danger" type="button" data-bs-dismiss="modal" onclick="CancelUpload(); window.top.ClearToast(); window.top.ShowSnack('warning', 'Operation cancelled. No data was affected.', 3000, true);" style="min-width: 25%;">
+                        <button class="btn btn-outline-danger" type="button" data-bs-dismiss="modal" onclick="CancelUpload();" style="min-width: 25%;">
                             Cancel
-                            <i class="fa-duotone fa-solid fa-ban"></i>
+                            <i class="fa-solid fa-ban"></i>
                         </button>
                     </div>
                 </div>
@@ -289,8 +289,6 @@
             $('#btnSave').toggle();
             $('#btnCancel').toggle();
             ReloadData();
-            window.top.ClearToast(); 
-            window.top.ShowSnack('warning', 'Operation cancelled. No data was affected.', 3000, true);
         }
 
         function ReloadData() {

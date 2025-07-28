@@ -5,18 +5,19 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Services;
+using System.Diagnostics.Metrics;
 
 
 namespace SearchAFile.Web.Pages.Companies;
 
 public class DetailsModel : PageModel
 {
-    private readonly TelemetryClient TelemetryClient;
+    private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
 
     public DetailsModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
     {
-        TelemetryClient = telemetryClient;
+        _telemetryClient = telemetryClient;
         _api = api;
     }
 
@@ -24,19 +25,25 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        try 
+        try
         {
+            // Set the page title.
+            HttpContext.Session.SetString("PageTitle", "Company Details");
+
             if (id == null)
                 return NotFound();
 
             var result = await _api.GetAsync<Company>($"companies/{id}");
 
             if (!result.IsSuccess || result.Data == null)
-            {
-                throw new Exception(result.ErrorMessage ?? "Unable to retrieve company.");
-            }
+                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to retrieve company.");
 
             Company = result.Data;
+
+            if (!string.IsNullOrEmpty(Company.Address))
+            {
+                Company.Address = Company.Address.Replace("<br>", Environment.NewLine);
+            }
 
             return Page();
         }
@@ -44,7 +51,7 @@ public class DetailsModel : PageModel
         {
             // Log the exception to Application Insights.
             ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            TelemetryClient.TrackException(ExceptionTelemetry);
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");

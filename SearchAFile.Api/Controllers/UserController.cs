@@ -56,25 +56,55 @@ public class UserController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] User user)
     {
-        if (id != user.UserId) return BadRequest();
-        return await _service.UpdateAsync(user) ? NoContent() : NotFound();
+        try
+        {
+            if (id != user.UserId) return BadRequest();
+            return await _service.UpdateAsync(user) ? NoContent() : NotFound();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to update user", detail = ex.Message });
+        }
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id) =>
-        await _service.DeleteAsync(id) ? NoContent() : NotFound();
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            return await _service.DeleteAsync(id) ? NoContent() : NotFound();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to delete user", detail = ex.Message });
+        }
+    }
 
     [HttpGet("emailexists")]
     public async Task<ActionResult<string?>> EmailExists(Guid companyId, string email, Guid? userId = null)
     {
-        var exists = await _service.EmailExistsAsync(companyId, email, userId);
-        return Ok(exists);
+        try
+        {
+            var exists = await _service.EmailExistsAsync(companyId, email, userId);
+            return Ok(exists);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to check user email address exists", detail = ex.Message });
+        }
     }
 
     [HttpGet("phoneexists")]
     public async Task<ActionResult<string?>> PhoneExists(Guid companyId, string phone, Guid? userId = null)
     {
-        var exists = await _service.PhoneExistsAsync(companyId, phone, userId);
-        return Ok(exists);
+        try
+        {
+            var exists = await _service.PhoneExistsAsync(companyId, phone, userId);
+            return Ok(exists);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to check phone number exists", detail = ex.Message });
+        }
     }
 }

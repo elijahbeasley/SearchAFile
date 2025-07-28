@@ -17,16 +17,16 @@ namespace SearchAFile.Pages.Common;
 [BindProperties(SupportsGet = true)]
 public class ChangePasswordModel : PageModel
 {
-    //private readonly TelemetryClient TelemetryClient;
+    //private readonly TelemetryClient _telemetryClient;
     //private readonly AuthenticatedApiClient _api;
-    //private IWebHostEnvironment IWebHostEnvironment;
+    //private readonly IWebHostEnvironment _iWebHostEnvironment;
     //private readonly IEmailService IEmailService;
 
-    //public ChangePasswordModel(TelemetryClient TC, AuthenticatedApiClient api, IWebHostEnvironment IWHE, IEmailService IES)
+    //public ChangePasswordModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, IEmailService IES)
     //{
-    //    TelemetryClient = TC;
+    //    _telemetryClient = telemetryClient;
     //    _api = api;
-    //    IWebHostEnvironment = IWHE;
+    //    _iWebHostEnvironment = iWebHostEnvironment;
     //    IEmailService = IES;
     //}
 
@@ -52,7 +52,7 @@ public class ChangePasswordModel : PageModel
     //        {
     //            // Output an error message.
     //            strMessage = "Unable to update password. Please report the following to " + HttpContext.Session.GetString("ContactInfo") + ": The Staff ID was null.";
-    //            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Modify Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 0, false);";
+    //            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Modify Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 0, false);";
     //            return;
     //        }
 
@@ -64,7 +64,7 @@ public class ChangePasswordModel : PageModel
     //        {
     //            // Output an error message.
     //            strMessage = "Unable to update password. Please report the following to " + HttpContext.Session.GetString("ContactInfo") + ": Staff was not found.";
-    //            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Modify Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 0, false);";
+    //            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Modify Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 0, false);";
     //            return;
     //        }
 
@@ -77,7 +77,7 @@ public class ChangePasswordModel : PageModel
     //    {
     //        // Log the exception to Application Insights.
     //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        TelemetryClient.TrackException(ExceptionTelemetry);
+    //        _telemetryClient.TrackException(ExceptionTelemetry);
 
     //        // Display an error for the user.
     //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
@@ -121,7 +121,7 @@ public class ChangePasswordModel : PageModel
 
     //        // Log the exception to Application Insights.
     //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        TelemetryClient.TrackException(ExceptionTelemetry);
+    //        _telemetryClient.TrackException(ExceptionTelemetry);
     //    }
 
     //    return new JsonResult(JsonConvert.SerializeObject(CustomJsonObject));
@@ -156,7 +156,7 @@ public class ChangePasswordModel : PageModel
 
     //        // Log the exception to Application Insights.
     //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        TelemetryClient.TrackException(ExceptionTelemetry);
+    //        _telemetryClient.TrackException(ExceptionTelemetry);
     //    }
 
     //    return new JsonResult(JsonConvert.SerializeObject(CustomJsonObject));
@@ -220,7 +220,7 @@ public class ChangePasswordModel : PageModel
 
     //        // Output a success message.
     //        strMessage = "Password successfully changed.";
-    //        TempData["StartupJavaScript"] = "window.top.CloseModal(); window.top.ClearToast(); window.top.ShowToast('success', 'Password Change Successful!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 7000, true);";
+    //        TempData["StartupJavaScript"] = "window.top.CloseModal(); window.top.ClearToast(); window.top.ShowToast('success', 'Password Change Successful!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true);";
     //    }
     //    catch (Exception ex)
     //    {
@@ -240,7 +240,7 @@ public class ChangePasswordModel : PageModel
     //        }
 
     //        // Output an error message.
-    //        TempData["StartupJavaScript"] = "window.top.StopLoading('#divLoadingBlockModal'); window.top.ShowToast('danger', 'Password Change Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br />").Replace("'", "\"") + "', 0, false);";
+    //        TempData["StartupJavaScript"] = "window.top.StopLoading('#divLoadingBlockModal'); window.top.ShowToast('danger', 'Password Change Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 0, false);";
     //    }
     //}
 }

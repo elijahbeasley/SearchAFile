@@ -10,16 +10,16 @@ namespace SearchAFile.Services;
 
 public class EmailServiceMailKit : IEmailService
 {
-    private readonly IWebHostEnvironment IWebHostEnvironment;
-    public EmailServiceMailKit(IWebHostEnvironment IWHE)
+    private readonly IWebHostEnvironment _iWebHostEnvironment;
+    public EmailServiceMailKit(IWebHostEnvironment iWebHostEnvironment)
     {
-        IWebHostEnvironment = IWHE;
+        _iWebHostEnvironment = iWebHostEnvironment;
     }
     public async Task SendEmail(List<KeyValuePair<string, string>> lstTo, List<KeyValuePair<string, string>> lstCC, List<KeyValuePair<string, string>> lstBCC, string strSubject, BodyBuilder objBodyBuilder)
     {
         try
         {
-            if (IWebHostEnvironment.IsDevelopment())
+            if (_iWebHostEnvironment.IsDevelopment())
             {
                 // BEGIN ***** TEST ***** BEGIN
                 lstTo.Clear();
