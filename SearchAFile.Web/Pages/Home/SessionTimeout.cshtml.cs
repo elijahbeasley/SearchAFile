@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 
-namespace SearchAFile.Pages.Home;
+namespace SearchAFile.Web.Pages.Home;
 
 public class SessionTimeoutModel : PageModel
 {

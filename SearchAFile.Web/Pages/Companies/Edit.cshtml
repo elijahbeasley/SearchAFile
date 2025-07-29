@@ -4,7 +4,7 @@
 <form method="post" enctype="multipart/form-data">
 
     <input asp-for="Company.CompanyId" hidden />
-    <div asp-validation-summary="ModelOnly" class="text-danger" hidden></div>
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
 
     <div class="card">
 

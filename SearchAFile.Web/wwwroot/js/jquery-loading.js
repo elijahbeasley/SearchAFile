@@ -4,19 +4,19 @@ function StartLoading(divID) {
 
     if (!PageIsLoaded) {
 
-        $('#' + divID).block({ overlayCSS: { 'cursor': 'unset', 'opacity': '0.2' }, message: $('#imgLoading'), css: { 'background-color': 'transparent', 'border': 'none', 'cursor': 'unset' } });
+        $(divID).block({ overlayCSS: { 'cursor': 'unset', 'opacity': '0.2' }, message: $('#imgLoading'), css: { 'background-color': 'transparent', 'border': 'none', 'cursor': 'unset' } });
     }
 }
 
 function StartLoadingModal(divID) {
 
-    $('#' + divID).block({ overlayCSS: { 'background-color': 'gainsboro', 'border-radius': '0.2rem', 'cursor': 'unset', 'opacity': '1', 'height': '100%' }, message: $('#imgLoading'), css: { 'background-color': 'transparent', 'border': 'none', 'cursor': 'unset' } });
+    $(divID).block({ overlayCSS: { 'background-color': 'gainsboro', 'border-radius': '0.2rem', 'cursor': 'unset', 'opacity': '1', 'height': '100%' }, message: $('#imgLoading'), css: { 'background-color': 'transparent', 'border': 'none', 'cursor': 'unset' } });
 }
 
 function StopLoading(divID) {
 
     PageIsLoaded = true;
-    $('#' + divID).unblock();
+    $(divID).unblock();
 }
 
 function StopLoadingAll() {

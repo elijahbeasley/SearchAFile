@@ -1,0 +1,15 @@
+﻿@model string
+@{
+    string modalSize = Model ?? "modal-lg"; 
+}
+
+<!-- Modal -->
+<div class="modal fade" id="divModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered @modalSize">
+        <div class="modal-content bg-transparent border-0">
+            <div id="divLoadingBlockModal">
+                <iframe id="ifrModal" frameborder="0" scrolling="no" style="height: 0; transition: all 0.5s ease-in-out; width: 100%;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>

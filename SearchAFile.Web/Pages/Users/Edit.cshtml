@@ -5,7 +5,7 @@
 <form method="post" enctype="multipart/form-data">
 
     <input asp-for="User.UserId" hidden />
-    <div asp-validation-summary="ModelOnly" class="text-danger" hidden></div>
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
 
     <div class="card">
 
@@ -77,14 +77,14 @@
             <div class="row align-items-center m-0">
                 <div class="cus-col col-sm-4">
                     <div class="form-floating">
-                        <input type="text" asp-for="User.EmailAddress" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.EmailAddress)" />
+                        <input id="txtEmailAddress" type="text" asp-for="User.EmailAddress" class="form-control" placeholder="@Html.DisplayNameFor(model => model.User.EmailAddress)" />
                         <label asp-for="User.EmailAddress" class="control-label" show-asterisk="true"></label>
                         <span asp-validation-for="User.EmailAddress" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="cus-col col-sm-4">
                     <div class="form-floating">
-                        <input type="text" asp-for="User.PhoneNumber" class="form-control" placeholder="(___) ___-____" data-bs-slots="_" />
+                        <input id="txtPhoneNumber" type="text" asp-for="User.PhoneNumber" class="form-control" placeholder="(___) ___-____" data-bs-slots="_" />
                         <label asp-for="User.PhoneNumber" class="control-label" show-asterisk="true"></label>
                         <span asp-validation-for="User.PhoneNumber" class="text-danger"></span>
                     </div>

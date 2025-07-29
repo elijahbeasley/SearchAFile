@@ -142,6 +142,40 @@
             });
         }
 
+        $(window).resize(function () {
+
+            ResizeModal();
+        });
+
+        function ResizeModal() {
+
+            $('#ifrModal').css('height', $('#ifrModal').contents().find('main').height() + 'px');
+            $('#divLoadingBlockModal').css('height', $('#ifrModal').contents().find('main').height() + 'px');
+        }
+
+        function ShowModal() {
+
+            if ($('#ifrModal').prop('src') != '') {
+
+                $('#ifrModal').css('height', 0);
+
+                StopLoading('#divLoadingBlockModal');
+
+                // Show the modal.
+                $('#divModal').modal('show');
+
+                ResizeModal();
+            }
+        }
+
+        function CloseModal() {
+
+            // Hide the modal.
+            $('.modal').modal('hide');
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+
     </script>
 </body>
 </html>

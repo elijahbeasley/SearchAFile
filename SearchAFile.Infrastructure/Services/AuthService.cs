@@ -19,16 +19,16 @@ public class AuthService : IAuthService
         var user = await _context.Users.FirstOrDefaultAsync(u => u.EmailAddress == email);
 
         if (user == null)
-            return new AuthResult { Success = false, ErrorMessage = "User not found" };
+            return new AuthResult { Success = false, ErrorMessage = "User not found." };
 
         if (!user.Active)
-            return new AuthResult { Success = false, ErrorMessage = "User is inactive" };
+            return new AuthResult { Success = false, ErrorMessage = "User is inactive." };
 
         if (!user.EmailVerified)
-            return new AuthResult { Success = false, ErrorMessage = "Your email address is not verified" };
+            return new AuthResult { Success = false, ErrorMessage = "Your email address is not verified." };
 
         if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-            return new AuthResult { Success = false, ErrorMessage = "Invalid password" };
+            return new AuthResult { Success = false, ErrorMessage = "Invalid password." };
 
         string token;
         try

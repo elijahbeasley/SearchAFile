@@ -14,20 +14,20 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design;
 using System.Web;
 
-namespace SearchAFile.Pages.Home;
+namespace SearchAFile.Web.Pages.Home;
 
 [BindProperties(SupportsGet = true)]
 public class LogInModel : PageModel
 {
     private readonly TelemetryClient _telemetryClient;
     private readonly AccountController AccountController;
-    private readonly IEmailService IEmailService;
+    private readonly IEmailService _emailService;
     private readonly AuthClient _loginService;
     private readonly AuthenticatedApiClient _api;
-    public LogInModel(TelemetryClient telemetryClient, IEmailService IES, AccountController AC, AuthClient loginService, AuthenticatedApiClient api)
+    public LogInModel(TelemetryClient telemetryClient, IEmailService emailService, AccountController AC, AuthClient loginService, AuthenticatedApiClient api)
     {
         _telemetryClient = telemetryClient;
-        IEmailService = IES;
+        _emailService = emailService;
         AccountController = AC;
         _loginService = loginService;
         _api = api;
@@ -221,7 +221,7 @@ public class LogInModel : PageModel
             //                <tr> 
             //                    <td style='padding: 0rem 1rem;'> 
             //                        <br /> 
-            //                        Please <a href='" + UrlHelper.Combine(SystemInfo.SystemUrl, "Home", "VerifyEmailAddress") + "?ext=" + User.EmailVerificationUrl + @"'>click here</a> to verify your email address. 
+            //                        Please <a href='" + UrlHelper.Combine(SystemInfo.Url, "Home", "VerifyEmailAddress") + "?ext=" + User.EmailVerificationUrl + @"'>click here</a> to verify your email address. 
             //                    </td> 
             //                </tr> 
             //            </table>";
@@ -238,7 +238,7 @@ public class LogInModel : PageModel
             //        // BCC.
             //        List<KeyValuePair<string, string>> lstBCC = new List<KeyValuePair<string, string>>();
 
-            //        await IEmailService.SendEmail(lstTo, lstCC, lstBCC, SystemInfo.SystemName + " - Verify Email Address", objBodyBuilder);
+            //        await _emailService.SendEmail(lstTo, lstCC, lstBCC, SystemInfo.SystemName + " - Verify Email Address", objBodyBuilder);
             //    }
             //}
             //else

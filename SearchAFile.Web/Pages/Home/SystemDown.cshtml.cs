@@ -6,7 +6,7 @@ using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Services;
 using SearchAFile.Web.Extensions;
 
-namespace SearchAFile.Pages.Home
+namespace SearchAFile.Web.Pages.Home
 {
     public class SystemDownModel : PageModel
     {

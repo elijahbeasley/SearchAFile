@@ -1,0 +1,6 @@
+﻿@page
+@model SearchAFile.Web.Pages.Home.VerifyEmailAddressModel
+
+<div class="position-sticky d-flex justify-content-center" style="top: 50%;">
+    <label class="text-success fs-4 fw-bold">Your email address "@(Model.User?.EmailAddress ?? "")" has been successfully verified. <a href="~/Home/LogIn?email=@Model.User.EmailAddress">Click here</a> to log in.</label>
+</div>

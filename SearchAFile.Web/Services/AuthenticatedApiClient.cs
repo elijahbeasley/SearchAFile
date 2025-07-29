@@ -33,18 +33,42 @@ public class AuthenticatedApiClient
         {
             if (string.IsNullOrWhiteSpace(content))
             {
-                // No content to deserialize (e.g., 204 No Content)
-                return ApiResult<T>.Success(default, response);
+                return ApiResult<T>.Success(default, response); // e.g., null
             }
 
             try
             {
-                var data = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                object data;
 
-                return ApiResult<T>.Success(data, response);
+                if (typeof(T) == typeof(string))
+                {
+                    data = content.Trim('"');
+                }
+                else if (typeof(T) == typeof(bool))
+                {
+                    data = bool.Parse(content);
+                }
+                else if (typeof(T) == typeof(int))
+                {
+                    data = int.Parse(content);
+                }
+                else if (typeof(T) == typeof(Guid))
+                {
+                    data = Guid.Parse(content);
+                }
+                else if (typeof(T).IsEnum)
+                {
+                    data = Enum.Parse(typeof(T), content, ignoreCase: true);
+                }
+                else
+                {
+                    data = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+
+                return ApiResult<T>.Success((T)data, response);
             }
             catch (Exception ex)
             {
@@ -52,7 +76,7 @@ public class AuthenticatedApiClient
             }
         }
 
-        // error handling
+        // Error handling logic (leave as-is)
         try
         {
             var errorObj = JsonSerializer.Deserialize<ApiErrorResponse>(content, new JsonSerializerOptions

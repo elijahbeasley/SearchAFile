@@ -59,8 +59,8 @@ public class UserService : IUserService
     public async Task<string?> EmailExistsAsync(Guid companyId, string email, Guid? userId = null)
     {
         return (await _context.Users
-            .FirstOrDefaultAsync(u => userId == null ? true : u.UserId != userId
-                && u.CompanyId == companyId
+            .FirstOrDefaultAsync(u => (userId == null ? true : u.UserId != userId)
+                //&& u.CompanyId == companyId
                 && !string.IsNullOrEmpty(u.EmailAddress)
                 && !string.IsNullOrEmpty(email)
                 && u.EmailAddress.Trim().ToLower().Equals(email.Trim().ToLower())))?.FullName;
@@ -69,7 +69,7 @@ public class UserService : IUserService
     {
         return (await _context.Users
             .FirstOrDefaultAsync(u => (userId == null || u.UserId != userId)
-                && u.CompanyId == companyId 
+                //&& u.CompanyId == companyId 
                 && !string.IsNullOrEmpty(u.PhoneNumber)
                 && !string.IsNullOrEmpty(phone)
                 && u.PhoneNumber.Trim().ToLower().Equals(phone.Trim().ToLower())))?.FullName;

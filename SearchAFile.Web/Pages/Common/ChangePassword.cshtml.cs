@@ -11,236 +11,237 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights;
+using SearchAFile.Web.Services;
+using SearchAFile.Web.Interfaces;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using SearchAFile.Web.Extensions;
 
-namespace SearchAFile.Pages.Common;
+namespace SearchAFile.Web.Pages.Common;
 
 [BindProperties(SupportsGet = true)]
 public class ChangePasswordModel : PageModel
 {
-    //private readonly TelemetryClient _telemetryClient;
-    //private readonly AuthenticatedApiClient _api;
-    //private readonly IWebHostEnvironment _iWebHostEnvironment;
-    //private readonly IEmailService IEmailService;
+    private readonly TelemetryClient _telemetryClient;
+    private readonly AuthenticatedApiClient _api;
+    private readonly IWebHostEnvironment _iWebHostEnvironment;
+    private readonly IEmailService _emailService;
 
-    //public ChangePasswordModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, IEmailService IES)
-    //{
-    //    _telemetryClient = telemetryClient;
-    //    _api = api;
-    //    _iWebHostEnvironment = iWebHostEnvironment;
-    //    IEmailService = IES;
-    //}
+    public ChangePasswordModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, IEmailService emailService)
+    {
+        _telemetryClient = telemetryClient;
+        _api = api;
+        _iWebHostEnvironment = iWebHostEnvironment;
+        _emailService = emailService;
+    }
 
-    //public Staff Staff { get; set; }
+    public User User { get; set; }
 
-    //[DisplayName("New Password")]
-    //[RegularExpression(@"^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$", ErrorMessage = "Invalid password entered. Password must be between 8 and 30 characters long, contain at least one upper case letter, at least one lower case letter, and at least one number.")]
-    //[Required(ErrorMessage = "New password is required.")]
-    //[StringLength(30)]
-    //public string NewPassword { get; set; }
+    [DisplayName("New Password")]
+    [RegularExpression(@"^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$", ErrorMessage = "Invalid password entered. Password must be between 8 and 30 characters long, contain at least one upper case letter, at least one lower case letter, and at least one number.")]
+    [Required(ErrorMessage = "New password is required.")]
+    [StringLength(30)]
+    public string NewPassword { get; set; }
 
-    //[DisplayName("Repeat Password")]
-    //[Required(ErrorMessage = "Repeat password is required.")]
-    //[StringLength(30)]
-    //public string RepeatPassword { get; set; }
-    //public async Task OnGetAsync()
-    //{
-    //    try
-    //    {
-    //        string strMessage;
+    [DisplayName("Repeat Password")]
+    [Required(ErrorMessage = "Repeat password is required.")]
+    [StringLength(30)]
+    public string RepeatPassword { get; set; }
+    public async Task<IActionResult> OnGetAsync(Guid? id)
+    {
+        try
+        {
+            if (id == null)
+                return NotFound();
 
-    //        if (HttpContext.Session.GetInt32("StaffID") == null)
-    //        {
-    //            // Output an error message.
-    //            strMessage = "Unable to update password. Please report the following to " + HttpContext.Session.GetString("ContactInfo") + ": The Staff ID was null.";
-    //            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Modify Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 0, false);";
-    //            return;
-    //        }
+            HttpContext.Session.SetString("UserID", id.ToString());
 
-    //        Staff = await SearchAFileContext.Staff
-    //            .AsNoTracking()
-    //            .FirstOrDefaultAsync(e => e.StaffId == HttpContext.Session.GetInt32("StaffID"));
+            await LoadUser();
 
-    //        if (Staff == null)
-    //        {
-    //            // Output an error message.
-    //            strMessage = "Unable to update password. Please report the following to " + HttpContext.Session.GetString("ContactInfo") + ": Staff was not found.";
-    //            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Modify Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 0, false);";
-    //            return;
-    //        }
+            ModelState.Remove("NewPassword");
+            ModelState.Remove("RepeatPassword");
 
-    //        ModelState.Remove("NewPassword");
-    //        ModelState.Remove("RepeatPassword");
+            TempData["StartupJavaScript"] = "if (self !== top) { window.top.StopLoading('#divLoadingBlock'); window.top.StopLoading('#divLoadingBlockModal'); window.top.ShowModal(); }";
 
-    //        TempData["StartupJavaScript"] = "if (self !== top) { window.top.StopLoading('#divLoadingBlock'); window.top.StopLoading('#divLoadingBlockModal'); window.top.ShowModal(); }";
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        // Log the exception to Application Insights.
-    //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        _telemetryClient.TrackException(ExceptionTelemetry);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
-    //        // Display an error for the user.
-    //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-    //        TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
-    //    }
-    //}
+            // Display an error for the user.
+            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
 
-    //public class CustomJsonObject
-    //{
-    //    public bool booSuccess { get; set; } = true;
-    //    public bool booIsEqual { get; set; } = true;
-    //    public string ErrorMessage { get; set; } = "";
-    //}
+            return StatusCode(500, new { message = "Failed to initialize page", detail = strExceptionMessage });
+        }
 
-    //public async Task<IActionResult> OnGetIsCurrentPasswordEqual(string CurrentPassword)
-    //{
-    //    CustomJsonObject CustomJsonObject = new CustomJsonObject();
+        return Page();
+    }
 
-    //    try
-    //    {
-    //        Staff = await SearchAFileContext.Staff
-    //            .AsNoTracking()
-    //            .FirstOrDefaultAsync(e => e.StaffId == HttpContext.Session.GetObject<Staff>("Staff").StaffId);
+    public class CustomJsonObject
+    {
+        public bool booSuccess { get; set; } = true;
+        public bool booIsEqual { get; set; } = true;
+        public string ErrorMessage { get; set; } = "";
+    }
 
-    //        CustomJsonObject.booIsEqual = BCrypt.Net.BCrypt.Verify(CurrentPassword, Staff.Password);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        CustomJsonObject.booSuccess = false;
-    //        CustomJsonObject.ErrorMessage = "An error has occured. Please contact " + HttpContext.Session.GetString("ContactInfo") + " and report the following error: ";
+    public async Task<IActionResult> OnGetIsCurrentPasswordEqual(string CurrentPassword)
+    {
+        CustomJsonObject CustomJsonObject = new CustomJsonObject();
 
-    //        // Is there an inner exception?
-    //        if (ex.InnerException == null) // No.
-    //        {
-    //            CustomJsonObject.ErrorMessage += ex.Message;
-    //        }
-    //        else // Yes.
-    //        {
-    //            CustomJsonObject.ErrorMessage += ex.InnerException.Message;
-    //        }
+        try
+        {
+            await LoadUser();
 
-    //        // Log the exception to Application Insights.
-    //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        _telemetryClient.TrackException(ExceptionTelemetry);
-    //    }
+            CustomJsonObject.booIsEqual = BCrypt.Net.BCrypt.Verify(CurrentPassword, User.Password);
+        }
+        catch (Exception ex)
+        {
+            CustomJsonObject.booSuccess = false;
+            CustomJsonObject.ErrorMessage = "An error has occured. Please contact " + HttpContext.Session.GetString("ContactInfo") + " and report the following error: ";
 
-    //    return new JsonResult(JsonConvert.SerializeObject(CustomJsonObject));
-    //}
+            // Is there an inner exception?
+            if (ex.InnerException == null) // No.
+            {
+                CustomJsonObject.ErrorMessage += ex.Message;
+            }
+            else // Yes.
+            {
+                CustomJsonObject.ErrorMessage += ex.InnerException.Message;
+            }
 
-    //public async Task<IActionResult> OnGetIsNewPasswordEqual(string NewPassword)
-    //{
-    //    CustomJsonObject CustomJsonObject = new CustomJsonObject();
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
+        }
 
-    //    try
-    //    {
-    //        Staff = await SearchAFileContext.Staff
-    //            .AsNoTracking()
-    //            .FirstOrDefaultAsync(e => e.StaffId == HttpContext.Session.GetObject<Staff>("Staff").StaffId);
+        return new JsonResult(JsonConvert.SerializeObject(CustomJsonObject));
+    }
 
-    //        CustomJsonObject.booIsEqual = BCrypt.Net.BCrypt.Verify(NewPassword, Staff.Password);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        CustomJsonObject.booSuccess = false;
-    //        CustomJsonObject.ErrorMessage = "An error has occured. Please contact " + HttpContext.Session.GetString("ContactInfo") + " and report the following error: ";
+    public async Task<IActionResult> OnGetIsNewPasswordEqual(string NewPassword)
+    {
+        CustomJsonObject CustomJsonObject = new CustomJsonObject();
 
-    //        // Is there an inner exception?
-    //        if (ex.InnerException == null) // No.
-    //        {
-    //            CustomJsonObject.ErrorMessage += ex.Message;
-    //        }
-    //        else // Yes.
-    //        {
-    //            CustomJsonObject.ErrorMessage += ex.InnerException.Message;
-    //        }
+        try
+        {
+            await LoadUser();
 
-    //        // Log the exception to Application Insights.
-    //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        _telemetryClient.TrackException(ExceptionTelemetry);
-    //    }
+            CustomJsonObject.booIsEqual = BCrypt.Net.BCrypt.Verify(NewPassword, User.Password);
+        }
+        catch (Exception ex)
+        {
+            CustomJsonObject.booSuccess = false;
+            CustomJsonObject.ErrorMessage = "An error has occured. Please contact " + HttpContext.Session.GetString("ContactInfo") + " and report the following error: ";
 
-    //    return new JsonResult(JsonConvert.SerializeObject(CustomJsonObject));
-    //}
+            // Is there an inner exception?
+            if (ex.InnerException == null) // No.
+            {
+                CustomJsonObject.ErrorMessage += ex.Message;
+            }
+            else // Yes.
+            {
+                CustomJsonObject.ErrorMessage += ex.InnerException.Message;
+            }
 
-    //public async Task OnPostAsync()
-    //{
-    //    string strMessage = "";
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
+        }
 
-    //    try
-    //    {
-    //        Staff = await SearchAFileContext.Staff
-    //            .AsNoTracking()
-    //            .FirstOrDefaultAsync(e => e.StaffId == HttpContext.Session.GetObject<Staff>("Staff").StaffId);
+        return new JsonResult(JsonConvert.SerializeObject(CustomJsonObject));
+    }
 
+    public async Task OnPostAsync()
+    {
+        string strMessage = "";
 
-    //        Staff.Password = BCrypt.Net.BCrypt.HashPassword(NewPassword);
+        try
+        {
+            await LoadUser();
 
-    //        SearchAFileContext.Update(Staff);
+            User.Password = BCrypt.Net.BCrypt.HashPassword(NewPassword);
 
-    //        // The entered item is unique.
-    //        await SearchAFileContext.SaveChangesAsync();
+            var result = await _api.PutAsync<User>($"users/{User.UserId}", User);
 
-    //        SystemInfo SystemInfo = HttpContext.Session.GetObject<SystemInfo>("SystemInfo");
+            if (!result.IsSuccess)
+            {
+                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to update user.");
+            }
 
-    //        if (SystemInfo == null)
-    //        {
-    //            SystemInfo = await SearchAFileContext.SystemInfo.FirstOrDefaultAsync();
-    //        }
+            SystemInfo SystemInfo = HttpContext.Session.GetObject<SystemInfo>("SystemInfo");
 
-    //        BodyBuilder objBodyBuilder = new BodyBuilder();
+            BodyBuilder objBodyBuilder = new BodyBuilder();
 
-    //        objBodyBuilder.HtmlBody = @"
-    //            <table> 
-    //                <tr> 
-    //                    <td> 
-    //                        Hello " + Staff.FirstName + " " + Staff.LastName + @", 
-    //                    </td> 
-    //                </tr> 
-    //                <tr> 
-    //                    <td style='padding: 0rem 1rem;'> 
-    //                        <br /> 
-    //                        Your password has been successfully changed.
-    //                    </td> 
-    //                </tr> 
-    //            </table> ";
+            objBodyBuilder.HtmlBody = @"
+                <table> 
+                    <tr> 
+                        <td> 
+                            Hello " + User.FullName + @", 
+                        </td> 
+                    </tr> 
+                    <tr> 
+                        <td style='padding: 0rem 1rem;'> 
+                            <br /> 
+                            Your password has been successfully changed. If you did not request a password change, please contact " + HttpContext.Session.GetString("ContactInfo") + @" immediately.
+                        </td> 
+                    </tr> 
+                </table> ";
 
-    //        // To.
-    //        List<KeyValuePair<string, string>> lstTo = new List<KeyValuePair<string, string>>();
+            // To.
+            List<KeyValuePair<string, string>> lstTo = new List<KeyValuePair<string, string>>();
 
-    //        // Add service to the email.
-    //        lstTo.Add(new KeyValuePair<string, string>(Staff.EmailAddress, Staff.FirstName + " " + Staff.LastName));
+            // Add service to the email.
+            lstTo.Add(new KeyValuePair<string, string>(User.EmailAddress, User.FullName));
 
-    //        // CC.
-    //        List<KeyValuePair<string, string>> lstCC = new List<KeyValuePair<string, string>>();
+            // CC.
+            List<KeyValuePair<string, string>> lstCC = new List<KeyValuePair<string, string>>();
 
-    //        // BCC.
-    //        List<KeyValuePair<string, string>> lstBCC = new List<KeyValuePair<string, string>>();
+            // BCC.
+            List<KeyValuePair<string, string>> lstBCC = new List<KeyValuePair<string, string>>();
 
-    //        await IEmailService.SendEmail(lstTo, lstCC, lstBCC, SystemInfo.SystemName + " - Password Successfully Changed", objBodyBuilder);
+            await _emailService.SendEmail(lstTo, lstCC, lstBCC, SystemInfo.SystemName + " - Password Successfully Changed", objBodyBuilder);
 
-    //        // Output a success message.
-    //        strMessage = "Password successfully changed.";
-    //        TempData["StartupJavaScript"] = "window.top.CloseModal(); window.top.ClearToast(); window.top.ShowToast('success', 'Password Change Successful!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true);";
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        // Create the message.
-    //        strMessage = "Password NOT successfully modified. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": ";
+            // Output a success message.
+            strMessage = "Password successfully changed.";
+            TempData["StartupJavaScript"] = "window.top.CloseModal(); window.top.ClearToast(); window.top.ShowToast('success', 'Password Change Successful!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true);";
+        }
+        catch (Exception ex)
+        {
+            // Create the message.
+            strMessage = "Password NOT successfully modified. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": ";
 
-    //        // Is there an inner exception?
-    //        if (ex.InnerException == null) // No.
-    //        {
-    //            // Append on the exception message.
-    //            strMessage += ex.Message;
-    //        }
-    //        else // Yes.
-    //        {
-    //            // Append on the inner exception message.
-    //            strMessage += ex.InnerException.Message;
-    //        }
+            // Is there an inner exception?
+            if (ex.InnerException == null) // No.
+            {
+                // Append on the exception message.
+                strMessage += ex.Message;
+            }
+            else // Yes.
+            {
+                // Append on the inner exception message.
+                strMessage += ex.InnerException.Message;
+            }
 
-    //        // Output an error message.
-    //        TempData["StartupJavaScript"] = "window.top.StopLoading('#divLoadingBlockModal'); window.top.ShowToast('danger', 'Password Change Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 0, false);";
-    //    }
-    //}
+            // Output an error message.
+            TempData["StartupJavaScript"] = "window.top.StopLoading('#divLoadingBlockModal'); window.top.ShowToast('danger', 'Password Change Error!', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 0, false);";
+        }
+    }
+
+    private async Task LoadUser()
+    {
+        try
+        {
+            var result = await _api.GetAsync<User>($"users/{HttpContext.Session.GetString("UserID")}");
+
+            if (!result.IsSuccess || result.Data == null)
+                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to retrieve user.");
+
+            User = result.Data;
+        }
+        catch
+        {
+            throw;
+        }
+    }
 }

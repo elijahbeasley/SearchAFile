@@ -6,7 +6,7 @@ using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Services;
 
-namespace SearchAFile.Pages.Home;
+namespace SearchAFile.Web.Pages.Home;
 
 public class DefaultModel : PageModel
 {

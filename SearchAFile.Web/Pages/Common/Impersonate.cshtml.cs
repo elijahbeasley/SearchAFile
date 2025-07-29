@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
-namespace SearchAFile.Pages.Common;
+namespace SearchAFile.Web.Pages.Common;
 
 [BindProperties(SupportsGet = true)]
 public class ImpersonateModel : PageModel
@@ -31,11 +31,11 @@ public class ImpersonateModel : PageModel
     //    _api = api;
     //    AccountController = AC;
     //}
-    //public IList<Staff> StaffIList { get; set; }
+    //public IList<User> UserIList { get; set; }
 
-    //[DisplayName("Staff")]
-    //[Required(ErrorMessage = "Staff is required.")]
-    //public int StaffID { get; set; }
+    //[DisplayName("User")]
+    //[Required(ErrorMessage = "User is required.")]
+    //public int UserID { get; set; }
     //public string Search { get; set; }
 
     //public async Task<IActionResult> OnGetAsync()
@@ -51,9 +51,9 @@ public class ImpersonateModel : PageModel
     //        // Set the page title.
     //        HttpContext.Session.SetString("PageTitle", "Impersonate User");
 
-    //        await BuildStaffSelectList();
+    //        await BuildUserSelectList();
 
-    //        ModelState.Remove("StaffID");
+    //        ModelState.Remove("UserID");
     //    }
     //    catch (Exception ex)
     //    {
@@ -75,47 +75,47 @@ public class ImpersonateModel : PageModel
 
     //    try
     //    {
-    //        await BuildStaffSelectList();
+    //        await BuildUserSelectList();
 
-    //        Staff Staff = await SearchAFileContext.Staff
+    //        User User = await SearchAFileContext.User
     //            .AsNoTracking()
-    //            .FirstOrDefaultAsync(e => e.StaffId == StaffID);
+    //            .FirstOrDefaultAsync(e => e.UserId == UserID);
 
-    //        if (Staff == null)
+    //        if (User == null)
     //        {
-    //            strMessage = "Unable to log in as selected user with ID " + StaffID + ".";
+    //            strMessage = "Unable to log in as selected user with ID " + UserID + ".";
     //            TempData["StartupJavaScript"] = "ShowSnack('warning', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 10000, false)";
     //        }
     //        else
     //        {
-    //            // Check to see if there is an OriginalStaff variable that needs to be saved. 
-    //            Staff OriginalStaff = null;
+    //            // Check to see if there is an OriginalUser variable that needs to be saved. 
+    //            User OriginalUser = null;
 
-    //            if (HttpContext.Session.GetObject<Models.Staff>("OriginalStaff") == default)
+    //            if (HttpContext.Session.GetObject<Models.User>("OriginalUser") == default)
     //            {
-    //                OriginalStaff = HttpContext.Session.GetObject<Models.Staff>("Staff");
+    //                OriginalUser = HttpContext.Session.GetObject<Models.User>("User");
     //            }
     //            else
     //            {
-    //                OriginalStaff = HttpContext.Session.GetObject<Models.Staff>("OriginalStaff");
+    //                OriginalUser = HttpContext.Session.GetObject<Models.User>("OriginalUser");
     //            }
 
-    //            // Log the staff member in. 
-    //            await AccountController.LogInStaffAsync(Staff);
+    //            // Log the user member in. 
+    //            await AccountController.LogInUserAsync(User);
 
     //            // Reset the AllowUserImpersonation session variable. 
     //            HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
 
-    //            // If the selected staff member is different from the OriginalStaff member then set the OriginalStaff variable. 
-    //            if (Staff.StaffId != OriginalStaff.StaffId)
+    //            // If the selected user member is different from the OriginalUser member then set the OriginalUser variable. 
+    //            if (User.UserId != OriginalUser.UserId)
     //            {
-    //                HttpContext.Session.SetObject("OriginalStaff", OriginalStaff);
+    //                HttpContext.Session.SetObject("OriginalUser", OriginalUser);
     //            }
 
-    //            strMessage = "You are now impersonating " + Staff.FirstName + " " + Staff.LastName + ".";
+    //            strMessage = "You are now impersonating " + User.FullName + ".";
     //            TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true)";
 
-    //            return Redirect(SystemFunctions.GetDashboardURL(Staff.Role));
+    //            return Redirect(SystemFunctions.GetDashboardURL(User.Role));
     //        }
     //    }
     //    catch (Exception ex)
@@ -132,7 +132,7 @@ public class ImpersonateModel : PageModel
     //    return Page();
     //}
 
-    //public async Task<IActionResult> OnGetReloadStaff(string strSearch)
+    //public async Task<IActionResult> OnGetReloadUser(string strSearch)
     //{
     //    try
     //    {
@@ -145,7 +145,7 @@ public class ImpersonateModel : PageModel
     //            Search = HttpUtility.UrlDecode(strSearch).Trim();
     //        }
 
-    //        await BuildStaffSelectList();
+    //        await BuildUserSelectList();
     //    }
     //    catch (Exception ex)
     //    {
@@ -162,18 +162,18 @@ public class ImpersonateModel : PageModel
     //    return Page();
     //}
 
-    //private async Task BuildStaffSelectList()
+    //private async Task BuildUserSelectList()
     //{
     //    try
     //    {
-    //        StaffIList = await SearchAFileContext.Staff
+    //        UserIList = await SearchAFileContext.User
     //            .Include(e => e.Country)
     //            .Where(e => (string.IsNullOrEmpty(Search) 
     //                || (e.FirstName + " " + e.LastName).Trim().ToLower().Contains(Search.Trim().ToLower())
     //                || (e.LastName + ", " + e.FirstName).Trim().ToLower().Contains(Search.Trim().ToLower())
     //                || (e.Role).Trim().ToLower().Contains(Search.Trim().ToLower())
     //                || (e.Country.Country1).Trim().ToLower().Contains(Search.Trim().ToLower()))
-    //                && e.StaffId != HttpContext.Session.GetObject<Staff>("Staff").StaffId)
+    //                && e.UserId != HttpContext.Session.GetObject<User>("User").UserId)
     //            .OrderBy(e => e.LastName)
     //            .ThenBy(e => e.FirstName)
     //            .AsNoTracking()

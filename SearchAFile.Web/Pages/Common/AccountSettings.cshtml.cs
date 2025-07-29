@@ -18,7 +18,7 @@ using SearchAFile.Web.Extensions;
 using System.Collections.Generic;
 using SearchAFile.Core.Mappers;
 
-namespace SearchAFile.Pages.Common;
+namespace SearchAFile.Web.Pages.Common;
 
 [BindProperties(SupportsGet = true)]
 public class AccountSettingsModel : PageModel
@@ -26,14 +26,14 @@ public class AccountSettingsModel : PageModel
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IWebHostEnvironment _iWebHostEnvironment;
-    private readonly IEmailService IEmailService;
+    private readonly IEmailService _emailService;
 
-    public AccountSettingsModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, IEmailService IES)
+    public AccountSettingsModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, IEmailService emailService)
     {
         _telemetryClient = telemetryClient;
         _api = api;
         _iWebHostEnvironment = iWebHostEnvironment;
-        IEmailService = IES;
+        _emailService = emailService;
     }
 
     public UserDto? User { get; set; }
@@ -92,7 +92,7 @@ public class AccountSettingsModel : PageModel
         {
             string? emailName;
 
-            var emailResult = await _api.GetAsync<string>($"users/emailexists?companyId={HttpContext.Session.GetObject<UserDto>("User").CompanyId}&email={HttpContext.Session.GetObject<UserDto>("User").EmailAddress}&userId={HttpContext.Session.GetObject<UserDto>("User").UserId}");
+            var emailResult = await _api.GetAsync<string>($"users/emailexists?companyId={HttpContext.Session.GetObject<UserDto>("User").CompanyId}&email={User.EmailAddress}&userId={HttpContext.Session.GetObject<UserDto>("User").UserId}");
 
             if (!emailResult.IsSuccess)
                 throw new Exception(ApiErrorHelper.GetErrorString(emailResult) ?? "Unable to check if email exists.");
@@ -108,7 +108,7 @@ public class AccountSettingsModel : PageModel
 
             string? phoneName;
 
-            var phoneResult = await _api.GetAsync<string?>($"users/phoneexists?companyId={HttpContext.Session.GetObject<UserDto>("User").CompanyId}&phone={HttpContext.Session.GetObject<UserDto>("User").PhoneNumber}&userId={HttpContext.Session.GetObject<UserDto>("User").UserId}");
+            var phoneResult = await _api.GetAsync<string?>($"users/phoneexists?companyId={HttpContext.Session.GetObject<UserDto>("User").CompanyId}&phone={User.PhoneNumber}&userId={HttpContext.Session.GetObject<UserDto>("User").UserId}");
 
             if (!phoneResult.IsSuccess)
                 throw new Exception(ApiErrorHelper.GetErrorString(phoneResult) ?? "Unable to check if phone exists.");
@@ -122,7 +122,7 @@ public class AccountSettingsModel : PageModel
                 TempData["StartupJavaScript"] += "$('#txtPhoneNumber').addClass('input-validation-error');";
             }
 
-            // Remove the IFormFile ModelState attribute so that it does not trigger ModelState.IsValid = false.
+            // Remove the unused ModelState attribute so that it does not trigger ModelState.IsValid = false.
             ModelState.Remove("IFormFile");
 
             if (!ModelState.IsValid)

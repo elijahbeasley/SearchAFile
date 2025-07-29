@@ -1,5 +1,5 @@
 ﻿@page
-@model SearchAFile.Pages.Common.AccountSettingsModel
+@model SearchAFile.Web.Pages.Common.AccountSettingsModel
 @using SearchAFile.Core.Domain.Entities;
 @{
     Model.User = HttpContext.Session.GetObject<UserDto>("User");
@@ -213,16 +213,7 @@
 
 </form>
 
-<!-- Modal -->
-<div class="modal fade" id="divModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content bg-transparent border-0">
-            <div id="divLoadingBlockModal">
-                <iframe id="ifrModal" frameborder="0" scrolling="no" style="height: 0; transition: all 0.5s ease-in-out; width: 100%;"></iframe>
-            </div>
-        </div>
-    </div>
-</div>
+@await Html.PartialAsync("~/Pages/Shared/_ModalPartial.cshtml", "modal-md")
 
 @section Scripts
 {
@@ -316,35 +307,6 @@
             });
         }
 
-        function ResizeModal() {
-
-            $('#ifrModal').css('height', $('#ifrModal').contents().find('main').height() + 'px');
-            $('#divLoadingBlockModal').css('height', $('#ifrModal').contents().find('main').height() + 'px');
-        }
-
-        function ShowModal() {
-
-            if ($('#ifrModal').prop('src') != '') {
-
-                $('#ifrModal').css('height', 0);
-
-                StopLoading('#divLoadingBlockModal');
-
-                // Show the modal.
-                $('#divModal').modal('show');
-
-                ResizeModal();
-            }
-        }
-
-        function CloseModal() {
-
-            // Hide the modal.
-            $('.modal').modal('hide');
-            $('body').removeClass('modal-open');
-            $('.modal-backdrop').remove();
-        }
-
         function ChangePassword() {
 
             if (PageIsLoaded){
@@ -355,28 +317,30 @@
 
             window.top.ClearToast();
 
-            $.ajax({
-                type: 'GET',
-                url: PageURL + '?handler=CheckID',
-                contentType: 'application/json; charset=utf-8',
-                dataType: 'json',
-                data: {
-                },
-                success: function (response) {
+            $('#ifrModal').attr('src', 'ChangePassword?id=@(HttpContext.Session.GetObject<UserDto>("User").UserId)');
 
-                    const jsonResponse = $.parseJSON(response);
+            // $.ajax({
+            //     type: 'GET',
+            //     url: PageURL + '?handler=CheckID',
+            //     contentType: 'application/json; charset=utf-8',
+            //     dataType: 'json',
+            //     data: {
+            //         id: 
+            //     },
+            //     success: function (response) {
 
-                    if (jsonResponse.booSuccess) {
+            //         const jsonResponse = $.parseJSON(response);
 
-                        $('#ifrModal').attr('src', 'ChangePassword');
-                    }
-                    else {
+            //         if (jsonResponse.booSuccess) {
 
-                         window.top.ShowToast('danger', 'Error!', jsonResponse.ErrorMessage.replace('\r', ' ').replace('\n', '<br />'), 0, false);
-                        StopLoadingAll();
-                    }
-                }
-            });
+            //         }
+            //         else {
+
+            //              window.top.ShowToast('danger', 'Error!', jsonResponse.ErrorMessage.replace('\r', ' ').replace('\n', '<br />'), 0, false);
+            //             StopLoadingAll();
+            //         }
+            //     }
+            // });
         }
 
         function UploadImage() {

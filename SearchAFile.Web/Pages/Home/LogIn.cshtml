@@ -1,9 +1,9 @@
 ﻿@page
-@model SearchAFile.Pages.Home.LogInModel
+@model SearchAFile.Web.Pages.Home.LogInModel
 
 <form id="objForm" method="post" onsubmit="$('#btnLogIn').prop('disabled', $(this).valid()); $('#btnResetPassword').prop('disabled', $(this).valid());">
 
-    <div id="divValidationSummary" asp-validation-summary="All" class="text-danger" hidden></div>
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
 
     <div id="divLoadingBlock" class="card m-auto p-0" style="max-width: 30rem;">
 

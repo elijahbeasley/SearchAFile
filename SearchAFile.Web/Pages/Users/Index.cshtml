@@ -63,13 +63,19 @@
                             <th>
                                 <a href="javascript:SortTable(5,'T', 'tblData');">
                                     @Html.DisplayNameFor(model => model.Users[0].PhoneNumber)
-                                    <i id="iSort3" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                    <i id="iSort5" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                             <th class="text-center">
                                 <a href="javascript:SortTable(6,'N', 'tblData');">
-                                    @Html.DisplayNameFor(model => model.Users[0].Role)
+                                    @Html.DisplayNameFor(model => model.Users[0].EmailVerified)
                                     <i id="iSort6" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a href="javascript:SortTable(7,'N', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.Users[0].Role)
+                                    <i id="iSort7" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                         </tr>
@@ -143,6 +149,18 @@
                                 </td>
                                 <td class="align-middle">
                                     <label>@item.PhoneNumber</label>
+                                </td>
+                                <td class="align-middle text-center cus-no-select" style="width: 0;">
+                                    @if (Convert.ToBoolean(item.EmailVerified))
+                                    {
+                                        <lable class="d-none">0</lable>
+                                        <i class="fa-solid fa-check-circle text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <lable class="d-none">1</lable>
+                                        <i class="fa-solid fa-xmark-circle text-danger"></i>
+                                    }
                                 </td>
                                 <td class="text-center cus-no-select" style="width: 0;">
                                     <span class="badge bg-success cus-no-select px-4 w-100 @(item.Role.Equals("System Admin") ? "bg-danger" : item.Role.Equals("Admin") ? "bg-warning" : "cus-bg-primary")">

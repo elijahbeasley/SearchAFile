@@ -1,12 +1,12 @@
 ﻿@page
-@model SearchAFile.Pages.Common.ImpersonateModel
+@model SearchAFile.Web.Pages.Common.ImpersonateModel
 @{
 
 }
 
 @* <form id="objForm" method="post" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnEnd').prop('disabled', $(this).valid());">
-
-    <div id="divValidationSummary" asp-validation-summary="All" class="text-danger" hidden></div>
+    
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
 
     <div class="card m-auto p-0" style="max-width: 40rem;">
 
@@ -25,19 +25,19 @@
                     <div class="form-floating">
                         <div class="form-control" style="height: 100%; min-height: 5rem;">
                             <div class="input-group dropdown">
-                                <button id="ddlStaff" class="btn cus-btn-outline-primary cus-dropdown-button form-control rounded" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="if (!is_mobile || focus_on_mobile) { setTimeout(function () { $('#txtSearchStaff').focus(); }, 500); }">
-                                    <span id="lblSelectedItem" class="cus-dropdown-selected-item w-100" style="font-size: smaller; line-height: 1.25rem;">-Staff-</span>
+                                <button id="ddlUser" class="btn cus-btn-outline-primary cus-dropdown-button form-control rounded" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="if (!is_mobile || focus_on_mobile) { setTimeout(function () { $('#txtSearchUser').focus(); }, 500); }">
+                                    <span id="lblSelectedItem" class="cus-dropdown-selected-item w-100" style="font-size: smaller; line-height: 1.25rem;">-User-</span>
                                     <i class="fa-solid fa-chevron-down cus-dropdown-chevron"></i>
                                 </button>
-                                <div class="dropdown-menu" aria-labelledby="ddlStaff">
+                                <div class="dropdown-menu" aria-labelledby="ddlUser">
                                     <div style="border-bottom: 2px solid lightgray;">
-                                        <input id="txtSearchStaff" type="text" class="cus-dropdown-search w-100" placeholder="Search Staff (@Model.StaffIList.Count())" maxlength="100" style="height: 2rem !important; padding-right: 2rem !important;" />
+                                        <input id="txtSearchUser" type="text" class="cus-dropdown-search w-100" placeholder="Search User (@Model.UserIList.Count())" maxlength="100" style="height: 2rem !important; padding-right: 2rem !important;" />
                                     </div>
                                     <div style="max-height: 17.5rem; overflow-y: auto;">
-                                        <div id="divStaff" class="cus-no-select" style="min-width: fit-content; width: 100%;">
-                                            @if (Model.StaffIList.Any())
+                                        <div id="divUser" class="cus-no-select" style="min-width: fit-content; width: 100%;">
+                                            @if (Model.UserIList.Any())
                                             {
-                                                @foreach (var item in Model.StaffIList)
+                                                @foreach (var item in Model.UserIList)
                                                 {
                                                     string strBadge = "cus-bg-secondary";
 
@@ -61,9 +61,9 @@
                                                             break;
                                                     }
 
-                                                    string strStaff = item.LastName + ", " + item.FirstName + " - " + item.Country.Country1 + " <span class='badge float-end " + strBadge + "' style='width: 7rem; '>" + item.Role + "</span>";
+                                                    string strUser = item.LastName + ", " + item.FirstName + " - " + item.Country.Country1 + " <span class='badge float-end " + strBadge + "' style='width: 7rem; '>" + item.Role + "</span>";
 
-                                                    <div tabindex="0" class="dropdown-item cus-dropdown-item" onclick="$('#ddlStaff').removeClass('input-validation-error'); $('#lblSelectedItem').html('@strStaff.EscapeJsString()'); $('#hdnItemID').val('@item.StaffId');" style="white-space: nowrap;">
+                                                    <div tabindex="0" class="dropdown-item cus-dropdown-item" onclick="$('#ddlUser').removeClass('input-validation-error'); $('#lblSelectedItem').html('@strUser.EscapeJsString()'); $('#hdnItemID').val('@item.UserId');" style="white-space: nowrap;">
                                                         <div class="d-flex">
                                                             <span>@item.LastName, @item.FirstName - @item.Country.Country1</span>
                                                             <span class="ms-auto ps-1">
@@ -85,7 +85,7 @@
                                             else
                                             {
                                                 <div class="px-2 py-1 cus-no-select">
-                                                    <i class="text-secondary" style="cursor: context-menu;">No existing  staff</i>
+                                                    <i class="text-secondary" style="cursor: context-menu;">No existing  user</i>
                                                 </div>
                                             }
                                         </div>
@@ -93,8 +93,8 @@
                                 </div>
                             </div>
                         </div>
-                        <label class="fw-bold" for="ddlStaff">@Html.DisplayNameFor(model => model.StaffID)</label>
-                        <input id="hdnItemID" type="hidden" asp-for="StaffID" value="" />
+                        <label class="fw-bold" for="ddlUser">@Html.DisplayNameFor(model => model.UserID)</label>
+                        <input id="hdnItemID" type="hidden" asp-for="UserID" value="" />
                     </div>
                 </div>
             </div>
@@ -131,7 +131,7 @@
             });
         });
 
-        $(document).not('#txtSearchStaff').on('keypress', function (event) {
+        $(document).not('#txtSearchUser').on('keypress', function (event) {
 
             let keycode = (event.keyCode ? event.keyCode : event.which);
 
@@ -142,14 +142,14 @@
             }
         });
 
-        $('#txtSearchStaff').on('keypress', function (event) {
+        $('#txtSearchUser').on('keypress', function (event) {
 
             let keycode = (event.keyCode ? event.keyCode : event.which);
 
             if (keycode == '13') {
 
                 event.preventDefault();
-                ReloadStaff();
+                ReloadUser();
             }
         });
 
@@ -168,12 +168,12 @@
 
             if ($('#hdnItemID').val() == '') {
 
-                strMessage += '<li>Staff is required.</li>';
-                $('#ddlStaff').addClass('input-validation-error');
+                strMessage += '<li>User is required.</li>';
+                $('#ddlUser').addClass('input-validation-error');
             }
             else {
 
-                $('#ddlStaff').removeClass('input-validation-error');
+                $('#ddlUser').removeClass('input-validation-error');
             }
 
             if (strMessage != '') {
@@ -204,13 +204,13 @@
             return booIsValid;
         }
 
-        OnKeyUpAfter($('#txtSearchStaff'), 'ReloadStaff()', 500);
+        OnKeyUpAfter($('#txtSearchUser'), 'ReloadUser()', 500);
 
-        function ReloadStaff() {
+        function ReloadUser() {
 
-            $('#txtSearchStaff').removeClass('ui-autocomplete-complete');
-            $('#txtSearchStaff').addClass('ui-autocomplete-loading');
-            $('#divStaff').load(PageURL + '?handler=ReloadStaff&strSearch=' + encodeURIComponent($('#txtSearchStaff').val()) + ' #divStaff>*', function (response, status, xhr) {
+            $('#txtSearchUser').removeClass('ui-autocomplete-complete');
+            $('#txtSearchUser').addClass('ui-autocomplete-loading');
+            $('#divUser').load(PageURL + '?handler=ReloadUser&strSearch=' + encodeURIComponent($('#txtSearchUser').val()) + ' #divUser>*', function (response, status, xhr) {
 
                 if (status == "error") {
 
@@ -219,11 +219,11 @@
                     return;
                 }
 
-                $('#txtSearchStaff').removeClass('ui-autocomplete-loading');
+                $('#txtSearchUser').removeClass('ui-autocomplete-loading');
 
-                if ($('#txtSearchStaff').val() != '') {
+                if ($('#txtSearchUser').val() != '') {
 
-                    $('#txtSearchStaff').addClass('ui-autocomplete-complete');
+                    $('#txtSearchUser').addClass('ui-autocomplete-complete');
                 }
             });
         }

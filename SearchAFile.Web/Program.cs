@@ -102,6 +102,9 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 // Add for email sending
 builder.Services.AddTransient<IEmailService, EmailServiceMailKit>();
 
+// Add for SMS sending
+builder.Services.AddTransient<ISMSService, SMSServiceAzure>();
+
 // Register the Login Service.
 builder.Services.AddScoped<AuthClient>();
 

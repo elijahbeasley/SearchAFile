@@ -16,13 +16,19 @@ public class AccountController : ControllerBase
         _authService = authService;
     }
 
-    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
         var result = await _authService.LoginAsync(request.Email, request.Password);
-        return result.Success ? Ok(result) : Unauthorized(result.ErrorMessage);
+
+        if (!result.Success)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result);
     }
+
 
     [Authorize]
     [HttpPost("logout")]

@@ -15,7 +15,7 @@
     <div class="card-body cus-bootstrap-table-striped p-0">
 
         <div class="row align-items-center m-0">
-            <div class="cus-col col-sm-6">
+            <div class="cus-col col-sm-4">
                 <div class="form-floating">
                     <div class="form-control div-disabled">
                         @if (Model.User.Active)
@@ -36,7 +36,7 @@
                     <label asp-for="User.Active" class="control-label"></label>
                 </div>
             </div>
-            <div class="cus-col col-sm-6">
+            <div class="cus-col col-sm-4">
                 <div class="form-floating">
                     <div class="form-control div-disabled">
                         <span class="badge bg-success cus-no-select px-4 w-100 @(Model.User.Role.Equals("System Admin") ? "bg-danger" : Model.User.Role.Equals("Admin") ? "bg-warning" : "cus-bg-primary")">
@@ -47,6 +47,27 @@
                         @Html.DisplayNameFor(model => model.User.Role)
                         <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your employees" data-bs-placement="top" data-bs-toggle="tooltip"></i>
                     </label>
+                </div>
+            </div>
+            <div class="cus-col col-sm-4">
+                <div class="form-floating">
+                    <div class="form-control div-disabled">
+                        @if (Model.User.EmailVerified)
+                        {
+                            <span class="badge bg-success cus-no-select w-100">
+                                Yes
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger cus-no-select w-100">
+                                No
+                                <i class="fa-solid fa-xmark"></i>
+                            </span>
+                        }
+                    </div>
+                    <label asp-for="User.EmailVerified" class="control-label"></label>
                 </div>
             </div>
         </div>

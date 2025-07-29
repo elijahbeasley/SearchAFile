@@ -1,4 +1,4 @@
-﻿namespace SearchAFile.Core.Helpers;
+﻿namespace SearchAFile.Web.Helpers;
 
 public static class PhoneNumberHelper
 {

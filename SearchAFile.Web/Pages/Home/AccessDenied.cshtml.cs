@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using SearchAFile.Web.Extensions;
 
-namespace SearchAFile.Pages.Home;
+namespace SearchAFile.Web.Pages.Home;
 
 public class AccessDeniedModel : PageModel
 {

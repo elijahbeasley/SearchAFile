@@ -64,6 +64,48 @@ public class CreateModel : PageModel
     {
         try
         {
+            string? emailName;
+
+            var emailResult = await _api.GetAsync<string>($"users/emailexists?companyId={HttpContext.Session.GetObject<Company>("Company").CompanyId}&email={User.EmailAddress}");
+
+            if (!emailResult.IsSuccess)
+                throw new Exception(ApiErrorHelper.GetErrorString(emailResult) ?? "Unable to check if email exists.");
+
+            emailName = emailResult.Data;
+
+            if (!string.IsNullOrEmpty(emailName))
+            {
+                // Add an error message.
+                ModelState.AddModelError(nameof(User.EmailAddress), "Invalid email address entered. The entered email address is being used by " + emailName + ".");
+                TempData["StartupJavaScript"] += "$('#txtEmailAddress').addClass('input-validation-error');";
+            }
+
+            string? phoneName;
+
+            var phoneResult = await _api.GetAsync<string?>($"users/phoneexists?companyId={HttpContext.Session.GetObject<Company>("Company").CompanyId}&phone={User.PhoneNumber}");
+
+            if (!phoneResult.IsSuccess)
+                throw new Exception(ApiErrorHelper.GetErrorString(phoneResult) ?? "Unable to check if phone exists.");
+
+            phoneName = phoneResult.Data;
+
+            if (!string.IsNullOrEmpty(phoneName))
+            {
+                // Add an error message.
+                ModelState.AddModelError(nameof(User.PhoneNumber), "Invalid phone number entered. The entered phone number is being used by " + phoneName + ".");
+                TempData["StartupJavaScript"] += "$('#txtPhoneNumber').addClass('input-validation-error');";
+            }
+
+            // Remove the unused ModelState attribute so that it does not trigger ModelState.IsValid = false.
+            //ModelState.Remove("User.Password");
+            //ModelState.Remove("IFormFile");
+
+            if (!ModelState.IsValid)
+            {
+                TempData["StartupJavaScript"] += "window.top.ShowToast('danger', 'The following errors have occured', $('#divValidationSummary').html(), 0, false)";
+                return Page();
+            }
+
             string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "UserFiles");
 
             if (IFormFile != null)
