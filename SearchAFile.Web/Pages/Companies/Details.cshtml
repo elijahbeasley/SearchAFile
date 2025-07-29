@@ -12,22 +12,44 @@
         <div class="row align-items-center m-0">
             <div class="cus-col col-sm-6">
                 <div class="form-floating">
-                    <select asp-for="Company.Active" class="form-select" disabled>
-                        <option value="" hidden>- Status -</option>
-                        <option value="True">Active</option>
-                        <option value="False">Inactive</option>
-                    </select>
+                    <div class="form-control div-disabled">
+                        @if (Model.Company.Active)
+                        {
+                            <span class="badge bg-success cus-no-select w-100">
+                                Active
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger cus-no-select w-100">
+                                Inactive
+                                <i class="fa-solid fa-xmark"></i>
+                            </span>
+                        }
+                    </div>
                     <label asp-for="Company.Active" class="control-label"></label>
                 </div>
             </div>
             <div class="cus-col col-sm-6">
                 <div class="form-floating">
-                    <select asp-for="Company.Lock" class="form-select" disabled>
-                        <option value="" hidden>- Lock/Unlock -</option>
-                        <option value="True">Locked</option>
-                        <option value="False">Unlocked</option>
-                    </select>
-                    <label asp-for="Company.Lock" class="control-label">
+                    <div class="form-control div-disabled">
+                        @if (Model.Company.Lock)
+                        {
+                            <span class="badge bg-success cus-no-select w-100">
+                                Lock
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning cus-no-select w-100">
+                                Unlocked
+                                <i class="fa-solid fa-xmark"></i>
+                            </span>
+                        }
+                    </div>
+                    <label asp-for="Company.Active" class="control-label">
                         @Html.DisplayNameFor(model => model.Company.Lock)
                         <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your employees" data-bs-placement="top" data-bs-toggle="tooltip"></i>
                     </label>

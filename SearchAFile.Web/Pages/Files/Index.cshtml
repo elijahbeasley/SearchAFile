@@ -1,0 +1,122 @@
+﻿@page
+@model SearchAFile.Web.Pages.Files.IndexModel
+
+<style>
+    .file-icon-wrapper {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 2rem 1rem;
+        position: relative;
+        transition: box-shadow 0.2s;
+        cursor: pointer;
+    }
+
+    .file-icon-wrapper:hover {
+        box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+    }
+
+    .file-icon {
+        font-size: 3rem;
+        color: #6c757d;
+    }
+
+    .delete-btn {
+        background: transparent;
+        border: none;
+        color: #dc3545;
+        padding: 0.25rem;
+        font-size: 1rem;
+        visibility: hidden;
+    }
+
+    .file-icon-wrapper:hover .delete-btn {
+        visibility: visible;
+    }
+</style>
+
+<div class="card">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <label class="fs-3 pe-3">Files</label>
+        <form method="get">
+            <div class="input-group">
+                <input asp-for="search" class="form-control" type="search" placeholder="Search files..." onchange="if (this.value === '') {this.form.submit(); }" />
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+
+        <div class="p-3">
+            <a asp-page="Create" class="btn btn-outline-success w-100">
+                <i class="fa-solid fa-plus-circle"></i>
+                Upload File
+            </a>
+        </div>
+
+        @if (Model.Files != null
+            && Model.Files.Any())
+        {
+            <div class="container-fluid mb-3">
+                <div class="row g-3">
+                    @foreach (var item in Model.Files)
+                    {
+                        string iconClass = System.IO.Path.GetExtension(item.Path) switch
+                        {
+                            ".pdf" => "fa-file-pdf text-danger",
+                            ".doc" or ".docx" => "fa-file-word text-primary",
+                            ".xls" or ".xlsx" => "fa-file-excel text-success",
+                            ".ppt" or ".pptx" => "fa-file-powerpoint text-warning",
+                            ".jpg" or ".jpeg" or "png" or "gif" => "fa-file-image text-info",
+                            ".zip" or ".rar" => "fa-file-archive text-secondary",
+                            ".txt" => "fa-file-lines text-muted",
+                            ".mp3" or ".wav" => "fa-file-audio text-warning",
+                            ".mp4" or ".mov" or "avi" => "fa-file-video text-dark",
+                            _ => "fa-file text-secondary" // default
+                        };
+
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                            <a href="~/Files/@item.Path" target="_blank">
+                                <div class="file-icon-wrapper position-relative text-center">
+                                    <i class="file-icon fa-solid @iconClass"></i>
+                                    <button type="button" class="delete-btn position-absolute top-0 end-0" title="Delete" onclick="deleteFile('@item.FileId')">
+                                        <i class="fa-solid fa-trash cus-text-danger"></i>
+                                    </button>
+                                    <div>
+                                        @item.File1
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+        }
+        else
+        {
+            <div class="mb-3 text-center text-secondary cus-no-select">
+                <i>No existing files</i>
+            </div>
+        }
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        function deleteFile(fileId) {
+            if (confirm("Are you sure you want to delete this file?")) {
+                
+                alert('File deleted...');
+            }
+        }
+
+    </script>
+}

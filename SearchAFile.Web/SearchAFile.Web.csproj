@@ -22,10 +22,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SearchAFile.Core\SearchAFile.Core.csproj" />
+    <ProjectReference Include="..\SearchAFile.Infrastructure\SearchAFile.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\CompanyFiles\" />
+    <Folder Include="wwwroot\FileGroups\" />
+    <Folder Include="wwwroot\Files\" />
     <Folder Include="wwwroot\UserFiles\" />
   </ItemGroup>
 

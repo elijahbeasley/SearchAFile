@@ -24,7 +24,7 @@ public class UserController : ControllerBase
         catch (Exception ex)
         {
             // Optional logging here
-            return StatusCode(500, new { message = "Failed to retrieve users", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to retrieve users.", detail = ex.Message });
         }
     }
 
@@ -42,7 +42,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to retrieve user", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to retrieve user.", detail = ex.Message });
         }
     }
 
@@ -63,7 +63,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to update user", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to update user.", detail = ex.Message });
         }
     }
 
@@ -76,7 +76,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to delete user", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to delete user.", detail = ex.Message });
         }
     }
 
@@ -90,7 +90,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to check user email address exists", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to check user email address exists.", detail = ex.Message });
         }
     }
 
@@ -104,7 +104,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to check phone number exists", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to check phone number exists.", detail = ex.Message });
         }
     }
 }

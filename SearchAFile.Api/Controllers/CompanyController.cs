@@ -27,7 +27,7 @@ public class CompanyController : ControllerBase
         catch (Exception ex)
         {
             // Optional logging here
-            return StatusCode(500, new { message = "Failed to retrieve companies", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to retrieve companies.", detail = ex.Message });
         }
     }
 
@@ -45,7 +45,7 @@ public class CompanyController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to retrieve company", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to retrieve company.", detail = ex.Message });
         }
     }
 
@@ -59,7 +59,7 @@ public class CompanyController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to create company", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to create company.", detail = ex.Message });
         }
     }
 
@@ -77,7 +77,7 @@ public class CompanyController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to update company", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to update company.", detail = ex.Message });
         }
     }
 
@@ -93,7 +93,7 @@ public class CompanyController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Failed to delete company", detail = ex.Message });
+            return StatusCode(500, new { message = "Failed to delete company.", detail = ex.Message });
         }
     }
 }

@@ -18,13 +18,15 @@ public class FileGroupService : IFileGroupService
     {
         var query = _context.FileGroups.AsQueryable();
 
+        search = search?.Trim().ToLower();
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(file_group =>
-                (file_group.FileGroup1 != null && file_group.FileGroup1.Trim().ToLower().Contains(search.Trim().ToLower())) ||
-                (file_group.CreatedByUser != null && file_group.CreatedByUser.FullName != null && file_group.CreatedByUser.FullName.Trim().ToLower().Contains(search.Trim().ToLower())) ||
-                (file_group.CreatedByUser != null && file_group.CreatedByUser.FullNameReverse != null && file_group.CreatedByUser.FullNameReverse.Trim().ToLower().Contains(search.Trim().ToLower())) ||
-                (file_group.Created != null && file_group.Created.Value.ToString("dddd, M/d/yyyy h:mm tt").Trim().ToLower().Contains(search.Trim().ToLower()))
+                (file_group.FileGroup1 != null && file_group.FileGroup1.Trim().ToLower().Contains(search)) ||
+                (file_group.CreatedByUser != null && file_group.CreatedByUser.FullName != null && file_group.CreatedByUser.FullName.Trim().ToLower().Contains(search)) ||
+                (file_group.CreatedByUser != null && file_group.CreatedByUser.FullNameReverse != null && file_group.CreatedByUser.FullNameReverse.Trim().ToLower().Contains(search)) ||
+                (file_group.Created != null && file_group.Created.Value.ToString("dddd, M/d/yyyy h:mm tt").Trim().ToLower().Contains(search))
             );
         }
 

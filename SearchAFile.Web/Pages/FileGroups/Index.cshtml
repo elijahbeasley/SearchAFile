@@ -1,14 +1,13 @@
 ﻿@page
-@model SearchAFile.Web.Pages.Users.IndexModel
-@using SearchAFile.Core.Domain.Entities
+@model SearchAFile.Web.Pages.FileGroups.IndexModel
 
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
-        <label class="fs-3 pe-3">Users</label>
+        <label class="fs-3 pe-3">File Groups</label>
         <form method="get">
             <div class="input-group">
-                <input asp-for="search" class="form-control" type="search" placeholder="Search users..." onchange="if (this.value === '') {this.form.submit(); }" />
+                <input asp-for="search" class="form-control" type="search" placeholder="Search file groups..." onchange="if (this.value === '') {this.form.submit(); }" />
                 <button type="submit" class="btn btn-primary">Search</button>
             </div>
         </form>
@@ -19,12 +18,12 @@
         <div class="p-3">
             <a asp-page="Create" class="btn btn-outline-success w-100">
                 <i class="fa-solid fa-plus-circle"></i>
-                Create User
+                Create File Group
             </a>
         </div>
 
-        @if (Model.Users != null
-            && Model.Users.Any())
+        @if (Model.FileGroups != null
+            && Model.FileGroups.Any())
         {
             <div style="margin-left: 40px; overflow-x: auto;">
                 <table id="tblData" class="table table-striped m-0">
@@ -34,44 +33,38 @@
                             <th></th>
                             <th class="text-center">
                                 <a href="javascript:SortTable(2,'T', 'tblData');">
-                                    @Html.DisplayNameFor(model => model.Users[0].Active)
+                                    @Html.DisplayNameFor(model => model.FileGroups[0].Active)
                                     <i id="iSort2" class="fa-solid fa-sort-up cus-sort-icon"></i>
                                 </a>
                             </th>
                             <th>
                                 <a href="javascript:SortTable(3,'T', 'tblData');">
-                                    @Html.DisplayNameFor(model => model.Users[0].FullName)
+                                    @Html.DisplayNameFor(model => model.FileGroups[0].FileGroup1)
                                     <i id="iSort3" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                             <th>
                                 <a href="javascript:SortTable(4,'T', 'tblData');">
-                                    @Html.DisplayNameFor(model => model.Users[0].EmailAddress)
+                                    @Html.DisplayNameFor(model => model.FileGroups[0].Created)
                                     <i id="iSort4" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                             <th>
-                                <a href="javascript:SortTable(5,'T', 'tblData');">
-                                    @Html.DisplayNameFor(model => model.Users[0].PhoneNumber)
+                                <a href="javascript:SortTable(5,'N', 'tblData');">
+                                    @Html.DisplayNameFor(model => model.FileGroups[0].CreatedByUserId)
                                     <i id="iSort5" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                             <th class="text-center">
                                 <a href="javascript:SortTable(6,'N', 'tblData');">
-                                    @Html.DisplayNameFor(model => model.Users[0].EmailVerified)
+                                    @Html.DisplayNameFor(model => model.FileGroups[0].Files)
                                     <i id="iSort6" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
-                                </a>
-                            </th>
-                            <th class="text-center">
-                                <a href="javascript:SortTable(7,'N', 'tblData');">
-                                    @Html.DisplayNameFor(model => model.Users[0].Role)
-                                    <i id="iSort7" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.Users)
+                        @foreach (var item in Model.FileGroups)
                         {
                             <tr style="white-space: nowrap;">
                                 <td class="cus-fixed-col-td">
@@ -80,38 +73,35 @@
                                             <i class="fa-solid fa-ellipsis-vertical" style="font-size: larger;"></i>
                                         </button>
                                         <div class="dropdown-menu" style="min-width: unset;">
-                                            <a asp-page="./Details" asp-route-id="@item.UserId" class="btn dropdown-item" title="Details">
+                                            <a asp-page="./Details" asp-route-id="@item.FileGroupId" class="btn dropdown-item" title="Details">
                                                 <i class="fa-solid fa-eye cus-text-primary"></i>
                                                 &nbsp;
                                                 Details
                                             </a>
-                                            <a asp-page="./Edit" asp-route-id="@item.UserId" class="btn dropdown-item" title="Edit">
+                                            <a asp-page="./Edit" asp-route-id="@item.FileGroupId" class="btn dropdown-item" title="Edit">
                                                 <i class="fa-solid fa-pen-to-square text-primary"></i>
                                                 &nbsp;
                                                 Edit
                                             </a>
-                                            @if (!HttpContext.Session.GetObject<UserDto>("User").UserId.Equals(item.UserId))
-                                            {
-                                                <a asp-page="./Delete" asp-route-id="@item.UserId" class="btn dropdown-item" title="Delete">
-                                                    <i class="fa-solid fa-trash text-danger"></i>
-                                                    &nbsp;
-                                                    Delete
-                                                </a>
-                                            }
+                                            <a asp-page="./Delete" asp-route-id="@item.FileGroupId" class="btn dropdown-item" title="Delete">
+                                                <i class="fa-solid fa-trash text-danger"></i>
+                                                &nbsp;
+                                                Delete
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a asp-page="/Files/Index" asp-route-id="@item.FileGroupId" class="btn dropdown-item" title="Files">
+                                                <i class="fa-solid fa-file text-primary"></i>
+                                                &nbsp;
+                                                Files (@item.Files.Count())
+                                            </a>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="align-middle py-0" style="width: 0;">
-                                    @if (string.IsNullOrEmpty(item.HeadshotPath)) 
+                                    @if (item.ImageUrl != null)
                                     {
-                                        <a href="~/UserFiles/Generic.jpg" target="_blank" style="cursor: pointer;">
-                                            <img alt="headshot" src="~/UserFiles/Generic.jpg" style="height: 35px;" title="<img src='/UserFiles/Generic.jpg' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a href="~/UserFiles/@item.HeadshotPath" target="_blank" style="cursor: pointer;">
-                                            <img alt="headshot" onerror="this.onerror=null;this.src='/UserFiles/Generic.jpg';" src="~/UserFiles/@item.HeadshotPath" style="height: 35px;" title="<img src='/UserFiles/@item.HeadshotPath' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
+                                        <a href="~/FileGroups/@item.ImageUrl" target="_blank" style="cursor: pointer;">
+                                            <img alt="logo" src="~/FileGroups/@item.ImageUrl" style="height: 35px;" title="<img src='/FileGroups/@item.ImageUrl' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
                                         </a>
                                     }
                                 </td>
@@ -132,30 +122,16 @@
                                     }
                                 </td>
                                 <td class="align-middle">
-                                    <label>@item.FullName</label>
+                                    <label>@item.FileGroup1</label>
                                 </td>
                                 <td class="align-middle">
-                                    <a href="mailto:@item.EmailAddress">@item.EmailAddress</a>
+                                    <label>@item.Created?.ToString("dddd M/d/yyyy")</label>
                                 </td>
                                 <td class="align-middle">
-                                    <label>@item.PhoneNumber</label>
+                                    <label>@item.CreatedByUserFullName</label>
                                 </td>
-                                <td class="align-middle text-center cus-no-select" style="width: 0;">
-                                    @if (Convert.ToBoolean(item.EmailVerified))
-                                    {
-                                        <lable class="d-none">0</lable>
-                                        <i class="fa-solid fa-check-circle text-success"></i>
-                                    }
-                                    else
-                                    {
-                                        <lable class="d-none">1</lable>
-                                        <i class="fa-solid fa-xmark-circle text-danger"></i>
-                                    }
-                                </td>
-                                <td class="align-middle text-center cus-no-select" style="width: 0;">
-                                    <span class="badge bg-success cus-no-select px-4 w-100 @(item.Role.Equals("System Admin") ? "bg-danger" : item.Role.Equals("Admin") ? "bg-warning" : "cus-bg-primary")">
-                                        @item.Role
-                                    </span>
+                                <td class="align-middle text-center">
+                                    <label>@item.Files.Count()</label>
                                 </td>
                             </tr>
                         }
@@ -166,7 +142,7 @@
         else
         {
             <div class="mb-3 text-center text-secondary cus-no-select">
-                <i>No existing users</i>
+                <i>No existing file groups</i>
             </div>
         }
 

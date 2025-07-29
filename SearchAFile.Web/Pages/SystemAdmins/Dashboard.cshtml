@@ -1,4 +1,33 @@
 ﻿@page
 @model SearchAFile.Web.Pages.SystemAdmins.DashboardModel
-@{
+
+<div class="py-3">
+    <div class="form-floating mx-auto" style="max-width: 30rem;">
+        <select class="form-select" asp-items="@(HttpContext.Session.GetObject<List<SelectListItem>>("Companies"))" onchange="ChangeCompany(this.value);"></select>
+        <label class="control-label">Companies</label>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        function ChangeCompany(id) {
+
+            $.ajax({
+                url: '/Account/ChangeCompany',
+                type: 'POST',
+                contentType: 'application/json',
+                //data: id,
+                data: JSON.stringify(id),
+                success: function (response) {
+                    location.reload();
+                },
+                error: function (xhr) {
+                    window.top.ShowToast('danger', 'Error', xhr.responseText, 0, false);
+                }
+            });
+        }
+
+    </script>
 }

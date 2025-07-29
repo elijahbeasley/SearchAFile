@@ -84,11 +84,11 @@ public partial class Company
 
     [DisplayName("Locked")]
     [Required(ErrorMessage = "Locked is required.")]
-    public bool? Lock { get; set; }
+    public bool Lock { get; set; }
 
     [DisplayName("Status")]
     [Required(ErrorMessage = "Status is required.")]
-    public bool? Active { get; set; }
+    public bool Active { get; set; }
 
     [InverseProperty("Company")]
     public virtual ICollection<FileGroup> FileGroups { get; set; } = new List<FileGroup>();

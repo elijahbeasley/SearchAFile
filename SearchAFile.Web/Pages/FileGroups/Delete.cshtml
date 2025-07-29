@@ -1,0 +1,67 @@
+﻿@page
+@model SearchAFile.Web.Pages.FileGroups.DeleteModel
+
+<div class="card">
+
+    <div class="card-header">
+        <label class="fs-5"><i class="fa-solid fa-trash text-danger"></i> @Model.FileGroup.FileGroup1</label>
+    </div>
+
+    <div class="card-body cus-bootstrap-table-striped p-0">
+
+        <div class="row align-items-center m-0">
+            <div class="cus-col col-sm-6">
+                <div class="form-floating">
+                    <div class="form-control div-disabled">
+                        @if (Model.FileGroup.Active)
+                        {
+                            <span class="badge bg-success cus-no-select w-100">
+                                Active
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger cus-no-select w-100">
+                                Inactive
+                                <i class="fa-solid fa-xmark"></i>
+                            </span>
+                        }
+                    </div>
+                    <label asp-for="FileGroup.Active" class="control-label"></label>
+                </div>
+            </div>
+            <div class="cus-col col-sm-6">
+                <div class="form-floating">
+                    <input type="text" asp-for="FileGroup.FileGroup1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.FileGroup.FileGroup1)" disabled />
+                    <label asp-for="FileGroup.FileGroup1" class="control-label" show-asterisk="true"></label>
+                    <span asp-validation-for="FileGroup.FileGroup1" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-top m-0">
+            <div class="cus-col col-12">
+                <div class="d-flex justify-content-center" style="height: 75px;">
+                    <img class="d-block" style="max-height: 75px; max-width: 100%;" src="@(string.IsNullOrEmpty(Model.FileGroup.ImageUrl) ? SystemFunctions.EmptyImageSource : "/FileGroups/" + Model.FileGroup.ImageUrl)">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card-footer text-center">
+        <form method="post">
+            <input type="hidden" asp-for="FileGroup.FileGroupId" />
+            <a asp-page="./Index" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to List
+            </a>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete @Model.FileGroup.FileGroup1? This cannot be undone.');">
+                Delete
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </form>
+    </div>
+
+</div>
