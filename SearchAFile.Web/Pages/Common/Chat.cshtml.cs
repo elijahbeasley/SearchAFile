@@ -2,45 +2,48 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Org.BouncyCastle.Asn1.Cmp;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Services;
+using System.ComponentModel.DataAnnotations;
 
-namespace SearchAFile.Web.Pages.SystemAdmins;
+namespace SearchAFile.Web.Pages.Common;
 
-public class DashboardModel : PageModel
+public class ChatModel : PageModel
 {
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
 
-    public DashboardModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
+    public ChatModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
     {
         _telemetryClient = telemetryClient;
         _api = api;
     }
+    public FileGroup FileGroup { get; set; }
 
-    [BindProperty(SupportsGet = true)]
-    public string? search { get; set; }
-    public List<FileGroup>? FileGroups { get; set; } = default!;
-    public async Task OnGetAsync()
+    [Required(ErrorMessage = "Message is required.")]
+    public string? Message { get; set; }
+
+    public async Task<IActionResult> OnGetAsync(Guid? id)
     {
         try
         {
+            if (id == null)
+                return Redirect(HttpContext.Session.GetString("DashboardURL") ?? "/");
+
             // Set the page title.
-            HttpContext.Session.SetString("PageTitle", "Dashboard");
+            HttpContext.Session.SetString("PageTitle", "Chat");
 
-            string url = string.IsNullOrWhiteSpace(search)
-                ? "filegroups"
-                : $"filegroups?search={Uri.EscapeDataString(search)}";
+            var fileGroupResult = await _api.GetAsync<FileGroup>($"filegroups/{id}");
 
-            var fileGroupsResult = await _api.GetAsync<List<FileGroup>>(url);
-
-            if (!fileGroupsResult.IsSuccess || fileGroupsResult.Data == null)
+            if (!fileGroupResult.IsSuccess || fileGroupResult.Data == null)
             {
-                throw new Exception(fileGroupsResult.ErrorMessage ?? "Unable to retrieve file group.");
+                throw new Exception(fileGroupResult.ErrorMessage ?? "Unable to retrieve file group.");
             }
 
-            FileGroups = fileGroupsResult.Data.Where(file_group => file_group.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId).ToList();
+            FileGroup = fileGroupResult.Data;
+
         }
         catch (Exception ex)
         {
@@ -51,6 +54,15 @@ public class DashboardModel : PageModel
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
             TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+
+            return Redirect(HttpContext.Session.GetString("DashboardURL") ?? "/");
         }
+
+        return Page();
+    }
+
+    public void OnPost()
+    {
+
     }
 }

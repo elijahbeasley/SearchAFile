@@ -45,7 +45,7 @@ public class IndexModel : PageModel
                 throw new Exception(fileGroupsResult.ErrorMessage ?? "Unable to retrieve file group.");
             }
 
-            FileGroups = fileGroupsResult.Data;
+            FileGroups = fileGroupsResult.Data.Where(file_group => file_group.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId).ToList();
 
             var usersResult = await _api.GetAsync<List<UserDto>>("users");
 

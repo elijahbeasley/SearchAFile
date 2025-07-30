@@ -1,0 +1,140 @@
+﻿@page
+@model SearchAFile.Web.Pages.Common.ChatModel
+
+<style>
+
+    .chat-body {
+        max-height: calc(100vh - 14rem); /* Adjust for header/footer/form spacing */
+        overflow-y: auto;
+        padding: 1rem;
+        /* background-color: #f8f9fa; */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+        .chat-message.user {
+            align-self: flex-end;
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .chat-message.bot {
+            align-self: flex-start;
+            background-color: #e2e3e5;
+            color: #41464b;
+        }
+
+</style>
+
+<div class="pb-3">
+    <a asp-page="@HttpContext.Session.GetString("DashboardURL")" title="File Groups">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back
+    </a>
+</div>
+
+<form id="objForm" method="post">
+
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
+    <input type="hidden" name="id" value="@Request.Query["id"]" />
+
+    <div class="card">
+
+        <div class="card-header">
+            <label class="fs-5"><i class="fa-solid fa-comments cus-text-primary-no-hover"></i> @Model.FileGroup.FileGroup1</label>
+        </div>
+
+        <div class="card-body chat-body" id="chatBody" style="height: 0;">
+            @* @foreach (var message in Model.Messages)
+            {
+                var isUser = message.Role == "user"; // or however you track it
+                var cssClass = isUser ? "user" : "bot";
+
+                <div class="chat-message @cssClass">
+                    @message.Content
+                </div>
+            } *@
+        </div>
+
+        <div class="card-footer">
+            <div class="input-group">
+                <input type="text" asp-for="Message" class="form-control" placeholder="Type a message..." autocomplete="off" />
+                <div class="input-group-append btn-group">
+                    <button id="btnSend" type="submit" class="btn btn-success" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                        <i class="fa fa-paper-plane"></i>
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+
+        window.onload = function () {
+
+            SetHeight();
+        }
+
+        $(window).resize(function () {
+
+            SetHeight();
+        });
+
+        function SetHeight(){
+
+            // $('#chatBody').height(calculateDistanceBetweenElements('#chatBody', '#footer', 45));
+            $('#chatBody').height(0);
+
+            $('#chatBody').animate({
+                height: calculateDistanceBetweenElements('#chatBody', '#footer', 15)
+            }, 500); 
+
+            $('#chatBody').scrollTop($('#chatBody')[0].scrollHeight);
+        }
+
+        $(document).on('keypress', function (event) {
+
+            let keycode = (event.keyCode ? event.keyCode : event.which);
+
+            if (keycode == '13') {
+
+                event.preventDefault();
+                $('#btnSend').click();
+            }
+        });
+
+        // function Send() {
+
+        //     // Clear out the messages.
+        //     window.top.ClearToast();
+
+        //     // Validate the page.
+        //     $('#objForm').validate();
+
+        //     if (!$('#objForm').valid()) {
+
+        //         // Output the errors.
+        //         window.top.ShowToast("danger", "The following errors have occured", $('#divValidationSummary').html(), 0, false);
+        //     }
+        // }
+
+    </script>
+
+}

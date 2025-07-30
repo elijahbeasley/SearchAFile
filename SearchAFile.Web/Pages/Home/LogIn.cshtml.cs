@@ -142,7 +142,11 @@ public class LogInModel : PageModel
                 }
 
                 TempData["StartupJavaScript"] = "ShowSnack('success', 'Login Successful!', 7000, true)";
-                return Redirect(SystemFunctions.GetDashboardURL(User.Role));
+
+                string strDashboardURL = SystemFunctions.GetDashboardURL(User.Role);
+                HttpContext.Session.SetString("DashboardURL", strDashboardURL);
+
+                return Redirect(strDashboardURL);
             }
             else if (string.IsNullOrEmpty(loginResult.ErrorMessage))
             {
