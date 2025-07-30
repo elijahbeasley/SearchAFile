@@ -32,6 +32,15 @@
             color: #41464b;
         }
 
+    .timestamp {
+        color: #555;
+        font-size: x-small;
+        justify-self: right;
+        margin-bottom: -0.2rem;
+        padding-left: 1rem;
+        white-space: nowrap;
+    }
+
 </style>
 
 <div class="pb-3">
@@ -44,7 +53,6 @@
 <form id="objForm" method="post">
 
     <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
-    <input type="hidden" name="id" value="@Request.Query["id"]" />
 
     <div class="card">
 
@@ -53,6 +61,7 @@
         </div>
 
         <div class="card-body chat-body" id="chatBody" style="height: 0;">
+            @Html.Raw(Model.Answer)
             @* @foreach (var message in Model.Messages)
             {
                 var isUser = message.Role == "user"; // or however you track it
@@ -66,13 +75,15 @@
 
         <div class="card-footer">
             <div class="input-group">
-                <input type="text" asp-for="Message" class="form-control" placeholder="Type a message..." autocomplete="off" />
-                <div class="input-group-append btn-group">
-                    <button id="btnSend" type="submit" class="btn btn-success" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
-                        <i class="fa fa-paper-plane"></i>
-                        Send
-                    </button>
-                </div>
+                <button asp-page-handler="StartNewChat" asp-route-id="@Model.Id" type="submit" class="btn btn-primary" formnovalidate>
+                    <i class="fa fa-rotate-left"></i>
+                    New Chat
+                </button>
+                <input id="txtQuestion" type="text" asp-for="Question" class="form-control" placeholder="Ask a question..." autocomplete="off" />
+                <button asp-page-handler="Ask" asp-route-id="@Model.Id" id="btnSend" type="submit" class="btn btn-success">
+                    Send
+                    <i class="fa fa-paper-plane"></i>
+                </button>
             </div>
         </div>
 
@@ -90,6 +101,7 @@
         window.onload = function () {
 
             SetHeight();
+            ClearQuestion();
         }
 
         $(window).resize(function () {
@@ -118,7 +130,15 @@
                 event.preventDefault();
                 $('#btnSend').click();
             }
-        });
+                });
+
+        // Clear the question.
+        function ClearQuestion() {
+
+            document.getElementById("txtQuestion").value = "";
+            document.getElementById("txtQuestion").focus();
+
+        }
 
         // function Send() {
 

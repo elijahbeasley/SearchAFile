@@ -6,6 +6,7 @@ using SearchAFile.Helpers;
 using SearchAFile.Services;
 using SearchAFile.Web.Interfaces;
 using SearchAFile.Web.Services;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,6 +114,14 @@ builder.Services.AddHttpClient<AuthenticatedApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]);
 });
+
+// Needed for access to OpenAI.
+builder.Services.AddHttpClient("SearchAFIleClient", client =>
+{
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", builder.Configuration["OpenAI:APIKey"]);
+    client.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
+});
+
 
 var app = builder.Build();
 
