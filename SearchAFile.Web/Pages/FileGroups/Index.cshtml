@@ -92,7 +92,7 @@
                                             <a asp-page="/Files/Index" asp-route-id="@item.FileGroupId" class="btn dropdown-item" title="Files">
                                                 <i class="fa-solid fa-file text-primary"></i>
                                                 &nbsp;
-                                                Files (@item.Files.Count())
+                                                Files (@item.FilesCount)
                                             </a>
                                         </div>
                                     </div>
@@ -131,7 +131,10 @@
                                     <label>@item.CreatedByUserFullName</label>
                                 </td>
                                 <td class="align-middle text-center">
-                                    <label>@item.Files.Count()</label>
+                                    <a asp-page="/Files/Index" asp-route-id="@item.FileGroupId" title="Files">
+                                        @item.FilesCount
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </a>
                                 </td>
                             </tr>
                         }

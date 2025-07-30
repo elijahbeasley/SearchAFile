@@ -1,0 +1,208 @@
+﻿@page
+@model SearchAFile.Web.Pages.Files.CreateModel
+@{
+    Layout = "_LayoutModal";
+}
+
+<form id="objForm" method="post" enctype="multipart/form-data" onmouseup="window.top.ResizeModal();" onmouseover="window.top.ResizeModal();" onsubmit="$('#btnSave').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());">
+
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
+    <input asp-for="File.FileGroupId" hidden />
+
+    <div class="card border-0 p-0">
+
+        <div class="card-header">
+            <label class="fs-5"><i class="fa-solid fa-file-arrow-up text-success"></i> Upload File</label>
+        </div>
+
+        <div class="card-body cus-bootstrap-table-striped p-0">
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-6">
+                    <label asp-for="File.Path"></label>
+                    <i class="fa-solid fa-circle-question cus-text-primary" data-bs-boundary="viewport" data-bs-container="body" title="Allowed File Types" data-bs-content="<ul class='cus-popover-list'>@string.Join("", Model.FileTypes.Select(ft => $"<li>{ft}</li>"))</ul>" data-bs-html="true" data-bs-placement="top" data-bs-toggle="popover" onclick="$(this).popover('show');" onmouseleave="$(this).popover('hide');" style="cursor: pointer;"></i>
+                    <input id="FilePath" class="form-control" type="file" asp-for="IFormFile" onchange="SelectFile(this, 'FilePath');">
+                    <span asp-validation-for="IFormFile" class="text-danger"></span>
+                </div>
+                <div class="cus-col col-sm-6">
+                    <div class="form-floating">
+                        <input type="text" asp-for="File.File1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.File.File1)" />
+                        <label asp-for="File.File1" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="File.File1" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-footer text-center">
+            <button id="btnCancel" type="button" class="btn btn-outline-secondary" onclick="window.top.CloseModal();">
+                <i class="fa-solid fa-ban"></i>
+                Cancel
+            </button>
+            <button id="btnSave" type="submit" class="btn btn-success" onclick="return Save();">
+                Upload
+                <i class="fa-solid fa-upload"></i>
+            </button>
+        </div>
+
+    </div>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+
+        if (self == top) {
+
+            history.back();
+        }
+
+        $(window).resize(function () {
+
+            if (self !== top) {
+
+                window.top.ResizeModal();
+            }
+        });
+
+        $(document).on('keypress', function (event) {
+
+            let keycode = (event.keyCode ? event.keyCode : event.which);
+
+            if (keycode == '13') {
+
+                event.preventDefault();
+                $('#btnSave').click();
+            }
+        });
+
+        function Save() {
+
+            // Clear out the messages.
+            window.top.ClearToast();
+
+            // Validate the page.
+            $('#objForm').validate();
+
+            if (!$('#objForm').valid()) {
+
+                // Output the errors.
+                window.top.ShowToast("danger", "The following errors have occured", $('#divValidationSummary').html(), 0, false);
+            }
+            else {
+
+                window.top.StartLoadingModal('#divLoadingBlockModal');
+            }
+
+            return booIsValid;
+        }
+
+        function CalculateFileSizes() {
+
+            var totalFileSize = 0;
+            var totalFileSizeMB = 0;
+
+            $('input:file').each(function () {
+
+                if (this.files[0] != null) {
+
+                    totalFileSize += this.files[0].size;
+                }
+            });
+
+            if (totalFileSize > 0) {
+
+                // 1024
+                totalFileSizeMB = totalFileSize / Math.pow(1024, 2);
+            }
+
+            $('#lblTotalFileSize').text(totalFileSizeMB.toFixed(2) + 'MB')
+        }
+
+        function ClearFile(e, id) {
+
+            $('#' + id + 'Preview').prop('src', '@SystemFunctions.EmptyImageSource');
+
+            $(e).find('input:file').val('');
+            $(e).parent('div').find('input:text').val('');
+            $(e).parent('div').find('input:text').prop('title', '');
+            CalculateFileSizes();
+        }
+
+        function SelectFile(e, id) {
+
+            let errors = '';
+
+            if (e.files[0].size > MaxFileSize) {
+
+                errors += '<li>Invalid file selected. File size must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB.</li>';
+            }
+
+                let fileExtension = ['pdf','doc','docx','xlsx','txt','csv','md'];
+
+            if ($.inArray($(e).val().split('.').pop().toLowerCase(), fileExtension) == -1) {
+
+                errors += '<li>Invalid file selected. File must be of type: ' + fileExtension.join(', ') + '.</li>';
+            }
+
+            if (errors == '') {
+
+                let totalFileSize = 0;
+
+                $('input:file').each(function () {
+
+                    if (this.files[0] != null) {
+
+                        totalFileSize += this.files[0].size;
+                    }
+                });
+
+                if (totalFileSize > MaxFileSize) {
+
+                    let totalFileSizeMB = totalFileSize - e.files[0].size;
+
+                    if (totalFileSize > 0) {
+
+                        // 1024
+                        totalFileSizeMB = totalFileSizeMB / Math.pow(1024, 2);
+                    }
+
+                    errors += '<li>Invalid file selected. The total file size(s) must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB. The current file size(s) is ' + totalFileSizeMB.toFixed(2) + 'MB.</li>';
+                }
+            }
+
+            if (errors !== '') {
+
+                $('#' + id).addClass('input-validation-error');
+                $(e).val('');
+                $(e).parent('div').parent('div').find('input:text').val('');
+                $(e).parent('div').parent('div').find('input:text').prop('title', '');
+
+                window.top.ClearToast();
+                window.top.ShowToast('danger', 'The following errors have occured', '<ul>' + errors + '</ul>', 0, false);
+            }
+            else {
+
+                $('#' + id).removeClass('input-validation-error');
+                $(e).parent('div').parent('div').find('input:text').val(e.files[0].name);
+                $(e).parent('div').parent('div').find('input:text').prop('title', e.files[0].name);
+
+                // Display the file.
+                var reader = new FileReader();
+                reader.onload = function (element) {
+                    $('#' + id + 'Preview').prop('src', element.target.result);
+                }
+                reader.readAsDataURL($(e)[0].files[0]);
+            }
+
+            CalculateFileSizes();
+        }
+
+    </script>
+
+}

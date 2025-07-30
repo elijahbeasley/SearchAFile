@@ -21,11 +21,7 @@ public class FileService : IFileService
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(file =>
-                (file.FileGroup != null && file.FileGroup.FileGroup1 != null && file.FileGroup.FileGroup1.Trim().ToLower().Contains(search.Trim().ToLower())) ||
-                (file.File1 != null && file.File1.Trim().ToLower().Contains(search.Trim().ToLower())) ||
-                (file.UploadedByUser != null && file.UploadedByUser.FullName != null && file.UploadedByUser.FullName.Trim().ToLower().Contains(search.Trim().ToLower())) ||
-                (file.UploadedByUser != null && file.UploadedByUser.FullNameReverse != null && file.UploadedByUser.FullNameReverse.Trim().ToLower().Contains(search.Trim().ToLower())) ||
-                (file.Uploaded != null && file.Uploaded.Value.ToString("dddd, M/d/yyyy h:mm tt").Trim().ToLower().Contains(search.Trim().ToLower()))
+                (file.File1 != null && file.File1.Trim().ToLower().Contains(search.Trim().ToLower()))
             );
         }
 

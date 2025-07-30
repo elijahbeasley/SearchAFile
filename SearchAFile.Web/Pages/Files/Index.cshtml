@@ -1,14 +1,33 @@
 ﻿@page
+@using SearchAFile.Helpers
 @model SearchAFile.Web.Pages.Files.IndexModel
 
 <style>
+
     .file-icon-wrapper {
         background-color: #f8f9fa;
         border: 1px solid #dee2e6;
         border-radius: 0.5rem;
+        cursor: pointer;
         padding: 2rem 1rem;
         position: relative;
         transition: box-shadow 0.2s;
+        height: 10rem; /* or whatever fixed height works visually */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .file-name {
+        margin-top: 0.5rem;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9rem;
+        color: #007bff;
+        text-decoration: underline;
         cursor: pointer;
     }
 
@@ -17,14 +36,13 @@
     }
 
     .file-icon {
-        font-size: 3rem;
         color: #6c757d;
+        font-size: 3rem;
     }
 
     .delete-btn {
         background: transparent;
         border: none;
-        color: #dc3545;
         padding: 0.25rem;
         font-size: 1rem;
         visibility: hidden;
@@ -33,13 +51,29 @@
     .file-icon-wrapper:hover .delete-btn {
         visibility: visible;
     }
+
+    /* ✅ Always show trash icon on small screens */
+    @@media (max-width: 991.98px) {
+        .delete-btn {
+            visibility: visible !important;
+        }
+    }
+
 </style>
+
+<div class="py-2">
+    <a asp-page="/FileGroups/Index" title="File Groups">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back
+    </a>
+</div>
 
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
-        <label class="fs-3 pe-3">Files</label>
+        <label class="fs-3 pe-3">@Model.FileGroup.FileGroup1 Files</label>
         <form method="get">
+            <input type="hidden" name="id" value="@Request.Query["id"]" />
             <div class="input-group">
                 <input asp-for="search" class="form-control" type="search" placeholder="Search files..." onchange="if (this.value === '') {this.form.submit(); }" />
                 <button type="submit" class="btn btn-primary">Search</button>
@@ -50,15 +84,20 @@
     <div class="card-body p-0">
 
         <div class="p-3">
-            <a asp-page="Create" class="btn btn-outline-success w-100">
+            <button class="btn btn-outline-success w-100" onclick="UploadFile();">
                 <i class="fa-solid fa-plus-circle"></i>
                 Upload File
-            </a>
+            </button>
         </div>
 
         @if (Model.Files != null
             && Model.Files.Any())
         {
+            int columnsPerRow =  DeviceHelper.IsMobileDeviceBrowser() ? 4 : 6; // because col-2 means 12 / 2 = 6 columns per row
+            int fileCount = Model.Files.Count();
+            int remainder = fileCount % columnsPerRow;
+            int fillerCount = remainder == 0 ? 0 : columnsPerRow - remainder;
+
             <div class="container-fluid mb-3">
                 <div class="row g-3">
                     @foreach (var item in Model.Files)
@@ -68,12 +107,13 @@
                             ".pdf" => "fa-file-pdf text-danger",
                             ".doc" or ".docx" => "fa-file-word text-primary",
                             ".xls" or ".xlsx" => "fa-file-excel text-success",
+                            ".csv" => "fa-file-csv text-success",
                             ".ppt" or ".pptx" => "fa-file-powerpoint text-warning",
-                            ".jpg" or ".jpeg" or "png" or "gif" => "fa-file-image text-info",
+                            ".jpg" or ".jpeg" or ".png" or ".gif" => "fa-file-image text-info",
                             ".zip" or ".rar" => "fa-file-archive text-secondary",
                             ".txt" => "fa-file-lines text-muted",
                             ".mp3" or ".wav" => "fa-file-audio text-warning",
-                            ".mp4" or ".mov" or "avi" => "fa-file-video text-dark",
+                            ".mp4" or ".mov" or ".avi" => "fa-file-video text-dark",
                             _ => "fa-file text-secondary" // default
                         };
 
@@ -81,17 +121,20 @@
                             <a href="~/Files/@item.Path" target="_blank">
                                 <div class="file-icon-wrapper position-relative text-center">
                                     <i class="file-icon fa-solid @iconClass"></i>
-                                    <button type="button" class="delete-btn position-absolute top-0 end-0" title="Delete" onclick="deleteFile('@item.FileId')">
+                                    <button type="button" class="delete-btn position-absolute top-0 end-0" title="Delete" onclick="deleteFile('@item.FileId', event)">
                                         <i class="fa-solid fa-trash cus-text-danger"></i>
                                     </button>
-                                    <div>
+                                    <div class="file-name" title="@item.File1">
                                         @item.File1
                                     </div>
                                 </div>
                             </a>
                         </div>
                     }
-
+                    @for (int i = 0; i < fillerCount; i++)
+                    {
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2"></div>
+                    }
                 </div>
             </div>
 
@@ -107,15 +150,50 @@
 
 </div>
 
+@await Html.PartialAsync("~/Pages/Shared/_ModalPartial.cshtml", "modal-md")
+
 @section Scripts {
 
     <script type="text/javascript">
 
-        function deleteFile(fileId) {
-            if (confirm("Are you sure you want to delete this file?")) {
-                
-                alert('File deleted...');
-            }
+        const id = new URLSearchParams(window.location.search).get("id");
+
+        function UploadFile() {
+
+            window.top.ClearToast();
+
+            $('#ifrModal').attr('src', '/Files/Create?id=' + id);
+        }
+
+        function deleteFile(id, event) {
+
+            event.stopPropagation(); // prevents bubbling to parent
+            event.preventDefault();  // optional: prevents default link/button behavior
+
+            if (!confirm("Are you sure you want to delete this file?")) return;
+
+            $.ajax({
+                url: PageURL + '/Index?handler=Delete',
+                type: 'GET',
+                contentType: 'application/json',
+                data: {
+                    id: id
+                },
+                success: function (response) {
+
+                    if (response.success) {
+
+                        location.reload();
+                    } else {
+
+                        window.top.ShowToast('danger', 'Error!', response.message || 'Unable to delete file.', 0, false);
+                    }
+                },
+                error: function (xhr) {
+
+                    window.top.ShowToast('danger', 'Error!', 'An error occurred while deleting the file:' + xhr.responseText, 0, false);
+                }
+            });
         }
 
     </script>

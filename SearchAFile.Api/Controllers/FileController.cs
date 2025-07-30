@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Core.Interfaces;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace SearchAFile.Api.Controllers;
 
@@ -48,18 +49,48 @@ public class FileController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Core.Domain.Entities.File file)
     {
-        await _service.CreateAsync(file);
-        return CreatedAtAction(nameof(GetById), new { id = file.FileId }, file);
+        try
+        {
+            await _service.CreateAsync(file);
+            return CreatedAtAction(nameof(GetById), new { id = file.FileId }, file);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to create file.", detail = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] Core.Domain.Entities.File file)
     {
-        if (id != file.FileId) return BadRequest();
-        return await _service.UpdateAsync(file) ? NoContent() : NotFound();
+        try
+        {
+            if (id != file.FileId) return BadRequest();
+
+            var result = await _service.UpdateAsync(file);
+            if (!result) return NotFound();
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to update file.", detail = ex.Message });
+        }
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id) =>
-        await _service.DeleteAsync(id) ? NoContent() : NotFound();
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            var result = await _service.DeleteAsync(id);
+            if (!result) return NotFound();
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to delete file.", detail = ex.Message });
+        }
+    }
 }

@@ -318,29 +318,6 @@
             window.top.ClearToast();
 
             $('#ifrModal').attr('src', 'ChangePassword?id=@(HttpContext.Session.GetObject<UserDto>("User").UserId)');
-
-            // $.ajax({
-            //     type: 'GET',
-            //     url: PageURL + '?handler=CheckID',
-            //     contentType: 'application/json; charset=utf-8',
-            //     dataType: 'json',
-            //     data: {
-            //         id: 
-            //     },
-            //     success: function (response) {
-
-            //         const jsonResponse = $.parseJSON(response);
-
-            //         if (jsonResponse.booSuccess) {
-
-            //         }
-            //         else {
-
-            //              window.top.ShowToast('danger', 'Error!', jsonResponse.ErrorMessage.replace('\r', ' ').replace('\n', '<br />'), 0, false);
-            //             StopLoadingAll();
-            //         }
-            //     }
-            // });
         }
 
         function UploadImage() {

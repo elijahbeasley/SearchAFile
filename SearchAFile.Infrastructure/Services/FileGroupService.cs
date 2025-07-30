@@ -24,9 +24,8 @@ public class FileGroupService : IFileGroupService
         {
             query = query.Where(file_group =>
                 (file_group.FileGroup1 != null && file_group.FileGroup1.Trim().ToLower().Contains(search)) ||
-                (file_group.CreatedByUser != null && file_group.CreatedByUser.FullName != null && file_group.CreatedByUser.FullName.Trim().ToLower().Contains(search)) ||
-                (file_group.CreatedByUser != null && file_group.CreatedByUser.FullNameReverse != null && file_group.CreatedByUser.FullNameReverse.Trim().ToLower().Contains(search)) ||
-                (file_group.Created != null && file_group.Created.Value.ToString("dddd, M/d/yyyy h:mm tt").Trim().ToLower().Contains(search))
+                (file_group.CreatedByUser != null && file_group.CreatedByUser.FirstName != null && file_group.CreatedByUser.LastName != null && (file_group.CreatedByUser.FirstName + " " + file_group.CreatedByUser.LastName).Trim().ToLower().Contains(search)) ||
+                (file_group.CreatedByUser != null && file_group.CreatedByUser.FirstName != null && file_group.CreatedByUser.LastName != null && (file_group.CreatedByUser.LastName + ", " + file_group.CreatedByUser.FirstName).Trim().ToLower().Contains(search))
             );
         }
 

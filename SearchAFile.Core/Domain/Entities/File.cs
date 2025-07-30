@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +18,12 @@ public partial class File
     public Guid? FileGroupId { get; set; }
 
     [Column("File")]
+    [DisplayName("File")]
+    [Required(ErrorMessage = "File is required.")]
     [StringLength(50)]
     public string? File1 { get; set; }
 
+    [Required(ErrorMessage = "Path is required.")]
     [StringLength(50)]
     public string? Path { get; set; }
 

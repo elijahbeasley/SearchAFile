@@ -26,6 +26,7 @@ public class IndexModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public string? search { get; set; }
+    public FileGroup FileGroup { get; set; }
     public List<File>? Files { get;set; } = default!;
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
@@ -33,27 +34,66 @@ public class IndexModel : PageModel
         try
         {
             if (id == null)
-                return NotFound();
+                return Redirect("FileGroups");
 
             // Set the page title.
             HttpContext.Session.SetString("PageTitle", "Maintain Files");
+
+            var fileGroupResult = await _api.GetAsync<FileGroup>($"filegroups/{id}");
+
+            if (!fileGroupResult.IsSuccess || fileGroupResult.Data == null)
+            {
+                throw new Exception(fileGroupResult.ErrorMessage ?? "Unable to retrieve file group.");
+            }
+
+            FileGroup = fileGroupResult.Data;
 
             string url = string.IsNullOrWhiteSpace(search)
                 ? "files"
                 : $"files?search={Uri.EscapeDataString(search)}";
 
-            var fileGroupsResult = await _api.GetAsync<List<File>>(url);
+            var filesResult = await _api.GetAsync<List<File>>(url);
 
-            if (!fileGroupsResult.IsSuccess || fileGroupsResult.Data == null)
+            if (!filesResult.IsSuccess || filesResult.Data == null)
             {
-                throw new Exception(fileGroupsResult.ErrorMessage ?? "Unable to retrieve files.");
+                throw new Exception(filesResult.ErrorMessage ?? "Unable to retrieve files.");
             }
 
-            Files = fileGroupsResult.Data;
+            Files = filesResult.Data.Where(file => file.FileGroupId == id).OrderBy(file => file.File1).ToList();
 
             ModelState.Remove("search");
 
             return Page();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
+
+            // Display an error for the user.
+            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+
+            return Redirect("FileGroups");
+        }
+    }
+
+    public async Task<IActionResult> OnGetDeleteAsync(Guid? id)
+    {
+        try
+        {
+            if (id == null)
+                return NotFound();
+
+            var result = await _api.DeleteAsync<object>($"files/{id}");
+
+            if (!result.IsSuccess)
+                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to delete file.");
+
+            TempData["StartupJavaScript"] = "window.top.ShowSnack('success', 'File successfully deleted.', 7000, true)";
+
+            return new JsonResult(new { success = true }) { StatusCode = 200 };
         }
         catch (Exception ex)
         {
