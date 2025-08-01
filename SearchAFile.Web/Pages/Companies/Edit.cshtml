@@ -215,6 +215,12 @@
 
         function SelectFile(e, id) {
 
+            if (e.files.length === 0) {
+
+                ClearFile();
+                return;
+            }
+
             let errors = '';
 
             if (e.files[0].size > MaxFileSize) {

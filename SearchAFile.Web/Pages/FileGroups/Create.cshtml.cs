@@ -20,12 +20,14 @@ public class CreateModel : PageModel
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IWebHostEnvironment _iWebHostEnvironment;
+    private readonly OpenAIFileService _openAIFileService;
 
-    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment)
+    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, OpenAIFileService openAIFileService)
     {
         _telemetryClient = telemetryClient;
         _api = api;
         _iWebHostEnvironment = iWebHostEnvironment;
+        _openAIFileService = openAIFileService;
     }
 
     public FileGroup FileGroup { get; set; } = default!;

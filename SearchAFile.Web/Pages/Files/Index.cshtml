@@ -71,7 +71,7 @@
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
-        <label class="fs-5 pe-3">@Model.FileGroup.FileGroup1 Files</label>
+        <label class="fs-5 pe-3"><i class="fa-solid fa-file cus-text-primary-no-hover"></i> @Model.FileGroup.FileGroup1 Files</label>
         <form method="get">
             <input type="hidden" name="id" value="@Request.Query["id"]" />
             <div class="input-group">
@@ -84,10 +84,21 @@
     <div class="card-body p-0">
 
         <div class="p-3">
-            <button class="btn btn-outline-success w-100" onclick="UploadFile();">
-                <i class="fa-solid fa-plus-circle"></i>
-                Upload File
-            </button>
+            @if (Model.Files == null
+                || Model.Files.Count() < 20)
+            {
+                <button class="btn btn-outline-success w-100" onclick="UploadFile();">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    Upload File
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-outline-success w-100" disabled>
+                    <i class="fa-solid fa-plus-circle"></i>
+                    Upload File
+                </button>
+            }
         </div>
 
         @if (Model.Files != null

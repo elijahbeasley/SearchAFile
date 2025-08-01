@@ -203,7 +203,7 @@ public class LogInModel : PageModel
             //    else
             //    {
             //        // Create the email verification info.
-            //        User.EmailVerificationUrl = Guid.NewGuid().ToString("N");
+            //        User.EmailVerificationUrl = Guid.NewGuid();
 
             //        SearchAFileContext.Update(User);
 

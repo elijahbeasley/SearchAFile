@@ -213,7 +213,7 @@ public class AccountSettingsModel : PageModel
                 if (UpdateUser != null)
                 {
                     // Create the file name.
-                    strFileName = Guid.NewGuid().ToString("N") + Path.GetExtension(IFormFile.FileName);
+                    strFileName = Guid.NewGuid() + Path.GetExtension(IFormFile.FileName);
 
                     UpdateUser.HeadshotPath = strFileName;
 

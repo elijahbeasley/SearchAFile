@@ -1,6 +1,7 @@
 using Ganss.Xss;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
@@ -8,6 +9,8 @@ using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
+using System.Text.Json;
 using File = SearchAFile.Core.Domain.Entities.File;
 
 namespace SearchAFile.Web.Pages.Files;
@@ -18,25 +21,27 @@ public class CreateModel : PageModel
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IWebHostEnvironment _iWebHostEnvironment;
+    private readonly OpenAIFileService _openAIFileService;
 
-    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment)
+    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, OpenAIFileService openAIFileService)
     {
         _telemetryClient = telemetryClient;
         _api = api;
         _iWebHostEnvironment = iWebHostEnvironment;
+        _openAIFileService = openAIFileService;
     }
 
-    public File File { get; set; } = default;
+    public File? File { get; set; } = default;
 
-    [Required(ErrorMessage = "Email logo is required.")]
+    [Required(ErrorMessage = "File is required.")]
     public IFormFile IFormFile { get; set; }
 
     public List<string> FileTypes = new List<string>()
     {
-        "pdf","doc","docx","xlsx","txt","csv","md"
+        "pdf","docx","csv","txt","md"
     };
 
-    public IActionResult OnGet(Guid? id)
+    public async Task<IActionResult> OnGet(Guid? id)
     {
         try
         {
@@ -69,10 +74,15 @@ public class CreateModel : PageModel
     {
         try
         {
+            string newFileName = Guid.NewGuid() + Path.GetExtension(IFormFile.FileName);
+
+            bool postSuccess = await _openAIFileService.TryPostFileToOpenAIAsync(IFormFile, "File", FileTypes, openAIFileId => File.OpenAIFileId = openAIFileId, newFileName);
+            if (!postSuccess) throw new Exception("Unable to post the file to OpenAI.");
+
             string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "Files");
 
-            bool headerSuccess = await FileUploadHelper.TryUploadFileAsync(IFormFile, "File", strPath, FileTypes, fileName => File.Path = fileName);
-            if (!headerSuccess) throw new Exception("Unable to upload the file.");
+            bool uploadSuccess = await FileUploadHelper.TryUploadFileAsync(IFormFile, "File", strPath, FileTypes, filePath => File.Path = filePath, null, newFileName);
+            if (!uploadSuccess) throw new Exception("Unable to upload the file.");
 
             // Sanitize the data.
             HtmlSanitizer objHtmlSanitizer = new HtmlSanitizer();

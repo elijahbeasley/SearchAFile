@@ -3,9 +3,18 @@
 
 <div class="card">
 
-    <div class="card-header">
-        <label class="fs-5"><i class="fa-solid fa-eye cus-text-primary-no-hover"></i> @Model.FileGroup.FileGroup1</label>
+    <div class="card-header d-flex align-items-center">
+        <a class="pe-2" href="~/FileGroups/@(string.IsNullOrEmpty(Model.FileGroup.ImageUrl) ? "Generic.jpg" : Model.FileGroup.ImageUrl)" target="_blank" title="View Image">
+            <img src="~/FileGroups/@(string.IsNullOrEmpty(Model.FileGroup.ImageUrl) ? "Generic.jpg" : Model.FileGroup.ImageUrl)" style="border-radius: 50%; height: 75px; width: 75px;" />
+        </a>
+        <label class="fs-5 ms-auto">
+            <i class="fa-solid fa-trash text-danger"></i> @Model.FileGroup.FileGroup1
+        </label>
     </div>
+
+    @* <div class="card-header">
+        <label class="fs-5"><i class="fa-solid fa-eye cus-text-primary-no-hover"></i> @Model.FileGroup.FileGroup1</label>
+    </div> *@
 
     <div class="card-body cus-bootstrap-table-striped p-0">
 
@@ -40,13 +49,13 @@
             </div>
         </div>
 
-        <div class="row align-items-top m-0">
+        @* <div class="row align-items-top m-0">
             <div class="cus-col col-12">
                 <div class="d-flex justify-content-center" style="height: 75px;">
                     <img class="d-block" style="max-height: 75px; max-width: 100%;" src="@(string.IsNullOrEmpty(Model.FileGroup.ImageUrl) ? SystemFunctions.EmptyImageSource : "/FileGroups/" + Model.FileGroup.ImageUrl)">
                 </div>
             </div>
-        </div>
+        </div> *@
 
     </div>
 

@@ -17,12 +17,14 @@ public class EditModel : PageModel
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IWebHostEnvironment _iWebHostEnvironment;
+    private readonly OpenAIFileService _openAIFileService;
 
-    public EditModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment)
+    public EditModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, OpenAIFileService openAIFileService)
     {
         _telemetryClient = telemetryClient;
         _api = api;
         _iWebHostEnvironment = iWebHostEnvironment;
+        _openAIFileService = openAIFileService;
     }
 
     public Company Company { get; set; } = default!;

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SearchAFile;
 using SearchAFile.Helpers;
 using SearchAFile.Services;
+using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Interfaces;
 using SearchAFile.Web.Services;
 using System.Net.Http.Headers;
@@ -115,13 +116,15 @@ builder.Services.AddHttpClient<AuthenticatedApiClient>(client =>
     client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]);
 });
 
-// Needed for access to OpenAI.
+// Register the client factory with the OpenAI service.
 builder.Services.AddHttpClient("SearchAFIleClient", client =>
 {
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", builder.Configuration["OpenAI:APIKey"]);
     client.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
 });
 
+// Register the OpenAI service.
+builder.Services.AddScoped<OpenAIFileService>();
 
 var app = builder.Build();
 

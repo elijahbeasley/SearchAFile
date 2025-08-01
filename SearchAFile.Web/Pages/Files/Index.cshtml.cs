@@ -6,8 +6,10 @@ using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Infrastructure.Mappers;
 using SearchAFile.Infrastructure.Mapping;
 using SearchAFile.Web.Extensions;
+using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
 using System.Data;
+using System.Net.Http;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using File = SearchAFile.Core.Domain.Entities.File;
 
@@ -17,11 +19,13 @@ public class IndexModel : PageModel
 {
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
+    private readonly HttpClient _httpClient;
 
-    public IndexModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
+    public IndexModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IHttpClientFactory httpClient)
     {
         _telemetryClient = telemetryClient;
         _api = api;
+        _httpClient = httpClient.CreateClient("SearchAFIleClient");
     }
 
     [BindProperty(SupportsGet = true)]
@@ -86,6 +90,31 @@ public class IndexModel : PageModel
             if (id == null)
                 return NotFound();
 
+            // Get the OpenAIFileID.
+            var fileResult = await _api.GetAsync<File>($"files/{id}");
+
+            if (!fileResult.IsSuccess || fileResult.Data == null)
+            {
+                throw new Exception(fileResult.ErrorMessage ?? "Unable to retrieve file.");
+            }
+
+            string OpenAIFileID = fileResult.Data.OpenAIFileId;
+
+            if (string.IsNullOrEmpty(OpenAIFileID))
+            {
+                throw new Exception("Unable to retrieve the OpenAI file ID.");
+            }
+
+            // Delete the file from OpenAI.
+            var response = await _httpClient.DeleteAsync($"https://api.openai.com/v1/files/{OpenAIFileID}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Failed to delete OpenAI file: {error}");
+            }
+
+            // Delete the file from local storage.
             var result = await _api.DeleteAsync<object>($"files/{id}");
 
             if (!result.IsSuccess)

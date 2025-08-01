@@ -3,6 +3,7 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
+using SearchAFile.Infrastructure.Mapping;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Services;
 
@@ -40,7 +41,21 @@ public class DashboardModel : PageModel
                 throw new Exception(fileGroupsResult.ErrorMessage ?? "Unable to retrieve file group.");
             }
 
-            FileGroups = fileGroupsResult.Data.Where(file_group => file_group.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId).ToList();
+            FileGroups = fileGroupsResult.Data
+                .Where(file_group => file_group.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId)
+                .OrderBy(file_group => file_group.FileGroup1)
+                .ToList();
+
+            var filesResult = await _api.GetAsync<List<Core.Domain.Entities.File>>("files");
+
+            if (!filesResult.IsSuccess || filesResult.Data == null)
+            {
+                throw new Exception(filesResult.ErrorMessage ?? "Unable to retrieve files.");
+            }
+
+            List<Core.Domain.Entities.File> Files = filesResult.Data;
+
+            FileGroupFileCountMapper.MapFilesCountToFileGroups(FileGroups, Files);
         }
         catch (Exception ex)
         {

@@ -18,14 +18,16 @@ public partial class File
     public Guid? FileGroupId { get; set; }
 
     [Column("File")]
-    [DisplayName("File")]
-    [Required(ErrorMessage = "File is required.")]
+    [DisplayName("File Name")]
+    [Required(ErrorMessage = "File name is required.")]
     [StringLength(50)]
     public string? File1 { get; set; }
-
-    [Required(ErrorMessage = "Path is required.")]
     [StringLength(50)]
     public string? Path { get; set; }
+
+    [Column("OpenAIFileID")]
+    [StringLength(50)]
+    public string? OpenAIFileId { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? Uploaded { get; set; }

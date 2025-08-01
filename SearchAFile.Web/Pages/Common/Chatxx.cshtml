@@ -1,41 +1,53 @@
-﻿@page 
-@model SearchAFile.Web.Pages.Common.ChatModel
+﻿@page
+@model SearchAFile.Web.Pages.Common.ChatxxModel
 
 <style>
 
     .chat-body {
-        /* background-color: #f8f9fa; */
         display: flex;
         flex-direction: column;
+        gap: 1.25rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
     }
 
+    /* Shared base for all messages */
     .chat-message {
-        margin-bottom: 1rem;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        max-width: 80%;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        max-width: 85%;
+        font-size: 1rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
         word-wrap: break-word;
+        width: fit-content;
+        display: inline-block;
     }
 
+        /* User bubble */
         .chat-message.user {
             align-self: flex-end;
-            background-color: #d1e7dd;
-            color: #0f5132;
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
         }
 
+        /* Bot bubble */
         .chat-message.bot {
             align-self: flex-start;
-            background-color: #e2e3e5;
-            color: #41464b;
+            background-color: #f4f4f5;
+            color: #262626;
+            border: 1px solid #e4e4e7;
         }
 
+    /* Timestamp */
     .timestamp {
-        color: #555;
-        font-size: x-small;
-        justify-self: right;
-        margin-bottom: -0.2rem;
-        padding-left: 1rem;
-        white-space: nowrap;
+        display: block;
+        text-align: right;
+        font-size: 0.7rem;
+        color: #999;
+        margin-top: 0.25rem;
     }
 
 </style>
@@ -57,7 +69,7 @@
             <label class="fs-5"><i class="fa-solid fa-comments cus-text-primary-no-hover"></i> @Model.FileGroup.FileGroup1</label>
         </div>
 
-        <div id="divLoadingBlock" class="card-body pb-0" style="height: 0; overflow-y: auto;">
+        <div id="divLoadingBlock" class="card-body p-0" style="height: 0; overflow-y: auto;">
             <div id="divData">
                 <div class="chat-body">
                     @Html.Raw(Model.Answer)
@@ -65,23 +77,20 @@
                 <div id="divEllipses" class="typing-indicator" style="display: none;">
                     <span></span><span></span><span></span>
                 </div>
+                <div id="divBottomSpacer" style="display: none; height: 100px;"></div>
             </div>
         </div>
 
         <div class="card-footer">
             <div class="input-group">
-                <button asp-page-handler="StartNewChat" asp-route-id="@Model.Id" type="submit" class="btn btn-primary" formnovalidate onclick="return confirm('Are you sure you want to clear the current chat and start a new one?');" title="New Chat">
+                <button asp-page-handler="StartNewChat" asp-route-id="@Model.Id" type="submit" class="btn btn-primary" formnovalidate>
                     <i class="fa fa-rotate-left"></i>
-                    <span class="d-none d-lg-inline">
-                        New Chat
-                    </span>
+                    New Chat
                 </button>
                 <input id="txtQuestion" type="text" class="form-control" placeholder="Ask a question..." autocomplete="off" />
-                <button id="btnSend" type="button" class="btn btn-success" onclick="Send();" title="Send">
-                    <span class="d-none d-lg-inline">
-                        Send
-                    </span>
-                    <i class="fa fa-arrow-up"></i>
+                <button id="btnSend" type="button" class="btn btn-success" onclick="Send();">
+                    Send
+                    <i class="fa fa-paper-plane"></i>
                 </button>
             </div>
         </div>
@@ -122,42 +131,48 @@
         });
 
         function Send() {
-
             $('.card-footer').find('button, input').prop('disabled', true);
-
-            // Clear out the messages.
             ClearToast();
 
-            // Validate the page.
             $('#objForm').validate();
 
-            // Is the form valid?
             if (!$('#objForm').valid()) {
-
-                // Output the errors.
                 window.top.ShowToast("danger", "The following errors have occured", $('#divValidationSummary').html(), 0, false);
-            }
-            else {
+            } else {
+                const questionRaw = $('#txtQuestion').val()?.trim();
+                const questionEncoded = encodeURIComponent(questionRaw);
 
-                const question = encodeURIComponent($('#txtQuestion').val()?.trim());
+                if (!questionRaw) return;
+
+                // Append user message to chat
+                const timestamp = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+                $('#divData .chat-body').append(`
+                    <div class="chat-message user">
+                        ${escapeHtml(questionRaw)}
+                        <div class="timestamp">${timestamp}</div>
+                    </div>
+                `);
+
+                // Show ellipses and bottom spacer
+                $('#divEllipses').show();
+                $('#divBottomSpacer').show();
 
                 ClearQuestion();
-                $('#divEllipses').show();
-
                 ScrollToBottom();
 
-                // Refresh the table.
-                $('#divData').load(`${PageURL}?Question=${question}&handler=Ask #divData>*`, function (response, status, xhr) {
-
+                // Load updated chat content via Ajax
+                $('#divData').load(`${PageURL}?Question=${questionEncoded}&handler=Ask #divData>*`, function (response, status, xhr) {
+                    
                     $('#divEllipses').hide();
+                    $('#divBottomSpacer').hide();
 
-                    if (status == "error") {
-
+                    if (status === "error") {
                         window.top.ShowToast("danger", "Error!", xhr.responseText, 0, false);
                     }
 
-                    ScrollToBottom();
                     $('.card-footer').find('button, input').prop('disabled', false);
+                    ScrollToBottom();
                 });
             }
         }
@@ -188,6 +203,10 @@
             $('#divLoadingBlock').animate({
                 scrollTop: $('#divLoadingBlock')[0].scrollHeight
             }, 500);
+        }
+
+        function escapeHtml(text) {
+            return $('<div>').text(text).html();
         }
 
     </script>

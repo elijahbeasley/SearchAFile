@@ -1,8 +1,10 @@
-﻿namespace SearchAFile.Web.Helpers;
+﻿using Microsoft.AspNetCore.Http.Metadata;
+
+namespace SearchAFile.Web.Helpers;
 
 public static class FileUploadHelper
 {
-    public static async Task<bool> TryUploadFileAsync(IFormFile file, string fileKey, string strPath, List<string> allowedFileTypes, Action<string> assignFileNameToModel, string? deleteFile = null)
+    public static async Task<bool> TryUploadFileAsync(IFormFile file, string fileKey, string strPath, List<string> allowedFileTypes, Action<string> assignFileNameToModel, string? deleteFile = null, string? newFileName = null)
     {
         try
         {
@@ -35,7 +37,11 @@ public static class FileUploadHelper
                 }
             }
 
-            string newFileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
+            if (string.IsNullOrEmpty(newFileName))
+            {
+                newFileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+            }
+
             using var stream = new FileStream(Path.Combine(strPath, newFileName), FileMode.Create);
             await file.CopyToAsync(stream);
 

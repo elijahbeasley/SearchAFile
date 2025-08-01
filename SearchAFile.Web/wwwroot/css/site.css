@@ -513,3 +513,46 @@ a {
     --control-max-width: unset; /* This is the width that all controls are. */
     --control-width: 100%; /* This is the width that all controls are. */
 }
+
+/* Loading Icon */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.25rem 0.75rem 0.75rem 0.75rem;
+    font-size: 1.5rem;
+    color: #999;
+}
+
+    .typing-indicator span {
+        width: 6px;
+        height: 6px;
+        background-color: #999;
+        border-radius: 50%;
+        animation: blink 1.4s infinite ease-in-out;
+        opacity: 0.3;
+    }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateY(-4px);
+    }
+}

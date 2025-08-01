@@ -1,4 +1,4 @@
-﻿using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -6,27 +6,25 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using Org.BouncyCastle.Asn1.Cmp;
 using SearchAFile.Core.Domain.Entities;
-using SearchAFile.Infrastructure.Mapping;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using File = SearchAFile.Core.Domain.Entities.File;
 
 namespace SearchAFile.Web.Pages.Common;
 
 [BindProperties(SupportsGet = true)]
-public class ChatModel : PageModel
+public class ChatxxModel : PageModel
 {
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public ChatModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IConfiguration configration, IHttpClientFactory httpClientFactory)
+    public ChatxxModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IConfiguration configration, IHttpClientFactory httpClientFactory)
     {
         _telemetryClient = telemetryClient;
         _api = api;
@@ -53,12 +51,6 @@ public class ChatModel : PageModel
         {
             if (Id == null)
                 return Redirect(HttpContext.Session.GetString("DashboardURL") ?? "/");
-
-            if (HttpContext.Session.GetObject<FileGroup>("FileGroup") != null
-                && Id != HttpContext.Session.GetObject<FileGroup>("FileGroup").FileGroupId)
-            {
-                await DeleteThread();
-            }
 
             // Set the page title.
             HttpContext.Session.SetString("PageTitle", "Chat");
@@ -142,7 +134,7 @@ public class ChatModel : PageModel
             }
 
             // Get the file IDs:
-            var fileIds = HttpContext.Session.GetObject<FileGroup>("FileGroup").Files?
+            var fileIds = HttpContext.Session.GetObject<List<File>>("Files")?
                 .Where(file => !string.IsNullOrEmpty(file.OpenAIFileId))
                 .Select(file => file.OpenAIFileId!)
                 .Take(20) // OpenAI limit
@@ -304,18 +296,18 @@ public class ChatModel : PageModel
     {
         try
         {
-            if (HttpContext.Session.GetObject<FileGroup>("FileGroup") == null)
+            var fileGroupResult = await _api.GetAsync<FileGroup>($"filegroups/{Id}");
+
+            if (!fileGroupResult.IsSuccess || fileGroupResult.Data == null)
             {
-                var fileGroupResult = await _api.GetAsync<FileGroup>($"filegroups/{Id}");
+                throw new Exception(fileGroupResult.ErrorMessage ?? "Unable to retrieve file group.");
+            }
 
-                if (!fileGroupResult.IsSuccess || fileGroupResult.Data == null)
-                {
-                    throw new Exception(fileGroupResult.ErrorMessage ?? "Unable to retrieve file group.");
-                }
+            FileGroup = fileGroupResult.Data;
 
-                FileGroup = fileGroupResult.Data;
-
-                // Load the files.
+            // Load the files.
+            if (HttpContext.Session.GetObject<List<File>>("Files") == null)
+            {
                 var filesResult = await _api.GetAsync<List<File>>("files");
 
                 if (!filesResult.IsSuccess || filesResult.Data == null)
@@ -325,13 +317,7 @@ public class ChatModel : PageModel
 
                 List<File> Files = filesResult.Data.Where(file => file.FileGroupId == FileGroup.FileGroupId).ToList();
 
-                FileGroupFileCountMapper.MapFilesToFileGroup(FileGroup, Files);
-
-                HttpContext.Session.SetObject("FileGroup", FileGroup);
-            }
-            else
-            {
-                FileGroup = HttpContext.Session.GetObject<FileGroup>("FileGroup");
+                HttpContext.Session.SetObject("Files", Files);
             }
         }
         catch
@@ -355,11 +341,6 @@ public class ChatModel : PageModel
 
             // Get the Assistant's message.
             using HttpResponseMessage objHttpResponseMessage5 = await objHttpClient.GetAsync($"{strBaseEndpointUrl}threads/{strThreadID}/messages");
-            if (!objHttpResponseMessage5.IsSuccessStatusCode)
-            {
-                string errorContent = await objHttpResponseMessage5.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to retrieve the conversation: {errorContent}");
-            }
 
             // Create the JsonDocument object.
             using JsonDocument objJsonDocument4 = await Conversions.CreateJsonDocumentObject(objHttpResponseMessage5);
@@ -379,33 +360,11 @@ public class ChatModel : PageModel
 
                         string strMessageText = objJsonElement2.GetProperty("text").GetProperty("value").GetString();
 
-                        // Replace raw file names in the assistant response with download links using FileId
-                        strMessageText = Regex.Replace(strMessageText,
-                            @"(?<fileId>[0-9a-fA-F\-]{36}\.(pdf|docx|xlsx))",
-                            m =>
-                            {
-                                string fileIdWithExt = m.Groups["fileId"].Value;
-                                string fileId = Path.GetFileNameWithoutExtension(fileIdWithExt);
-
-                                // Find the matching file by FileId (GUID string)
-                                var file = FileGroup.Files
-                                    .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f.Path.ToString()).Equals(fileId, StringComparison.OrdinalIgnoreCase));
-
-                                if (file != null)
-                                {
-                                    string url = $"/Files/{file.Path}";
-                                    string displayName = file.File1; // The friendly name the user uploaded
-                                    return $"<a href='{url}' target='_blank'>{displayName}</a>";
-                                }
-
-                                return fileIdWithExt; // fallback
-                            });
-
                         string roleClass = strRole == "user" ? "user" : "bot";
 
                         Answer += $@"
                             <div class='chat-message {roleClass}'>
-                                <div class='message-text'>{strMessageText}</div>
+                                {strMessageText}
                                 <div class='timestamp'>{formattedTime}</div>
                             </div>";
                     }

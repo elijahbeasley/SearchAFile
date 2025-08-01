@@ -143,7 +143,7 @@
                 errors += '<li>Invalid file selected. File size must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB.</li>';
             }
 
-                let fileExtension = ['pdf','doc','docx','xlsx','txt','csv','md'];
+                let fileExtension = ['pdf','docx','csv','txt','md'];
 
             if ($.inArray($(e).val().split('.').pop().toLowerCase(), fileExtension) == -1) {
 

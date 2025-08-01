@@ -20,16 +20,18 @@ public class CreateModel : PageModel
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IWebHostEnvironment _iWebHostEnvironment;
+    private readonly OpenAIFileService _openAIFileService;
 
-    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment)
+    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, OpenAIFileService openAIFileService)
     {
         _telemetryClient = telemetryClient;
         _api = api;
         _iWebHostEnvironment = iWebHostEnvironment;
+        _openAIFileService = openAIFileService;
     }
 
     public User User { get; set; } = default!;
-
+    
     public IFormFile? IFormFile { get; set; }
 
     private List<string> FileTypes = new List<string>()
@@ -95,10 +97,6 @@ public class CreateModel : PageModel
                 ModelState.AddModelError(nameof(User.PhoneNumber), "Invalid phone number entered. The entered phone number is being used by " + phoneName + ".");
                 TempData["StartupJavaScript"] += "$('#txtPhoneNumber').addClass('input-validation-error');";
             }
-
-            // Remove the unused ModelState attribute so that it does not trigger ModelState.IsValid = false.
-            //ModelState.Remove("User.Password");
-            //ModelState.Remove("IFormFile");
 
             if (!ModelState.IsValid)
             {

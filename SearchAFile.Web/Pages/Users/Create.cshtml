@@ -143,7 +143,7 @@
                             <i class="fa-solid fa-circle-question cus-text-primary" data-bs-boundary="viewport" data-bs-container="body" title="Allowed File Types" data-bs-content="<ul class='cus-popover-list'><li>png</li><li>jpeg</li><li>jpg</li></ul>" data-bs-html="true" data-bs-placement="top" data-bs-toggle="popover" onclick="$(this).popover('show');" onmouseleave="$(this).popover('hide');" style="cursor: pointer;"></i>
                         </div>
                         <div class="cus-col col-sm-7 col-md-7 col-lg-9 col-xl-9">
-                            <input id="Headshot" class="form-control" type="file" asp-for="IFormFile" onchange="SelectFile(this);">
+                            <input class="form-control" type="file" asp-for="IFormFile" onchange="SelectFile(this);">
                         </div>
                     </div>
 
@@ -206,9 +206,9 @@
             window.top.ClearToast();
 
             // Is the form valid?
-            if ($('#Headshot').val() == '') {
+            if ($('input[type=file]').val() == '') {
 
-                $('#Headshot').addClass('input-validation-error');
+                $('input[type=file]').addClass('input-validation-error');
 
                 // Output the errors.
                 window.top.ShowToast('danger', 'The following errors have occured', '<ul><li>A file is required.</li></ul>', 0, false)
@@ -259,6 +259,12 @@
 
         function SelectFile(e) {
 
+            if (e.files.length === 0) {
+
+                ClearFile();
+                return;
+            }
+
             let errors = '';
 
             if (e.files[0].size > MaxFileSize) {
@@ -301,7 +307,7 @@
 
             if (errors !== '') {
 
-                $('#Headshot').addClass('input-validation-error');
+                $('input[type=file]').addClass('input-validation-error');
                 $(e).val('');
                 $(e).parent('div').parent('div').find('input:text').val('');
                 $(e).parent('div').parent('div').find('input:text').prop('title', '');
@@ -311,7 +317,7 @@
             }
             else {
 
-                $('#Headshot').removeClass('input-validation-error');
+                $('input[type=file]').removeClass('input-validation-error');
                 $(e).parent('div').parent('div').find('input:text').val(e.files[0].name);
                 $(e).parent('div').parent('div').find('input:text').prop('title', e.files[0].name);
 
@@ -328,10 +334,9 @@
 
         function CancelUpload() {
 
-            $('#Headshot').val('');
-            $('#Headshot').removeClass('input-validation-error');
+            $('input[type=file]').val('');
+            $('input[type=file]').removeClass('input-validation-error');
             $('#imgPreview').prop('src', '@SystemFunctions.EmptyImageSource');
-            //$('#imgNewImage').prop('src', '/UserFiles/Generic.jpg');
         }
 
     </script>

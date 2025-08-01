@@ -198,12 +198,18 @@ a.nav_link.active {
     }
 
     .height-100 {
-        margin: 4rem 1rem 1rem 1rem;
+        margin: 5rem 1rem 1rem 1rem;
+        /******************************/
+        /*min-height: calc(100vh - var(--header-height) - var(--footer-height) - 2rem);*/
+        /******************************/
         min-height: calc(100vh - var(--header-height) - var(--footer-height) - 2rem);
     }
 
         .height-100:not(.height-100-show) {
             margin: calc(var(--header-height) + 1rem) 1rem 1rem calc(var(--nav-width) + 1rem);
+            /******************************/
+            /*min-height: calc(100vh - var(--header-height) - var(--footer-height) - 2rem);*/
+            /******************************/
             min-height: calc(100vh - var(--header-height) - var(--footer-height) - 2rem);
         }
 

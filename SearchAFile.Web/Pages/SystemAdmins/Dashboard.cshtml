@@ -68,7 +68,7 @@
            && Model.FileGroups.Any())
         {
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
-                @foreach (var item in Model.FileGroups)
+                @foreach (var item in Model.FileGroups.Where(file_group => file_group.FilesCount > 0))
                 {
                     <div class="col">
                         <a href="/Common/Chat?id=@item.FileGroupId" class="file-group-card text-decoration-none">

@@ -164,29 +164,20 @@
                     <div class="modal-body card-body cus-bootstrap-table-striped p-0">
 
                         <div class="row align-items-center m-0">
-                            <div class="cus-col col-sm-4 fw-bold">
-                                <label>Upload Image</label>
+                            <div class="cus-col col-sm-5 col-md-5 col-lg-3 col-xl-3 fw-bold">
+                                <label asp-for="User.HeadshotPath"></label>
                                 <i class="fa-solid fa-circle-question cus-text-primary" data-bs-boundary="viewport" data-bs-container="body" title="Allowed File Types" data-bs-content="<ul class='cus-popover-list'><li>png</li><li>jpeg</li><li>jpg</li></ul>" data-bs-html="true" data-bs-placement="top" data-bs-toggle="popover" onclick="$(this).popover('show');" onmouseleave="$(this).popover('hide');" style="cursor: pointer;"></i>
                             </div>
-                            <div class="cus-col col-sm-8">
-                                <div class="d-flex" style="max-width: var(--control-max-width);">
-                                    <input id="fileName" class="fileName m-0" type="text" placeholder="No file selected" disabled="disabled" style="border-radius: 0.2rem 0 0 0.2rem; height: 2.9rem !important;" />
-                                    <div class="fileUpload cus-btn-primary m-0" onclick="ClearFile(this);" style="border-radius: 0 0.25rem 0.25rem 0;">
-                                        <span style="color: unset">
-                                            Browse...
-                                        </span>
-                                        <i class="fa-solid fa-file-upload"></i>
-                                        <input id="fileuploader" type="file" class="upload" asp-for="IFormFile" onchange="SelectFile(this);" />
-                                    </div>
-                                </div>
+                            <div class="cus-col col-sm-7 col-md-7 col-lg-9 col-xl-9">
+                                <input class="form-control" type="file" asp-for="IFormFile" onchange="SelectFile(this);">
                             </div>
                         </div>
 
                         <div class="row align-items-center m-0">
-                            <div class="cus-col col-sm-4 fw-bold">
+                            <div class="cus-col col-sm-5 col-md-5 col-lg-3 col-xl-3 fw-bold">
                                 <label>Preview</label>
                             </div>
-                            <div class="cus-col col-sm-8" style="max-width: var(--control-max-width);">
+                            <div class="cus-col col-sm-7 col-md-7 col-lg-9 col-xl-9" style="max-width: var(--control-max-width);">
                                 <img id="imgPreview" height="100" width="100" style="border-radius: 50%;" src="@SystemFunctions.EmptyImageSource" />
                             </div>
                         </div>
@@ -390,6 +381,12 @@
         }
 
         function SelectFile(e) {
+
+            if (e.files.length === 0) {
+
+                ClearFile();
+                return;
+            }
 
             let errors = '';
 
