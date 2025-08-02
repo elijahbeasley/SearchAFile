@@ -4,7 +4,7 @@ namespace SearchAFile.Web.Helpers;
 
 public static class FileUploadHelper
 {
-    public static async Task<bool> TryUploadFileAsync(IFormFile file, string fileKey, string strPath, List<string> allowedFileTypes, Action<string> assignFileNameToModel, string? deleteFile = null, string? newFileName = null)
+    public static async Task<bool> TryUploadFileAsync(IFormFile file, string fileKey, string strPath, List<string> allowedFileTypes, Action<string>? assignFileNameToModel = null, string? newFileName = null, string? deleteFile = null)
     {
         try
         {
@@ -45,7 +45,11 @@ public static class FileUploadHelper
             using var stream = new FileStream(Path.Combine(strPath, newFileName), FileMode.Create);
             await file.CopyToAsync(stream);
 
-            assignFileNameToModel(newFileName);
+            if (assignFileNameToModel != null)
+            {
+                assignFileNameToModel(newFileName);
+            }
+
             return true;
         }
         catch

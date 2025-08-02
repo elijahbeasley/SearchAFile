@@ -2,6 +2,7 @@
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Core.Interfaces;
 using SearchAFile.Infrastructure.Data;
+using File = SearchAFile.Core.Domain.Entities.File;
 
 namespace SearchAFile.Infrastructure.Services;
 
@@ -14,7 +15,7 @@ public class FileService : IFileService
         _context = context;
     }
 
-    public async Task<IEnumerable<Core.Domain.Entities.File>> GetAllAsync(string? search = null)
+    public async Task<IEnumerable<File>> GetAllAsync(string? search = null)
     {
         var query = _context.Files.AsQueryable();
 
@@ -28,15 +29,16 @@ public class FileService : IFileService
         return await query.ToListAsync();
     }
 
-    public async Task<Core.Domain.Entities.File?> GetByIdAsync(Guid id) => await _context.Files.FindAsync(id);
+    public async Task<File?> GetByIdAsync(Guid id) => await _context.Files.FindAsync(id);
 
-    public async Task CreateAsync(Core.Domain.Entities.File file)
+    public async Task<File?> CreateAsync(File file)
     {
         _context.Files.Add(file);
         await _context.SaveChangesAsync();
+        return file;
     }
 
-    public async Task<bool> UpdateAsync(Core.Domain.Entities.File file)
+    public async Task<bool> UpdateAsync(File file)
     {
         _context.Files.Update(file);
         return await _context.SaveChangesAsync() > 0;

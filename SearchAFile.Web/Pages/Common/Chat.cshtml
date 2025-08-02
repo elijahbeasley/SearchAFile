@@ -141,7 +141,6 @@
 
                 const question = encodeURIComponent($('#txtQuestion').val()?.trim());
 
-                ClearQuestion();
                 $('#divEllipses').show();
 
                 ScrollToBottom();
@@ -157,6 +156,7 @@
                     }
 
                     ScrollToBottom();
+                    ClearQuestion();
                     $('.card-footer').find('button, input').prop('disabled', false);
                 });
             }

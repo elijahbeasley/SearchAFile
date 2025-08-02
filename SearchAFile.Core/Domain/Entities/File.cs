@@ -22,8 +22,10 @@ public partial class File
     [Required(ErrorMessage = "File name is required.")]
     [StringLength(50)]
     public string? File1 { get; set; }
-    [StringLength(50)]
-    public string? Path { get; set; }
+
+    [StringLength(10)]
+    public string? Extension { get; set; }
+    public string Path => $"{FileId}.{Extension ?? ""}".Trim();
 
     [Column("OpenAIFileID")]
     [StringLength(50)]

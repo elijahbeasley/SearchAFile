@@ -1,6 +1,15 @@
 ﻿@page
 @model SearchAFile.Web.Pages.FileGroups.IndexModel
 
+<style>
+    .cus-clickable {
+        cursor: pointer !important;
+    }
+    label {
+        cursor: inherit;
+    }
+</style>
+
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -66,7 +75,9 @@
                     <tbody>
                         @foreach (var item in Model.FileGroups)
                         {
-                            <tr style="white-space: nowrap;">
+                            string strFileCounts = item.FilesCount == 0 ? "text-danger" : "";
+
+                            <tr style="white-space: nowrap;" data-href="@Url.Page("/Files/Index", new { id = item.FileGroupId })">
                                 <td class="cus-fixed-col-td">
                                     <div class="dropdown dropend">
                                         <button type="button" class="btn py-1 m-0" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="false">
@@ -92,7 +103,7 @@
                                             <a asp-page="/Files/Index" asp-route-id="@item.FileGroupId" class="btn dropdown-item" title="Files">
                                                 <i class="fa-solid fa-file text-info"></i>
                                                 &nbsp;
-                                                Files (@item.FilesCount)
+                                                Files (<label class="@strFileCounts">@item.FilesCount</label>)
                                             </a>
                                         </div>
                                     </div>
@@ -105,7 +116,7 @@
                                         </a>
                                     }
                                 </td>
-                                <td class="align-middle text-center cus-no-select" style="width: 0;">
+                                <td class="align-middle text-center cus-no-select cus-clickable" style="width: 0;">
                                     @if (Convert.ToBoolean(item.Active))
                                     {
                                         <span class="badge bg-success px-4 w-100">
@@ -121,20 +132,21 @@
                                         </span>
                                     }
                                 </td>
-                                <td class="align-middle">
+                                <td class="align-middle cus-clickable">
                                     <label>@item.FileGroup1</label>
                                 </td>
-                                <td class="align-middle">
+                                <td class="align-middle cus-clickable">
                                     <label>@item.Created?.ToString("dddd M/d/yyyy")</label>
                                 </td>
-                                <td class="align-middle">
+                                <td class="align-middle cus-clickable">
                                     <label>@item.CreatedByUserFullName</label>
                                 </td>
-                                <td class="align-middle text-center">
-                                    <a asp-page="/Files/Index" asp-route-id="@item.FileGroupId" title="Files">
+                                <td class="align-middle text-center cus-clickable">
+                                    <label class="@strFileCounts">@item.FilesCount</label>
+                                    @* <a asp-page="/Files/Index" asp-route-id="@item.FileGroupId" title="Files">
                                         @item.FilesCount
                                         <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                    </a>
+                                    </a> *@
                                 </td>
                             </tr>
                         }
@@ -152,3 +164,17 @@
     </div>
 
 </div>
+
+@section Scripts {
+
+    <script type="text/javascript">
+        $(document).on('click', '.cus-clickable', function (e) {
+
+            const url = $(this).parent().data('href');
+            if (url) {
+                window.location.href = url;
+            }
+        });
+    </script>
+
+}

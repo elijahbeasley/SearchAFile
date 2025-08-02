@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Core.Interfaces;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using File = SearchAFile.Core.Domain.Entities.File;
 
 namespace SearchAFile.Api.Controllers;
 
@@ -47,7 +47,7 @@ public class FileController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Core.Domain.Entities.File file)
+    public async Task<IActionResult> Create([FromBody] File file)
     {
         try
         {
@@ -61,7 +61,7 @@ public class FileController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Core.Domain.Entities.File file)
+    public async Task<IActionResult> Update(Guid id, [FromBody] File file)
     {
         try
         {

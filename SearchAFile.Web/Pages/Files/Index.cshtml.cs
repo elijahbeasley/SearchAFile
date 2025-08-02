@@ -1,5 +1,6 @@
 ﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
@@ -18,12 +19,14 @@ namespace SearchAFile.Web.Pages.Files;
 public class IndexModel : PageModel
 {
     private readonly TelemetryClient _telemetryClient;
+    private readonly IWebHostEnvironment _iWebHostEnvironment;
     private readonly AuthenticatedApiClient _api;
     private readonly HttpClient _httpClient;
 
-    public IndexModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IHttpClientFactory httpClient)
+    public IndexModel(TelemetryClient telemetryClient, IWebHostEnvironment iWebHostEnvironment, AuthenticatedApiClient api, IHttpClientFactory httpClient)
     {
         _telemetryClient = telemetryClient;
+        _iWebHostEnvironment = iWebHostEnvironment;
         _api = api;
         _httpClient = httpClient.CreateClient("SearchAFIleClient");
     }
@@ -115,6 +118,20 @@ public class IndexModel : PageModel
             }
 
             // Delete the file from local storage.
+            if (!string.IsNullOrEmpty(fileResult.Data.Path))
+            {
+                string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "Files", fileResult.Data.Path);
+
+                // Delete the old tile image from the folder.
+                string strDeletePath = Path.Combine(strPath, strPath);
+
+                if (System.IO.File.Exists(strDeletePath))
+                {
+                    System.IO.File.Delete(strDeletePath);
+                }
+            }
+
+            // Delete the file from our DB.
             var result = await _api.DeleteAsync<object>($"files/{id}");
 
             if (!result.IsSuccess)

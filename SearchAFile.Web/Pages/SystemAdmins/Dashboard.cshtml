@@ -65,7 +65,7 @@
     <div class="card-body">
 
         @if (Model.FileGroups != null
-           && Model.FileGroups.Any())
+           && Model.FileGroups.Any(file_group => file_group.FilesCount > 0))
         {
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
                 @foreach (var item in Model.FileGroups.Where(file_group => file_group.FilesCount > 0))

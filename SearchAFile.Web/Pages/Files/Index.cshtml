@@ -113,18 +113,18 @@
                 <div class="row g-3">
                     @foreach (var item in Model.Files)
                     {
-                        string iconClass = System.IO.Path.GetExtension(item.Path) switch
+                        string iconClass = item.Extension switch
                         {
-                            ".pdf" => "fa-file-pdf text-danger",
-                            ".doc" or ".docx" => "fa-file-word text-primary",
-                            ".xls" or ".xlsx" => "fa-file-excel text-success",
-                            ".csv" => "fa-file-csv text-success",
-                            ".ppt" or ".pptx" => "fa-file-powerpoint text-warning",
-                            ".jpg" or ".jpeg" or ".png" or ".gif" => "fa-file-image text-info",
-                            ".zip" or ".rar" => "fa-file-archive text-secondary",
-                            ".txt" => "fa-file-lines text-muted",
-                            ".mp3" or ".wav" => "fa-file-audio text-warning",
-                            ".mp4" or ".mov" or ".avi" => "fa-file-video text-dark",
+                            "pdf" => "fa-file-pdf text-danger",
+                            "doc" or "docx" => "fa-file-word text-primary",
+                            "xls" or "xlsx" => "fa-file-excel text-success",
+                            "csv" => "fa-file-csv text-success",
+                            "ppt" or "pptx" => "fa-file-powerpoint text-warning",
+                            "jpg" or "jpeg" or "png" or "gif" => "fa-file-image text-info",
+                            "zip" or "rar" => "fa-file-archive text-secondary",
+                            "txt" => "fa-file-lines text-muted",
+                            "mp3" or "wav" => "fa-file-audio text-warning",
+                            "mp4" or "mov" or "avi" => "fa-file-video text-dark",
                             _ => "fa-file text-secondary" // default
                         };
 

@@ -12,7 +12,7 @@ public class OpenAIFileService
         _httpClient = httpClient.CreateClient("SearchAFIleClient");
     }
 
-    public async Task<bool> TryPostFileToOpenAIAsync(IFormFile file, string fileKey, List<string> allowedFileTypes, Action<string> assignOpenAIFileIdToModel, string? newFileName = null)
+    public async Task<bool> TryPostFileToOpenAIAsync(IFormFile file, string fileKey, List<string> allowedFileTypes, Action<string> assignOpenAIFileIdToModel, string newFileName)
     {
         try
         {
@@ -25,11 +25,6 @@ public class OpenAIFileService
             {
                 string allowedTypesMsg = string.Join(", ", allowedFileTypes);
                 throw new Exception($"Invalid file type. File must be of type: {allowedTypesMsg}.");
-            }
-
-            if (string.IsNullOrEmpty(newFileName))
-            {
-                newFileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
             }
 
             // Upload file to OpenAI
