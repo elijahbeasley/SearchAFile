@@ -14,8 +14,8 @@ public partial class File
     [Column("FileID")]
     public Guid FileId { get; set; }
 
-    [Column("FileGroupID")]
-    public Guid? FileGroupId { get; set; }
+    [Column("CollectionID")]
+    public Guid? CollectionId { get; set; }
 
     [Column("File")]
     [DisplayName("File Name")]
@@ -37,9 +37,9 @@ public partial class File
     [Column("UploadedByUserID")]
     public Guid? UploadedByUserId { get; set; }
 
-    [ForeignKey("FileGroupId")]
+    [ForeignKey("CollectionId")]
     [InverseProperty("Files")]
-    public virtual FileGroup? FileGroup { get; set; }
+    public virtual Collection? Collection { get; set; }
 
     [ForeignKey("UploadedByUserId")]
     [InverseProperty("Files")]

@@ -1,0 +1,97 @@
+﻿@page
+@model SearchAFile.Web.Pages.Collections.DeleteModel
+
+<div class="card">
+
+    <div class="card-header d-flex align-items-center">
+        <a class="pe-2" href="~/Collections/@(string.IsNullOrEmpty(Model.Collection.ImageUrl) ? "Generic.jpg" : Model.Collection.ImageUrl)" target="_blank" title="View Image">
+            <img src="~/Collections/@(string.IsNullOrEmpty(Model.Collection.ImageUrl) ? "Generic.jpg" : Model.Collection.ImageUrl)" style="border-radius: 50%; height: 75px; width: 75px;" />
+        </a>
+        <label class="fs-5 ms-auto">
+            <i class="fa-solid fa-trash text-danger"></i> @Model.Collection.Collection1
+        </label>
+    </div>
+
+    @* <div class="card-header">
+        <label class="fs-5"><i class="fa-solid fa-trash text-danger"></i> @Model.Collection.Collection1</label>
+    </div> *@
+
+    <div class="card-body cus-bootstrap-table-striped p-0">
+
+        <div class="row align-items-center m-0">
+            <div class="cus-col col-sm-4">
+                <div class="form-floating">
+                    <div class="form-control div-disabled">
+                        @if (Model.Collection.Active)
+                        {
+                            <span class="badge bg-success cus-no-select w-100">
+                                Active
+                                <i class="fa-solid fa-check-circle"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger cus-no-select w-100">
+                                Inactive
+                                <i class="fa-solid fa-xmark-circle"></i>
+                            </span>
+                        }
+                    </div>
+                    <label asp-for="Collection.Active" class="control-label"></label>
+                </div>
+            </div>
+            <div class="cus-col col-sm-4">
+                <div class="form-floating">
+                    <div class="form-control div-disabled">
+                        @if (Model.Collection.Private)
+                        {
+                            <span class="badge bg-success cus-no-select w-100">
+                                Yes
+                                <i class="fa-solid fa-check-circle"></i>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning cus-no-select w-100">
+                                No
+                                <i class="fa-solid fa-exclamation-circle"></i>
+                            </span>
+                        }
+                    </div>
+                    <label asp-for="Collection.Private" class="control-label"></label>
+                </div>
+            </div>
+            <div class="cus-col col-sm-4">
+                <div class="form-floating">
+                    <input type="text" asp-for="Collection.Collection1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Collection.Collection1)" disabled />
+                    <label asp-for="Collection.Collection1" class="control-label" show-asterisk="true"></label>
+                    <span asp-validation-for="Collection.Collection1" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        @* <div class="row align-items-top m-0">
+            <div class="cus-col col-12">
+                <div class="d-flex justify-content-center" style="height: 75px;">
+                    <img class="d-block" style="max-height: 75px; max-width: 100%;" src="@(string.IsNullOrEmpty(Model.Collection.ImageUrl) ? SystemFunctions.EmptyImageSource : "/Collections/" + Model.Collection.ImageUrl)">
+                </div>
+            </div>
+        </div> *@
+
+    </div>
+
+    <div class="card-footer text-center">
+        <form method="post">
+            <input type="hidden" asp-for="Collection.CollectionId" />
+            <a asp-page="./Index" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to List
+            </a>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete @Model.Collection.Collection1? This cannot be undone.');">
+                Delete
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </form>
+    </div>
+
+</div>

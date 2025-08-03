@@ -33,7 +33,7 @@ public class IndexModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public string? search { get; set; }
-    public FileGroup FileGroup { get; set; }
+    public Collection Collection { get; set; }
     public List<File>? Files { get;set; } = default!;
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
@@ -41,19 +41,19 @@ public class IndexModel : PageModel
         try
         {
             if (id == null)
-                return Redirect("FileGroups");
+                return Redirect("Collections");
 
             // Set the page title.
             HttpContext.Session.SetString("PageTitle", "Maintain Files");
 
-            var fileGroupResult = await _api.GetAsync<FileGroup>($"filegroups/{id}");
+            var collectionResult = await _api.GetAsync<Collection>($"collections/{id}");
 
-            if (!fileGroupResult.IsSuccess || fileGroupResult.Data == null)
+            if (!collectionResult.IsSuccess || collectionResult.Data == null)
             {
-                throw new Exception(fileGroupResult.ErrorMessage ?? "Unable to retrieve file group.");
+                throw new Exception(collectionResult.ErrorMessage ?? "Unable to retrieve collection.");
             }
 
-            FileGroup = fileGroupResult.Data;
+            Collection = collectionResult.Data;
 
             string url = string.IsNullOrWhiteSpace(search)
                 ? "files"
@@ -66,7 +66,7 @@ public class IndexModel : PageModel
                 throw new Exception(filesResult.ErrorMessage ?? "Unable to retrieve files.");
             }
 
-            Files = filesResult.Data.Where(file => file.FileGroupId == id).OrderBy(file => file.File1).ToList();
+            Files = filesResult.Data.Where(file => file.CollectionId == id).OrderBy(file => file.File1).ToList();
 
             ModelState.Remove("search");
 
@@ -82,7 +82,7 @@ public class IndexModel : PageModel
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
             TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
 
-            return Redirect("FileGroups");
+            return Redirect("Collections");
         }
     }
 

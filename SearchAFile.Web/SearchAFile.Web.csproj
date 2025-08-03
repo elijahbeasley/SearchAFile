@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Communication.Sms" Version="1.0.1" />
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="HtmlSanitizer" Version="9.0.886" />
     <PackageReference Include="MailKit" Version="4.13.0" />
@@ -27,7 +28,6 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\CompanyFiles\" />
-    <Folder Include="wwwroot\FileGroups\" />
     <Folder Include="wwwroot\Files\" />
     <Folder Include="wwwroot\UserFiles\" />
   </ItemGroup>

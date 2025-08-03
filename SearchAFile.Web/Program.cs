@@ -8,6 +8,7 @@ using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Interfaces;
 using SearchAFile.Web.Services;
 using System.Net.Http.Headers;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,7 +57,7 @@ builder.Services.AddAuthorization(options =>
     // Maintenance Pages:
     options.AddPolicy("MaintainCompaniesPolicy", policy => policy.RequireRole("System Admin", "Admin"));
     options.AddPolicy("MaintainFilesPolicy", policy => policy.RequireRole("System Admin", "Admin"));
-    options.AddPolicy("MaintainFileGroupsPolicy", policy => policy.RequireRole("System Admin", "Admin"));
+    options.AddPolicy("MaintainCollectionsPolicy", policy => policy.RequireRole("System Admin", "Admin"));
     options.AddPolicy("MaintainSystemInfoPolicy", policy => policy.RequireRole("System Admin", "Admin"));
     options.AddPolicy("MaintainUsersPolicy", policy => policy.RequireRole("System Admin", "Admin"));
 });
@@ -77,7 +78,7 @@ builder.Services.AddRazorPages(options =>
     // Maintenance Pages:
     options.Conventions.AuthorizeFolder("/MaintainCompanies", "MaintainCompaniesPolicy");
     options.Conventions.AuthorizeFolder("/MaintainFiles", "MaintainFilesPolicy");
-    options.Conventions.AuthorizeFolder("/MaintainFileGroups", "MaintainFileGroupsPolicy");
+    options.Conventions.AuthorizeFolder("/MaintainCollections", "MaintainCollectionsPolicy");
     options.Conventions.AuthorizeFolder("/MaintainSystemInfo", "MaintainSystemInfoPolicy");
     options.Conventions.AuthorizeFolder("/MaintainUsers", "MaintainUsersPolicy");
 });

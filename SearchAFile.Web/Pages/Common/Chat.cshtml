@@ -41,7 +41,7 @@
 </style>
 
 <div class="pb-3">
-    <a asp-page="@HttpContext.Session.GetString("DashboardURL")" title="File Groups">
+    <a asp-page="@HttpContext.Session.GetString("DashboardURL")" title="Collections">
         <i class="fa-solid fa-arrow-left"></i>
         Back
     </a>
@@ -54,7 +54,7 @@
     <div class="card">
 
         <div class="card-header">
-            <label class="fs-5"><i class="fa-solid fa-comments cus-text-primary-no-hover"></i> @Model.FileGroup.FileGroup1</label>
+            <label class="fs-5"><i class="fa-solid fa-comments cus-text-primary-no-hover"></i> @Model.Collection.Collection1</label>
         </div>
 
         <div id="divLoadingBlock" class="card-body pb-0" style="height: 0; overflow-y: auto;">

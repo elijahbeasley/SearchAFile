@@ -3,19 +3,19 @@ using File = SearchAFile.Core.Domain.Entities.File;
 
 namespace SearchAFile.Infrastructure.Mapping;
 
-public static class FileGroupFileCountMapper
+public static class CollectionFileCountMapper
 {
-    public static void MapFilesCountToFileGroups(List<FileGroup> fileGroups, List<File> files)
+    public static void MapFilesCountToCollections(List<Collection> collection, List<File> files)
     {
         try
         {
             var fileCountLookup = files
-                .GroupBy(f => f.FileGroupId)
+                .GroupBy(f => f.CollectionId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            foreach (var fg in fileGroups)
+            foreach (var fg in collection)
             {
-                if (fileCountLookup.TryGetValue(fg.FileGroupId, out var count))
+                if (fileCountLookup.TryGetValue(fg.CollectionId, out var count))
                 {
                     fg.FilesCount = count;
                 }
@@ -31,11 +31,11 @@ public static class FileGroupFileCountMapper
         }
     }
 
-    public static void MapFilesCountToFileGroup(FileGroup fileGroup, List<File> files)
+    public static void MapFilesCountToCollection(Collection collection, List<File> files)
     {
         try
         {
-            fileGroup.FilesCount = files.Count(f => f.FileGroupId == fileGroup.FileGroupId);
+            collection.FilesCount = files.Count(f => f.CollectionId == collection.CollectionId);
         }
         catch
         {
@@ -43,17 +43,17 @@ public static class FileGroupFileCountMapper
         }
     }
 
-    public static void MapFilesToFileGroups(List<FileGroup> fileGroups, List<File> files)
+    public static void MapFilesToCollections(List<Collection> collection, List<File> files)
     {
         try
         {
             var fileLookup = files
-                .GroupBy(f => f.FileGroupId)
+                .GroupBy(f => f.CollectionId)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            foreach (var fg in fileGroups)
+            foreach (var fg in collection)
             {
-                if (fileLookup.TryGetValue(fg.FileGroupId, out var matchingFiles))
+                if (fileLookup.TryGetValue(fg.CollectionId, out var matchingFiles))
                 {
                     fg.Files = matchingFiles;
                     fg.FilesCount = matchingFiles.Count;
@@ -71,13 +71,13 @@ public static class FileGroupFileCountMapper
         }
     }
 
-    public static void MapFilesToFileGroup(FileGroup fileGroup, List<File> files)
+    public static void MapFilesToCollection(Collection collection, List<File> files)
     {
         try
         {
-            var matchingFiles = files.Where(f => f.FileGroupId == fileGroup.FileGroupId).ToList();
-            fileGroup.Files = matchingFiles;
-            fileGroup.FilesCount = matchingFiles.Count;
+            var matchingFiles = files.Where(f => f.CollectionId == collection.CollectionId).ToList();
+            collection.Files = matchingFiles;
+            collection.FilesCount = matchingFiles.Count;
         }
         catch
         {

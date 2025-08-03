@@ -7,23 +7,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SearchAFile.Core.Domain.Entities;
 
-[Table("FileGroup")]
-public partial class FileGroup
+[Table("Collection")]
+public partial class Collection
 {
     [Key]
-    [Column("FileGroupID")]
-    public Guid FileGroupId { get; set; }
+    [Column("CollectionID")]
+    public Guid CollectionId { get; set; }
 
     [Column("CompanyID")]
     [DisplayName("Company")]
     [Required(ErrorMessage = "Company is required.")]
     public Guid? CompanyId { get; set; }
 
-    [Column("FileGroup")]
-    [DisplayName("File Group")]
-    [Required(ErrorMessage = "File group is required.")]
+    [Column("Collection")]
+    [DisplayName("Collection")]
+    [Required(ErrorMessage = "Collection is required.")]
     [StringLength(50)]
-    public string? FileGroup1 { get; set; }
+    public string? Collection1 { get; set; }
 
     [Column("ImageURL")]
     [DisplayName("Image")]
@@ -37,6 +37,9 @@ public partial class FileGroup
     [DisplayName("Created By")]
     public Guid CreatedByUserId { get; set; }
 
+    [Required(ErrorMessage = "Private/public is required.")]
+    public bool Private { get; set; }
+
     [DisplayName("Sort Order")]
     public int? SortOrder { get; set; }
 
@@ -45,17 +48,17 @@ public partial class FileGroup
     public bool Active { get; set; }
 
     [ForeignKey("CompanyId")]
-    [InverseProperty("FileGroups")]
+    [InverseProperty("Collections")]
     public virtual Company? Company { get; set; }
 
     [ForeignKey("CreatedByUserId")]
-    [InverseProperty("FileGroups")]
+    [InverseProperty("Collections")]
     public virtual User? CreatedByUser { get; set; }
 
     [NotMapped]
     public string? CreatedByUserFullName { get; set; }
 
-    [InverseProperty("FileGroup")]
+    [InverseProperty("Collection")]
     public virtual ICollection<File> Files { get; set; } = new List<File>();
 
     [NotMapped]

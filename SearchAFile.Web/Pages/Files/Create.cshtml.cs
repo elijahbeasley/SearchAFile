@@ -48,7 +48,7 @@ public class CreateModel : PageModel
             if (id == null)
                 return NotFound();
 
-            File.FileGroupId = id;
+            File.CollectionId = id;
 
             ModelState.Remove("IFormFile");
 

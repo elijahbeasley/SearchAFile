@@ -10,7 +10,7 @@ using SearchAFile.Web.Services;
 using System.Data;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
-namespace SearchAFile.Web.Pages.FileGroups;
+namespace SearchAFile.Web.Pages.Collections;
 
 public class IndexModel : PageModel
 {
@@ -25,29 +25,29 @@ public class IndexModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public string? search { get; set; }
-    public List<FileGroup>? FileGroups { get;set; } = default!;
+    public List<Collection>? Collections { get;set; } = default!;
 
     public async Task OnGetAsync()
     {
         try
         {
             // Set the page title.
-            HttpContext.Session.SetString("PageTitle", "Maintain File Groups");
+            HttpContext.Session.SetString("PageTitle", "Maintain Collections");
 
             string url = string.IsNullOrWhiteSpace(search)
-                ? "filegroups"
-                : $"filegroups?search={Uri.EscapeDataString(search)}";
+                ? "collections"
+                : $"collections?search={Uri.EscapeDataString(search)}";
 
-            var fileGroupsResult = await _api.GetAsync<List<FileGroup>>(url);
+            var collectionsResult = await _api.GetAsync<List<Collection>>(url);
 
-            if (!fileGroupsResult.IsSuccess || fileGroupsResult.Data == null)
+            if (!collectionsResult.IsSuccess || collectionsResult.Data == null)
             {
-                throw new Exception(fileGroupsResult.ErrorMessage ?? "Unable to retrieve file group.");
+                throw new Exception(collectionsResult.ErrorMessage ?? "Unable to retrieve collection.");
             }
 
-            FileGroups = fileGroupsResult.Data
+            Collections = collectionsResult.Data
                 .Where(file_group => file_group.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId)
-                .OrderBy(file_group => file_group.FileGroup1)
+                .OrderBy(file_group => file_group.Collection1)
                 .ToList();
 
             var usersResult = await _api.GetAsync<List<UserDto>>("users");
@@ -59,7 +59,7 @@ public class IndexModel : PageModel
 
             List<UserDto> Users = usersResult.Data;
 
-            FileGroupUserMapper.MapUserNamesToFileGroups(FileGroups, Users);
+            CollectionUserMapper.MapUserNamesToCollections(Collections, Users);
 
             var filesResult = await _api.GetAsync<List<Core.Domain.Entities.File>>("files");
 
@@ -70,7 +70,7 @@ public class IndexModel : PageModel
 
             List<Core.Domain.Entities.File> Files = filesResult.Data;
 
-            FileGroupFileCountMapper.MapFilesCountToFileGroups(FileGroups, Files);
+            CollectionFileCountMapper.MapFilesCountToCollections(Collections, Files);
 
             ModelState.Remove("search");
         }

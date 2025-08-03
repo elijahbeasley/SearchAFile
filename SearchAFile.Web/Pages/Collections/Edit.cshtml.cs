@@ -3,26 +3,23 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.CodeAnalysis.Emit;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Metrics;
 
-namespace SearchAFile.Web.Pages.FileGroups;
+namespace SearchAFile.Web.Pages.Collections;
 
 [BindProperties]
-public class CreateModel : PageModel
+public class EditModel : PageModel
 {
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IWebHostEnvironment _iWebHostEnvironment;
     private readonly OpenAIFileService _openAIFileService;
 
-    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, OpenAIFileService openAIFileService)
+    public EditModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, OpenAIFileService openAIFileService)
     {
         _telemetryClient = telemetryClient;
         _api = api;
@@ -30,23 +27,33 @@ public class CreateModel : PageModel
         _openAIFileService = openAIFileService;
     }
 
-    public FileGroup FileGroup { get; set; } = default!;
+    public Collection Collection { get; set; } = default!;
 
     public IFormFile? IFormFile { get; set; }
 
-    private List<string> FileGroupTypes = new List<string>()
+    private List<string> CollectionTypes = new List<string>()
     {
         "png","jpeg","jpg"
     };
 
-    public IActionResult OnGet()
+    public async Task<IActionResult> OnGetAsync(Guid? id)
     {
         try
         {
             // Set the page title.
-            HttpContext.Session.SetString("PageTitle", "Create File Group");
+            HttpContext.Session.SetString("PageTitle", "Edit Collection");
 
-            ModelState.Remove("IFormFile");
+            if (id == null)
+                return NotFound();
+
+            var result = await _api.GetAsync<Collection>($"collections/{id}");
+
+            if (!result.IsSuccess || result.Data == null)
+                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to retrieve collection.");
+
+            Collection = result.Data;
+
+            return Page();
         }
         catch (Exception ex)
         {
@@ -57,43 +64,44 @@ public class CreateModel : PageModel
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
             TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+            return NotFound();
         }
-
-        return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
         try
         {
-            string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "FileGroups");
+            var getResult = await _api.GetAsync<Collection>($"collections/{Collection.CollectionId}");
+
+            if (!getResult.IsSuccess || getResult.Data == null)
+                throw new Exception(ApiErrorHelper.GetErrorString(getResult) ?? "Unable to retrieve collection.");
+
+            Collection UpdateCollection = getResult.Data;
+
+            string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "Collections");
 
             if (IFormFile != null)
             {
-                bool headerSuccess = await FileUploadHelper.TryUploadFileAsync(IFormFile, "Image", strPath, FileGroupTypes, fileName => FileGroup.ImageUrl = fileName);
+                bool headerSuccess = await FileUploadHelper.TryUploadFileAsync(IFormFile, "Image", strPath, CollectionTypes, fileName => UpdateCollection.ImageUrl = fileName);
                 if (!headerSuccess) throw new Exception("Unable to upload the image.");
             }
 
             // Sanitize the data.
             HtmlSanitizer objHtmlSanitizer = new HtmlSanitizer();
-            FileGroup.FileGroup1 = objHtmlSanitizer.Sanitize(FileGroup.FileGroup1.Trim());
+            UpdateCollection.Collection1 = objHtmlSanitizer.Sanitize(Collection.Collection1.Trim());
+            UpdateCollection.Private = Collection.Private;
+            UpdateCollection.Active = Collection.Active;
 
-            FileGroup.CompanyId = HttpContext.Session.GetObject<Company>("Company").CompanyId;
-            FileGroup.Created = DateTime.Now;
-            FileGroup.CreatedByUserId = HttpContext.Session.GetObject<UserDto>("User").UserId;
+            var updateResult = await _api.PutAsync<Collection>($"collections/{UpdateCollection.CollectionId}", UpdateCollection);
 
-            var result = await _api.PostAsync<FileGroup>("filegroups", FileGroup);
-
-            if (!result.IsSuccess)
+            if (!updateResult.IsSuccess)
             {
-                ApiErrorHelper.AddErrorsToModelState(result, ModelState, "FileGroup");
-
-                string strExceptionMessage = ApiErrorHelper.GetErrorString(result);
-                TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '<ul>" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<li>").EscapeJsString() + "</ul>', 0, false);";
+                ApiErrorHelper.AddErrorsToModelState(updateResult, ModelState, "Collection");
                 return Page();
             }
 
-            TempData["StartupJavaScript"] = "ShowSnack('success', 'File group successfully created.', 7000, true)";
+            TempData["StartupJavaScript"] = "ShowSnack('success', 'Collection successfully updated.', 7000, true)";
 
             return RedirectToPage("./Index");
         }
@@ -104,7 +112,7 @@ public class CreateModel : PageModel
             _telemetryClient.TrackException(ExceptionTelemetry);
 
             // Display an error for the user.
-            string strExceptionMessage = "File group NOT successfully created. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            string strExceptionMessage = "Collection NOT successfully updated. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
             TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
 
             return Page();

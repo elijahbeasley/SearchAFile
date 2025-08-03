@@ -43,7 +43,7 @@ public class ChatModel : PageModel
     private readonly string strBaseEndpointUrl = "https://api.openai.com/v1/";
 
     public Guid? Id { get; set; }
-    public FileGroup FileGroup { get; set; }
+    public Collection Collection { get; set; }
 
     private HttpClient objHttpClient;
 
@@ -54,8 +54,8 @@ public class ChatModel : PageModel
             if (Id == null)
                 return Redirect(HttpContext.Session.GetString("DashboardURL") ?? "/");
 
-            if (HttpContext.Session.GetObject<FileGroup>("FileGroup") != null
-                && Id != HttpContext.Session.GetObject<FileGroup>("FileGroup").FileGroupId)
+            if (HttpContext.Session.GetObject<Collection>("Collection") != null
+                && Id != HttpContext.Session.GetObject<Collection>("Collection").CollectionId)
             {
                 await DeleteThread();
             }
@@ -142,7 +142,7 @@ public class ChatModel : PageModel
             }
 
             // Get the file IDs:
-            var fileIds = HttpContext.Session.GetObject<FileGroup>("FileGroup").Files?
+            var fileIds = HttpContext.Session.GetObject<Collection>("Collection").Files?
                 .Where(file => !string.IsNullOrEmpty(file.OpenAIFileId))
                 .Select(file => file.OpenAIFileId!)
                 .Take(20) // OpenAI limit
@@ -304,16 +304,16 @@ public class ChatModel : PageModel
     {
         try
         {
-            if (HttpContext.Session.GetObject<FileGroup>("FileGroup") == null)
+            if (HttpContext.Session.GetObject<Collection>("Collection") == null)
             {
-                var fileGroupResult = await _api.GetAsync<FileGroup>($"filegroups/{Id}");
+                var collectionResult = await _api.GetAsync<Collection>($"collections/{Id}");
 
-                if (!fileGroupResult.IsSuccess || fileGroupResult.Data == null)
+                if (!collectionResult.IsSuccess || collectionResult.Data == null)
                 {
-                    throw new Exception(fileGroupResult.ErrorMessage ?? "Unable to retrieve file group.");
+                    throw new Exception(collectionResult.ErrorMessage ?? "Unable to retrieve collection.");
                 }
 
-                FileGroup = fileGroupResult.Data;
+                Collection = collectionResult.Data;
 
                 // Load the files.
                 var filesResult = await _api.GetAsync<List<File>>("files");
@@ -323,15 +323,15 @@ public class ChatModel : PageModel
                     throw new Exception(filesResult.ErrorMessage ?? "Unable to retrieve files.");
                 }
 
-                List<File> Files = filesResult.Data.Where(file => file.FileGroupId == FileGroup.FileGroupId).ToList();
+                List<File> Files = filesResult.Data.Where(file => file.CollectionId == Collection.CollectionId).ToList();
 
-                FileGroupFileCountMapper.MapFilesToFileGroup(FileGroup, Files);
+                CollectionFileCountMapper.MapFilesToCollection(Collection, Files);
 
-                HttpContext.Session.SetObject("FileGroup", FileGroup);
+                HttpContext.Session.SetObject("Collection", Collection);
             }
             else
             {
-                FileGroup = HttpContext.Session.GetObject<FileGroup>("FileGroup");
+                Collection = HttpContext.Session.GetObject<Collection>("Collection");
             }
         }
         catch
@@ -388,7 +388,7 @@ public class ChatModel : PageModel
                                 string fileId = Path.GetFileNameWithoutExtension(fileIdWithExt);
 
                                 // Find the matching file by FileId (GUID string)
-                                var file = FileGroup.Files
+                                var file = Collection.Files
                                     .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f.Path.ToString()).Equals(fileId, StringComparison.OrdinalIgnoreCase));
 
                                 if (file != null)
@@ -400,6 +400,8 @@ public class ChatModel : PageModel
 
                                 return fileIdWithExt; // fallback
                             });
+
+                        strMessageText = Regex.Replace(strMessageText, @"\r\n|\n|\r", "<br>");
 
                         string roleClass = strRole == "user" ? "user" : "bot";
 

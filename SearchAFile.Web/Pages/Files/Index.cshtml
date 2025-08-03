@@ -62,7 +62,7 @@
 </style>
 
 <div class="pb-3">
-    <a asp-page="/FileGroups/Index" title="File Groups">
+    <a asp-page="/Collections/Index" title="Collections">
         <i class="fa-solid fa-arrow-left"></i>
         Back
     </a>
@@ -71,7 +71,7 @@
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
-        <label class="fs-5 pe-3"><i class="fa-solid fa-file cus-text-primary-no-hover"></i> @Model.FileGroup.FileGroup1 Files</label>
+        <label class="fs-5 pe-3"><i class="fa-solid fa-folder-open cus-text-primary-no-hover"></i> @Model.Collection.Collection1 Files</label>
         <form method="get">
             <input type="hidden" name="id" value="@Request.Query["id"]" />
             <div class="input-group">

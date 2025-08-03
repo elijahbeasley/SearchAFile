@@ -22,7 +22,7 @@ public class DashboardModel : PageModel
 
     [BindProperty(SupportsGet = true)]
     public string? search { get; set; }
-    public List<FileGroup>? FileGroups { get; set; } = default!;
+    public List<Collection>? Collections { get; set; } = default!;
     public async Task OnGetAsync()
     {
         try
@@ -31,19 +31,19 @@ public class DashboardModel : PageModel
             HttpContext.Session.SetString("PageTitle", "Dashboard");
 
             string url = string.IsNullOrWhiteSpace(search)
-                ? "filegroups"
-                : $"filegroups?search={Uri.EscapeDataString(search)}";
+                ? "collections"
+                : $"collections?search={Uri.EscapeDataString(search)}";
 
-            var fileGroupsResult = await _api.GetAsync<List<FileGroup>>(url);
+            var collectionResult = await _api.GetAsync<List<Collection>>(url);
 
-            if (!fileGroupsResult.IsSuccess || fileGroupsResult.Data == null)
+            if (!collectionResult.IsSuccess || collectionResult.Data == null)
             {
-                throw new Exception(fileGroupsResult.ErrorMessage ?? "Unable to retrieve file group.");
+                throw new Exception(collectionResult.ErrorMessage ?? "Unable to retrieve collection.");
             }
 
-            FileGroups = fileGroupsResult.Data
-                .Where(file_group => file_group.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId)
-                .OrderBy(file_group => file_group.FileGroup1)
+            Collections = collectionResult.Data
+                .Where(collection => collection.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId)
+                .OrderBy(collection => collection.Collection1)
                 .ToList();
 
             var filesResult = await _api.GetAsync<List<Core.Domain.Entities.File>>("files");
@@ -55,7 +55,7 @@ public class DashboardModel : PageModel
 
             List<Core.Domain.Entities.File> Files = filesResult.Data;
 
-            FileGroupFileCountMapper.MapFilesCountToFileGroups(FileGroups, Files);
+            CollectionFileCountMapper.MapFilesCountToCollections(Collections, Files);
         }
         catch (Exception ex)
         {

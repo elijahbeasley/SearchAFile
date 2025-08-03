@@ -8,7 +8,7 @@ using SearchAFile.Web.Services;
 using System.Diagnostics.Metrics;
 
 
-namespace SearchAFile.Web.Pages.FileGroups;
+namespace SearchAFile.Web.Pages.Collections;
 
 public class DetailsModel : PageModel
 {
@@ -21,24 +21,24 @@ public class DetailsModel : PageModel
         _api = api;
     }
 
-    public FileGroup FileGroup { get; set; } = default!;
+    public Collection Collection { get; set; } = default!;
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
         try
         {
             // Set the page title.
-            HttpContext.Session.SetString("PageTitle", "FileGroup Details");
+            HttpContext.Session.SetString("PageTitle", "Collection Details");
 
             if (id == null)
                 return NotFound();
 
-            var result = await _api.GetAsync<FileGroup>($"filegroups/{id}");
+            var result = await _api.GetAsync<Collection>($"collections/{id}");
 
             if (!result.IsSuccess || result.Data == null)
-                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to retrieve file group.");
+                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to retrieve collection.");
 
-            FileGroup = result.Data;
+            Collection = result.Data;
 
             return Page();
         }

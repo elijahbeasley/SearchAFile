@@ -7,7 +7,7 @@
 <form id="objForm" method="post" enctype="multipart/form-data" onmouseup="window.top.ResizeModal();" onmouseover="window.top.ResizeModal();" onsubmit="$('#btnSave').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());">
 
     <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
-    <input asp-for="File.FileGroupId" hidden />
+    <input asp-for="File.CollectionId" hidden />
 
     <div class="card border-0 p-0">
 

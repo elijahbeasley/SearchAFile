@@ -47,7 +47,7 @@
                         case "System Admin":
                             NavLink("/SystemAdmins/Dashboard", "fa-solid fa-house", "Dashboard");
                             NavLink("/Companies", "fa-regular fa-building", "Companies");
-                            NavLink("/FileGroups", "fa-solid fa-folder-open", "Files");
+                            NavLink("/Collections", "fa-solid fa-layer-group", "Collections");
                             NavLink("/Users", "fa-solid fa-users", "Users");
                             NavLink("/SystemAdmins/SystemSettings", "fa-solid fa-gears", "System Settings");
                             NavLink("/Admins/CompanySettings", "fa-solid fa-users-gear", "Company Settings");
@@ -57,7 +57,7 @@
 
                         case "Admin":
                             NavLink("/Admins/Dashboard", "fa-solid fa-house", "Dashboard");
-                            NavLink("/FileGroups", "fa-solid fa-folder-open", "Files");
+                            NavLink("/Collections", "fa-solid fa-layer-group", "Collections");
                             NavLink("/Admins/CompanySettings", "fa-regular fa-building", "Company Settings");
                             NavLink("/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
                             if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))

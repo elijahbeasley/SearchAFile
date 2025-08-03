@@ -41,7 +41,7 @@ public class ChatxxModel : PageModel
     private readonly string strBaseEndpointUrl = "https://api.openai.com/v1/";
 
     public Guid? Id { get; set; }
-    public FileGroup FileGroup { get; set; }
+    public Collection Collection { get; set; }
 
     private HttpClient objHttpClient;
 
@@ -296,14 +296,14 @@ public class ChatxxModel : PageModel
     {
         try
         {
-            var fileGroupResult = await _api.GetAsync<FileGroup>($"filegroups/{Id}");
+            var collectionResult = await _api.GetAsync<Collection>($"collections/{Id}");
 
-            if (!fileGroupResult.IsSuccess || fileGroupResult.Data == null)
+            if (!collectionResult.IsSuccess || collectionResult.Data == null)
             {
-                throw new Exception(fileGroupResult.ErrorMessage ?? "Unable to retrieve file group.");
+                throw new Exception(collectionResult.ErrorMessage ?? "Unable to retrieve collection.");
             }
 
-            FileGroup = fileGroupResult.Data;
+            Collection = collectionResult.Data;
 
             // Load the files.
             if (HttpContext.Session.GetObject<List<File>>("Files") == null)
@@ -315,7 +315,7 @@ public class ChatxxModel : PageModel
                     throw new Exception(filesResult.ErrorMessage ?? "Unable to retrieve files.");
                 }
 
-                List<File> Files = filesResult.Data.Where(file => file.FileGroupId == FileGroup.FileGroupId).ToList();
+                List<File> Files = filesResult.Data.Where(file => file.CollectionId == Collection.CollectionId).ToList();
 
                 HttpContext.Session.SetObject("Files", Files);
             }

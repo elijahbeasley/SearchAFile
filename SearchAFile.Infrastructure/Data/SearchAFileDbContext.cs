@@ -22,7 +22,7 @@ public partial class SearchAFileDbContext : DbContext
 
     public virtual DbSet<Core.Domain.Entities.File> Files { get; set; }
 
-    public virtual DbSet<FileGroup> FileGroups { get; set; }
+    public virtual DbSet<Collection> Collections { get; set; }
 
     public virtual DbSet<SystemInfo> SystemInfos { get; set; }
 
@@ -55,22 +55,22 @@ public partial class SearchAFileDbContext : DbContext
 
             entity.Property(e => e.FileId).HasDefaultValueSql("(newsequentialid())");
 
-            entity.HasOne(d => d.FileGroup).WithMany(p => p.Files).HasConstraintName("FK_File_FileGroup");
+            entity.HasOne(d => d.Collection).WithMany(p => p.Files).HasConstraintName("FK_File_Collection");
 
             entity.HasOne(d => d.UploadedByUser).WithMany(p => p.Files).HasConstraintName("FK_File_User");
         });
 
-        modelBuilder.Entity<FileGroup>(entity =>
+        modelBuilder.Entity<Collection>(entity =>
         {
-            entity.HasKey(e => e.FileGroupId).HasName("PK_FileGroup_1");
+            entity.HasKey(e => e.CollectionId).HasName("PK_Collection_1");
 
-            entity.ToTable("FileGroup", tb => tb.HasTrigger("trg_FileGroup_Audit"));
+            entity.ToTable("Collection", tb => tb.HasTrigger("trg_Collection_Audit"));
 
-            entity.Property(e => e.FileGroupId).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.CollectionId).HasDefaultValueSql("(newsequentialid())");
 
-            entity.HasOne(d => d.Company).WithMany(p => p.FileGroups).HasConstraintName("FK_FileGroup_Company");
+            entity.HasOne(d => d.Company).WithMany(p => p.Collections).HasConstraintName("FK_Collection_Company");
 
-            entity.HasOne(d => d.CreatedByUser).WithMany(p => p.FileGroups).HasConstraintName("FK_FileGroup_User");
+            entity.HasOne(d => d.CreatedByUser).WithMany(p => p.Collections).HasConstraintName("FK_Collection_User");
         });
 
         modelBuilder.Entity<SystemInfo>(entity =>

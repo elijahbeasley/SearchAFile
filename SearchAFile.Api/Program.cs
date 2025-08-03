@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SearchAFile.Core.Interfaces;
 using SearchAFile.Infrastructure.Data;
 using SearchAFile.Infrastructure.Services;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,7 @@ builder.Services.AddDbContext<SearchAFileDbContext>(options => options.UseSqlSer
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IFileService, FileService>();
-builder.Services.AddScoped<IFileGroupService, FileGroupService>();
+builder.Services.AddScoped<ICollectionService, CollectionService>();
 builder.Services.AddScoped<ISystemInfoService, SystemInfoService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<JwtTokenGenerator>();
@@ -23,6 +24,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
 
 var app = builder.Build();
 

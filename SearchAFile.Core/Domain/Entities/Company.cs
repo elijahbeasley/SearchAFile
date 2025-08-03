@@ -91,7 +91,7 @@ public partial class Company
     public bool Active { get; set; }
 
     [InverseProperty("Company")]
-    public virtual ICollection<FileGroup> FileGroups { get; set; } = new List<FileGroup>();
+    public virtual ICollection<Collection> Collections { get; set; } = new List<Collection>();
 
     [InverseProperty("Company")]
     public virtual ICollection<User> Users { get; set; } = new List<User>();

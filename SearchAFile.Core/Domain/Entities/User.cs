@@ -87,7 +87,7 @@ public partial class User
     public virtual ICollection<Event> Events { get; set; } = new List<Event>();
 
     [InverseProperty("CreatedByUser")]
-    public virtual ICollection<FileGroup> FileGroups { get; set; } = new List<FileGroup>();
+    public virtual ICollection<Collection> Collections { get; set; } = new List<Collection>();
 
     [InverseProperty("UploadedByUser")]
     public virtual ICollection<File> Files { get; set; } = new List<File>();
