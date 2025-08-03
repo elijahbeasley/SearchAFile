@@ -19,12 +19,12 @@ public class ClientAuthMiddleware
         var configClientId = _configuration["ApiAuth:ClientId"];
         var configClientSecret = _configuration["ApiAuth:ClientSecret"];
 
-        //if (clientId != configClientId || clientSecret != configClientSecret)
-        //{
-        //    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        //    await context.Response.WriteAsync("Unauthorized: Invalid client credentials.");
-        //    return;
-        //}
+        if (clientId != configClientId || clientSecret != configClientSecret)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync("Unauthorized: Invalid client credentials.");
+            return;
+        }
 
         await _next(context);
     }

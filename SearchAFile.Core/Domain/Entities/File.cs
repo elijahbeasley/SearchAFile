@@ -20,7 +20,7 @@ public partial class File
     [Column("File")]
     [DisplayName("File Name")]
     [Required(ErrorMessage = "File name is required.")]
-    [StringLength(50)]
+    [StringLength(100)]
     public string? File1 { get; set; }
 
     [StringLength(10)]
