@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
 
-namespace SearchAFile.Helpers;
+namespace SearchAFile.Web.Helpers;
+
 public static class UrlHelper
 {
     public static string Combine(params string[] parts)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SearchAFile.Core.Domain.Entities;
+using SearchAFile.Core.Helpers;
 using SearchAFile.Infrastructure.Data;
 
 namespace SearchAFile.Infrastructure.Services;
@@ -25,7 +26,7 @@ public class AuthService : IAuthService
             return new AuthResult { Success = false, ErrorMessage = "User is inactive." };
 
         if (!user.EmailVerified)
-            return new AuthResult { Success = false, ErrorMessage = "Your email address is not verified." };
+            return new AuthResult { Success = false, ErrorMessage = @"Your email address has not been verified. <a class='btn btn-link p-0 m-0 cus-no-box-shadow fs-6' href='VerifyEmailAddress?id=" + user.EmailVerificationUrl + "'>Click here</a> to resend the email address verification email." };
 
         if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
             return new AuthResult { Success = false, ErrorMessage = "Invalid password." };

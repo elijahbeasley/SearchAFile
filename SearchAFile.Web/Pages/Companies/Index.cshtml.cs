@@ -41,7 +41,9 @@ public class IndexModel : PageModel
                 throw new Exception(result.ErrorMessage ?? "Unable to retrieve company.");
             }
 
-            Companies = result.Data;
+            Companies = result.Data
+                .OrderBy(company => company.Company1)
+                .ToList();
 
             ModelState.Remove("search");
         }

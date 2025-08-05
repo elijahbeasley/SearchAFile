@@ -1,7 +1,7 @@
 ﻿using MailKit.Security;
 using MimeKit;
 using MailKit.Net.Smtp;
-using SearchAFile.Helpers;
+using SearchAFile.Web.Helpers;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Interfaces;

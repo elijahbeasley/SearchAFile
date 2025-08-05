@@ -1,4 +1,5 @@
-﻿@model (SearchAFile.Core.Domain.Entities.SystemInfo SystemInfo, string FooterShow)
+﻿@model (SystemInfo SystemInfo, Company Company, string FooterShow)
+@using SearchAFile.Core.Domain.Entities;
 
 <div id="footer"
      class="cus-bg-primary d-flex align-items-center cus-no-select @Model.FooterShow">
@@ -12,5 +13,5 @@
             @Model.SystemInfo.ContactName
         </a>
     </span>
-    <img class="ps-3 ms-auto" height="35" src="~/SystemFiles/@Model.SystemInfo.FooterLogo" alt="Footer Logo" />
+    <img class="ps-3 ms-auto" height="35" src="@(Model.Company != null ? "/CompanyFiles/" + Model.Company.FooterLogo : "/SystemFiles/" + Model.SystemInfo.FooterLogo)" alt="Footer Logo" />
 </div>

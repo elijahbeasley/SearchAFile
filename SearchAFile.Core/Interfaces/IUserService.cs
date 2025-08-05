@@ -9,7 +9,7 @@ public interface IUserService
 {
     Task<IEnumerable<User>> GetAllAsync(string? search = null);
     Task<User?> GetByIdAsync(Guid userId);
-    Task CreateAsync(User user);
+    Task<User?> CreateAsync(User user);
     Task<bool> UpdateAsync(User user);
     Task<bool> DeleteAsync(Guid userId);
     Task<string?> EmailExistsAsync(Guid CompanyId, string email, Guid? UserId);

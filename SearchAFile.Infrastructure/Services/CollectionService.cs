@@ -34,24 +34,25 @@ public class CollectionService : ICollectionService
 
     public async Task<Collection?> GetByIdAsync(Guid id) => await _context.Collections.FindAsync(id);
 
-    public async Task CreateAsync(Collection group)
+    public async Task<Collection?> CreateAsync(Collection collection)
     {
-        _context.Collections.Add(group);
+        _context.Collections.Add(collection);
         await _context.SaveChangesAsync();
+        return collection;
     }
 
-    public async Task<bool> UpdateAsync(Collection group)
+    public async Task<bool> UpdateAsync(Collection collection)
     {
-        _context.Collections.Update(group);
+        _context.Collections.Update(collection);
         return await _context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var group = await _context.Collections.FindAsync(id);
-        if (group == null) return false;
+        var collection = await _context.Collections.FindAsync(id);
+        if (collection == null) return false;
 
-        _context.Collections.Remove(group);
+        _context.Collections.Remove(collection);
         return await _context.SaveChangesAsync() > 0;
     }
 }

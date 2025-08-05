@@ -23,7 +23,7 @@
             </label>
         </div>
 
-        @* <div class="card-header">
+        @* <div class="card-header cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
             <label class="fs-5"><i class="fa-solid fa-pen-to-square text-primary"></i> @Model.Collection.Collection1</label>
         </div> *@
 
@@ -77,6 +77,9 @@
         </div>
 
         <div class="card-footer text-center">
+            <div id="divSaveHeadshotNotice" style="display: none;">
+                <span class="text-danger">Click Save to save the uploaded file.</span>
+            </div>
             <a asp-page="./Index" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-arrow-left"></i>
                 Back to List
@@ -152,6 +155,50 @@
 
     <script type="text/javascript">
 
+        $('#divUploadImage').on('keypress', function (event) {
+
+            let keycode = (event.keyCode ? event.keyCode : event.which);
+
+            if (keycode == '13') {
+
+                event.preventDefault();
+                $('#btnUploadImage').click();
+            }
+        });
+
+        $('#divUploadImage').on('hidden.bs.modal', function (e) {
+
+            $('#lblSubmitUpload').show();
+            $('#imgSubmitUpload').hide();
+        })
+
+        function UploadImage() {
+
+            // Clear out the messages.
+            window.top.ClearToast();
+
+            // Is the form valid?
+            if ($('input[type=file]').val() == '') {
+
+                $('input[type=file]').addClass('input-validation-error');
+
+                // Output the errors.
+                window.top.ShowToast('danger', 'The following errors have occured', '<ul><li>A file is required.</li></ul>', 0, false)
+            }
+            else {
+
+                $('#lblSubmitUpload').toggle();
+                $('#imgSubmitUpload').toggle();
+
+                // Display the file.
+                $("#imgNewImage").prop('src', $("#imgPreview").prop('src'));
+
+                $('#divUploadImage').modal('hide');
+
+                $('#divSaveHeadshotNotice').show();
+            }
+        }
+
         function CalculateFileSizes() {
 
             var totalFileSize = 0;
@@ -174,9 +221,9 @@
             $('#lblTotalFileSize').text(totalFileSizeMB.toFixed(2) + 'MB')
         }
 
-        function ClearFile(e, id) {
+        function ClearFile(e) {
 
-            $('#' + id + 'Preview').prop('src', '@SystemFunctions.EmptyImageSource');
+            $('#imgPreview').prop('src', '@SystemFunctions.EmptyImageSource');
 
             $(e).find('input:file').val('');
             $(e).parent('div').find('input:text').val('');
@@ -184,7 +231,7 @@
             CalculateFileSizes();
         }
 
-        function SelectFile(e, id) {
+        function SelectFile(e) {
 
             if (e.files.length === 0) {
 
@@ -234,7 +281,7 @@
 
             if (errors !== '') {
 
-                $('#' + id).addClass('input-validation-error');
+                $('input[type=file]').addClass('input-validation-error');
                 $(e).val('');
                 $(e).parent('div').parent('div').find('input:text').val('');
                 $(e).parent('div').parent('div').find('input:text').prop('title', '');
@@ -244,19 +291,26 @@
             }
             else {
 
-                $('#' + id).removeClass('input-validation-error');
+                $('input[type=file]').removeClass('input-validation-error');
                 $(e).parent('div').parent('div').find('input:text').val(e.files[0].name);
                 $(e).parent('div').parent('div').find('input:text').prop('title', e.files[0].name);
 
                 // Display the file.
                 var reader = new FileReader();
                 reader.onload = function (element) {
-                    $('#' + id + 'Preview').prop('src', element.target.result);
+                    $("#imgPreview").prop('src', element.target.result);
                 }
                 reader.readAsDataURL($(e)[0].files[0]);
             }
 
             CalculateFileSizes();
+        }
+
+        function CancelUpload() {
+
+            $('input[type=file]').val('');
+            $('input[type=file]').removeClass('input-validation-error');
+            $('#imgPreview').prop('src', '@SystemFunctions.EmptyImageSource');
         }
 
     </script>

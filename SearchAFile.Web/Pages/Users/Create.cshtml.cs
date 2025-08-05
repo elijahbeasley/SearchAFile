@@ -5,9 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.CodeAnalysis.Emit;
+using MimeKit;
 using SearchAFile.Core.Domain.Entities;
+using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
+using SearchAFile.Web.Interfaces;
 using SearchAFile.Web.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Metrics;
@@ -20,14 +23,14 @@ public class CreateModel : PageModel
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IWebHostEnvironment _iWebHostEnvironment;
-    private readonly OpenAIFileService _openAIFileService;
+    private readonly IEmailService _emailService;
 
-    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, OpenAIFileService openAIFileService)
+    public CreateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IWebHostEnvironment iWebHostEnvironment, IEmailService emailService)
     {
         _telemetryClient = telemetryClient;
         _api = api;
         _iWebHostEnvironment = iWebHostEnvironment;
-        _openAIFileService = openAIFileService;
+        _emailService = emailService;
     }
 
     public User User { get; set; } = default!;
@@ -126,7 +129,7 @@ public class CreateModel : PageModel
 
             var result = await _api.PostAsync<User>("users", User);
 
-            if (!result.IsSuccess)
+            if (!result.IsSuccess && result.Data != null)
             {
                 ApiErrorHelper.AddErrorsToModelState(result, ModelState, "User");
 
@@ -134,6 +137,11 @@ public class CreateModel : PageModel
                 TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '<ul>" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<li>").EscapeJsString() + "</ul>', 0, false);";
                 return Page();
             }
+
+            User = result.Data;
+
+            // Send a welcome email.
+            await SendEmail();
 
             TempData["StartupJavaScript"] = "ShowSnack('success', '" + User.FullName + " successfully created.', 7000, true)";
 
@@ -150,6 +158,71 @@ public class CreateModel : PageModel
             TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
 
             return Page();
+        }
+    }
+
+    private async Task SendEmail()
+    {
+        try
+        {
+            // Create the email verification info.
+            SystemInfo SystemInfo = HttpContext.Session.GetObject<SystemInfo>("SystemInfo");
+
+            // Send the password reset email.
+
+            BodyBuilder objBodyBuilder = new BodyBuilder();
+
+            objBodyBuilder.HtmlBody = @"
+                <table> 
+                    <tr> 
+                        <td> 
+                            Hello " + User.FullName + @", 
+                        </td> 
+                    </tr> 
+                    <tr> 
+                        <td style='padding: 0rem 1rem;'> 
+                            <br />";
+
+            if (User.CompanyId != null)
+            {
+                Company Company = HttpContext.Session.GetObject<Company>("Company");
+
+                if (Company != null)
+                {
+                    objBodyBuilder.HtmlBody += "A " + SystemInfo.SystemName + " account for " + Company.Company1 + " has been created using this email address. Please <a href='" + UrlHelper.Combine(SystemInfo.Url, "Home", "VerifyEmailAddress") + "?id=" + User.EmailVerificationUrl + @"'>click here</a> to verify your email address.";
+                }
+                else
+                {
+                    objBodyBuilder.HtmlBody += "A " + SystemInfo.SystemName + " account has been created using this email address. Please <a href='" + UrlHelper.Combine(SystemInfo.Url, "Home", "VerifyEmailAddress") + "?id=" + User.EmailVerificationUrl + @"'>click here</a> to verify your email address.";
+                }
+            }
+            else
+            {
+                objBodyBuilder.HtmlBody += "A " + SystemInfo.SystemName + " account has been created using this email address. Please <a href='" + UrlHelper.Combine(SystemInfo.Url, "Home", "VerifyEmailAddress") + "?id=" + User.EmailVerificationUrl + @"'>click here</a> to verify your email address.";
+            }
+
+            objBodyBuilder.HtmlBody += @"
+                        </td> 
+                    </tr> 
+                </table> ";
+
+            // To.
+            List<KeyValuePair<string, string>> lstTo = new List<KeyValuePair<string, string>>();
+
+            // Add service to the email.
+            lstTo.Add(new KeyValuePair<string, string>(User.EmailAddress, User.FullName));
+
+            // CC.
+            List<KeyValuePair<string, string>> lstCC = new List<KeyValuePair<string, string>>();
+
+            // BCC.
+            List<KeyValuePair<string, string>> lstBCC = new List<KeyValuePair<string, string>>();
+
+            await _emailService.SendEmail(lstTo, lstCC, lstBCC, SystemInfo.SystemName + " - Verify Email Address", objBodyBuilder);
+        }
+        catch
+        {
+            throw;
         }
     }
 }

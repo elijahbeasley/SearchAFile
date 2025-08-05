@@ -1,4 +1,6 @@
-﻿public static class ParsingHelpers
+﻿namespace SearchAFile.Web.Helpers;
+
+public static class ParsingHelpers
 {
     public static int ToIntOrDefault(this string? input, int defaultValue = 0)
     {

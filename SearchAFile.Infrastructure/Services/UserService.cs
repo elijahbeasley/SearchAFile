@@ -36,10 +36,11 @@ public class UserService : IUserService
 
     public async Task<User?> GetByIdAsync(Guid id) => await _context.Users.FindAsync(id);
 
-    public async Task CreateAsync(User user)
+    public async Task<User?> CreateAsync(User user)
     {
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+        return user;
     }
 
     public async Task<bool> UpdateAsync(User user)

@@ -13,7 +13,7 @@
 
         <div id="divLoadingBlock" class="container card p-0">
 
-            <div class="card-header d-flex align-items-center cus-no-select" style="background-color: lightgray; border-bottom: 3px solid var(--secondary-color);">
+            <div class="card-header d-flex align-items-center cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
                 <div class="cus-hover-image-container cus-image-size" onclick="$('#divUploadImage').modal('show');" title="Upload New Headshot" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip">
                     <img class="cus-hover-image cus-image-size" onerror="this.onerror = null; this.src='/UserFiles/Generic.jpg';" src="~/UserFiles/@(string.IsNullOrEmpty(Model.User.HeadshotPath) ? "Generic.jpg" : Model.User.HeadshotPath)" style="border-radius: 50%;" />
                     <div class="cus-hover-image-middle">

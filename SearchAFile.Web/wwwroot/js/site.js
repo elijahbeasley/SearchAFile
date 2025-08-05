@@ -476,3 +476,13 @@ $(document).on('shown.bs.dropdown', function (e) {
         setTimeout(() => $firstItem.focus(), 0); // short delay to allow DOM to settle
     }
 });
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+    .catch(err => {
+        window.top.ShowSnack('danger', 'Error copying to clipboard.', 5000, true);
+        return;
+    });
+
+    window.top.ShowSnack('success', 'Successfully copied to clipboard.', 5000, true);
+}

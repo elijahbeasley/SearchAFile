@@ -17,6 +17,7 @@ using SearchAFile.Web.Interfaces;
 using SearchAFile.Web.Extensions;
 using System.Collections.Generic;
 using SearchAFile.Core.Mappers;
+using SearchAFile.Web.Helpers;
 
 namespace SearchAFile.Web.Pages.Common;
 
@@ -265,16 +266,6 @@ public class AccountSettingsModel : PageModel
                 // Output an error message.
                 throw new Exception("Image NOT successfully uploaded. Could not get attached image.");
             }
-
-            //ModelState.Remove("User.FirstName");
-            //ModelState.Remove("User.LastName");
-            //ModelState.Remove("User.PhoneNumber");
-            //ModelState.Remove("User.WhatsApp");
-            //ModelState.Remove("User.EmailAddress");
-            //ModelState.Remove("User.City");
-            //ModelState.Remove("User.State");
-            //ModelState.Remove("User.ZipCode");
-            //ModelState.Remove("User.Company");
         }
         catch (Exception ex)
         {

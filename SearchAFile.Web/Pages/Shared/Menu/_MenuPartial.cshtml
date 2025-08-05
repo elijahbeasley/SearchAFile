@@ -1,4 +1,5 @@
-﻿@model (SearchAFile.Core.Domain.Entities.UserDto User, string BodyClass, string ShowMenu)
+﻿@model (UserDto User, string BodyClass, string ShowMenu)
+@using SearchAFile.Core.Domain.Entities;
 @{
     // Ensure a valid headshot
     if (string.IsNullOrEmpty(Model.User.HeadshotPath))
@@ -41,7 +42,6 @@
             <div class="overflow-auto"
                  style="display:flex; flex-direction:column; height:var(--body-height);">
                 <div class="nav_list">
-
                     @switch (Model.User.Role)
                     {
                         case "System Admin":
@@ -53,11 +53,13 @@
                             NavLink("/Admins/CompanySettings", "fa-solid fa-users-gear", "Company Settings");
                             NavLink("/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
                             NavLink("/Common/Impersonate", "fa-solid fa-sign-in", "Impersonate");
+                            NavLink("javascript:copyToClipboard('" + UrlHelper.Combine(Context.Session.GetObject<SystemInfo>("SystemInfo")?.Url ?? "", "Home", "Dashboard") + "?id=" + Context.Session.GetObject<Company>("Company")?.CompanyId + "'); SetMenuHighlight();", "fa-solid fa-copy", "Copy Share Link");
                             break;
 
                         case "Admin":
-                            NavLink("/Admins/Dashboard", "fa-solid fa-house", "Dashboard");
+                            NavLink("/Common/Dashboard", "fa-solid fa-house", "Dashboard");
                             NavLink("/Collections", "fa-solid fa-layer-group", "Collections");
+                            NavLink("/Users", "fa-solid fa-users", "Users");
                             NavLink("/Admins/CompanySettings", "fa-regular fa-building", "Company Settings");
                             NavLink("/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
                             if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
@@ -75,7 +77,6 @@
                             }
                             break;
                     }
-
                 </div>
 
                 @* always show logout at bottom *@

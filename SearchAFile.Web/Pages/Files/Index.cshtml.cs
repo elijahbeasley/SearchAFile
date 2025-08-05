@@ -66,7 +66,10 @@ public class IndexModel : PageModel
                 throw new Exception(filesResult.ErrorMessage ?? "Unable to retrieve files.");
             }
 
-            Files = filesResult.Data.Where(file => file.CollectionId == id).OrderBy(file => file.File1).ToList();
+            Files = filesResult.Data
+                .Where(file => file.CollectionId == id)
+                .OrderBy(file => file.File1)
+                .ToList();
 
             ModelState.Remove("search");
 

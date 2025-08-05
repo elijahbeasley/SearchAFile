@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Org.BouncyCastle.Asn1.Cmp;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
+using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
 
 namespace SearchAFile.Web.Controllers;

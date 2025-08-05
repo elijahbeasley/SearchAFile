@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights;
 using SearchAFile.Web.Extensions;
-using SearchAFile.Helpers;
+using SearchAFile.Web.Helpers;
 
 namespace SearchAFile;
 
@@ -39,8 +39,8 @@ public static class SystemFunctions
         return role switch
         {
             "System Admin" => "~/SystemAdmins/Dashboard",
-            "Admin" => "~/Admins/Dashboard",
-            "Employee" => "~/Employees/Dashboard",
+            "Admin" => "~/Common/Dashboard",
+            "Employee" => "~/Common/Dashboard",
             _ => DefaultDashboardURL,
         };
     }

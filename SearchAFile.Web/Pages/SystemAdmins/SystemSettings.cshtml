@@ -1,0 +1,327 @@
+﻿@page
+@model SearchAFile.Web.Pages.Admins.SystemInfoSettingsModel
+
+<style>
+    .popover-body {
+        color: var(--primary-text-color);
+        padding: 0.5rem;
+    }
+</style>
+
+<form id="objForm" method="post" enctype="multipart/form-data" onsubmit="$('#btnSave').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());" autocomplete="off">
+
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
+    <input type="hidden" asp-for="SystemInfo.SystemInfoId" />
+
+    <div id="divLoadingBlock" class="container card p-0">
+
+        <div class="card-header cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
+            <label class="fs-5">@Model.SystemInfo.SystemName</label>
+        </div>
+
+        <div class="card-body cus-bootstrap-table-striped p-0">
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-md-4">
+                    <div class="form-floating">
+                        <input asp-for="SystemInfo.SystemName" type="text" class="form-control" disabled placeholder="@Html.DisplayNameFor(model => model.SystemInfo.SystemName)" />
+                        <label asp-for="SystemInfo.SystemName" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.SystemName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-md-4">
+                    <div class="form-floating">
+                        <input asp-for="SystemInfo.Url" type="url" class="form-control" disabled placeholder="@Html.DisplayNameFor(model => model.SystemInfo.Url)" />
+                        <label asp-for="SystemInfo.Url" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.Url" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-md-4">
+                    <div class="form-floating">
+                        <input asp-for="SystemInfo.Version" type="url" class="form-control" disabled placeholder="@Html.DisplayNameFor(model => model.SystemInfo.Version)" />
+                        <label asp-for="SystemInfo.Version" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.Version" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-md-4">
+                    <div class="form-floating">
+                        <input asp-for="SystemInfo.ContactName" type="text" class="form-control" disabled placeholder="@Html.DisplayNameFor(model => model.SystemInfo.ContactName)" />
+                        <label asp-for="SystemInfo.ContactName" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.ContactName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-md-4">
+                    <div class="form-floating">
+                        <input asp-for="SystemInfo.ContactEmailAddress" type="text" class="form-control" disabled placeholder="@Html.DisplayNameFor(model => model.SystemInfo.ContactEmailAddress)" />
+                        <label asp-for="SystemInfo.ContactEmailAddress" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.ContactEmailAddress" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-md-4">
+                    <div class="form-floating">
+                        <input asp-for="SystemInfo.ContactPhoneNumber" type="text" class="form-control" disabled placeholder="(___) ___-____" data-bs-slots="_" />
+                        <label asp-for="SystemInfo.ContactPhoneNumber" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.ContactPhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-3">
+                    <div class="form-floating">
+                        <input type="color" asp-for="SystemInfo.PrimaryColor" class="form-control" placeholder="@Html.DisplayNameFor(model => model.SystemInfo.PrimaryColor)" disabled />
+                        <label asp-for="SystemInfo.PrimaryColor" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.PrimaryColor" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-3">
+                    <div class="form-floating">
+                        <input type="color" asp-for="SystemInfo.SecondaryColor" class="form-control" placeholder="@Html.DisplayNameFor(model => model.SystemInfo.SecondaryColor)" disabled />
+                        <label asp-for="SystemInfo.SecondaryColor" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.SecondaryColor" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-3">
+                    <div class="form-floating">
+                        <input type="color" asp-for="SystemInfo.PrimaryTextColor" class="form-control" placeholder="@Html.DisplayNameFor(model => model.SystemInfo.PrimaryTextColor)" disabled />
+                        <label asp-for="SystemInfo.PrimaryTextColor" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.PrimaryTextColor" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-3">
+                    <div class="form-floating">
+                        <input type="color" asp-for="SystemInfo.SecondaryTextColor" class="form-control" placeholder="@Html.DisplayNameFor(model => model.SystemInfo.SecondaryTextColor)" disabled />
+                        <label asp-for="SystemInfo.SecondaryTextColor" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="SystemInfo.SecondaryTextColor" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row align-items-top m-0">
+                <div class="cus-col col-md-3">
+                    <div class="mb-2">
+                        <label asp-for="SystemInfo.Favicon"></label>
+                        <input id="Favicon" class="form-control" type="file" asp-for="IFormFileFavicon" onchange="SelectFile(this, 'Favicon');" disabled>
+                        <span asp-validation-for="IFormFileFavicon" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-center" style="height: 75px;">
+                        <img id="FaviconPreview" class="d-block" style="max-height: 75px; max-width: 100%;" src="~/SystemFiles/@Model.SystemInfo.Favicon">
+                    </div>
+                </div>
+                <div class="cus-col col-md-3">
+                    <div class="mb-2">
+                        <label asp-for="SystemInfo.HeaderLogo"></label>
+                        <input id="HeaderLogo" class="form-control" type="file" asp-for="IFormFileHeaderLogo" onchange="SelectFile(this, 'HeaderLogo');" disabled>
+                        <span asp-validation-for="IFormFileHeaderLogo" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-center" style="height: 75px;">
+                        <img id="HeaderLogoPreview" class="d-block" style="max-height: 75px; max-width: 100%;" src="~/SystemFiles/@Model.SystemInfo.HeaderLogo">
+                    </div>
+                </div>
+                <div class="cus-col col-md-3">
+                    <div class="mb-2">
+                        <label asp-for="SystemInfo.FooterLogo"></label>
+                        <input id="FooterLogo" class="form-control" type="file" asp-for="IFormFileFooterLogo" onchange="SelectFile(this, 'FooterLogo');" disabled>
+                        <span asp-validation-for="IFormFileFooterLogo" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-center" style="height: 75px;">
+                        <img id="FooterLogoPreview" class="d-block" style="max-height: 75px; max-width: 100%;" src="~/SystemFiles/@Model.SystemInfo.FooterLogo">
+                    </div>
+                </div>
+                <div class="cus-col col-md-3">
+                    <div class="mb-2">
+                        <label asp-for="SystemInfo.EmailLogo"></label>
+                        <input id="EmailLogo" class="form-control" type="file" asp-for="IFormFileEmailLogo" onchange="SelectFile(this, 'EmailLogo');" disabled>
+                        <span asp-validation-for="IFormFileEmailLogo" class="text-danger"></span>
+                    </div>
+                    <div class="d-flex justify-content-center" style="height: 75px;">
+                        <img id="EmailLogoPreview" class="d-block" style="max-height: 75px; max-width: 100%;" src="~/SystemFiles/@Model.SystemInfo.EmailLogo">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-footer text-center cus-no-select">
+            <button id="btnModify" type="button" class="btn cus-btn-outline-primary" onclick="Modify();" style="min-width: 15%;">
+                Modify
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button id="btnSave" type="submit" asp-page-handler="Modify" class="btn btn-outline-success" onclick="Save();" style="display: none; min-width: 15%;">
+                <span id="lblSubmit" style="color: unset;">
+                    Save
+                    <i class="fa-solid fa-save"></i>
+                </span>
+                <img id="imgSubmit" src="~/SystemFiles/loading.gif" style="display: none; height: 20px; width: 20px;" />
+            </button>
+            <button id="btnCancel" type="reset" class="btn btn-outline-danger" onclick="Cancel();" style="display: none; min-width: 15%;">
+                Cancel
+                <i class="fa-solid fa-ban"></i>
+            </button>
+        </div>
+
+    </div>
+
+</form>
+
+@section Scripts
+{
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script type="text/javascript">
+        
+        function Modify() {
+
+            $('input').prop('disabled', false);
+            $('#btnModify').toggle();
+            $('#btnSave').toggle();
+            $('#btnCancel').toggle();
+        }
+
+        function Save() {
+
+            // Clear out the messages.
+            ClearToast();
+
+            // Validate the page.
+            $('#objForm').validate();
+
+            // Is the form valid?
+            if (!$('#objForm').valid()) { // No, the form is NOT valid.
+
+                // Output the errors.
+                ShowToast("danger", "The following errors have occured", $('#divValidationSummary').html(), 0, false);
+            }
+            else {
+                
+                $('#lblSubmit').toggle();
+                $('#imgSubmit').toggle();
+
+                PageIsLoaded = false;
+                StartLoading('divLoadingBlock');
+            }
+        }
+
+        function Cancel() {
+
+            $('input').prop('disabled', true);
+
+            $('#btnModify').toggle();
+            $('#btnSave').toggle();
+            $('#btnCancel').toggle();
+            ClearToast();
+            ShowSnack('warning', 'Operation cancelled. No data was affected.', 3000, true);
+        }
+
+        function CalculateFileSizes() {
+
+            var totalFileSize = 0;
+            var totalFileSizeMB = 0;
+
+            $('input:file').each(function () {
+
+                if (this.files[0] != null) {
+
+                    totalFileSize += this.files[0].size;
+                }
+            });
+
+            if (totalFileSize > 0) {
+
+                // 1024
+                totalFileSizeMB = totalFileSize / Math.pow(1024, 2);
+            }
+
+            $('#lblTotalFileSize').text(totalFileSizeMB.toFixed(2) + 'MB')
+        }
+
+        function ClearFile(e, id) {
+
+            $('#' + id + 'Preview').prop('src', '@SystemFunctions.EmptyImageSource');
+
+            $(e).find('input:file').val('');
+            $(e).parent('div').find('input:text').val('');
+            $(e).parent('div').find('input:text').prop('title', '');
+            CalculateFileSizes();
+        }
+
+        function SelectFile(e, id) {
+
+            if (e.files.length === 0) {
+
+                ClearFile();
+                return;
+            }
+
+            let errors = '';
+
+            if (e.files[0].size > MaxFileSize) {
+
+                errors += '<li>Invalid file selected. File size must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB.</li>';
+            }
+
+            let fileExtension = ['png', 'jpeg', 'jpg'];
+
+            if ($.inArray($(e).val().split('.').pop().toLowerCase(), fileExtension) == -1) {
+
+                errors += '<li>Invalid file selected. File must be of type: ' + fileExtension.join(', ') + '.</li>';
+            }
+
+            if (errors == '') {
+
+                let totalFileSize = 0;
+
+                $('input:file').each(function () {
+
+                    if (this.files[0] != null) {
+
+                        totalFileSize += this.files[0].size;
+                    }
+                });
+
+                if (totalFileSize > MaxFileSize) {
+
+                    let totalFileSizeMB = totalFileSize - e.files[0].size;
+
+                    if (totalFileSize > 0) {
+
+                        // 1024
+                        totalFileSizeMB = totalFileSizeMB / Math.pow(1024, 2);
+                    }
+
+                    errors += '<li>Invalid file selected. The total file size(s) must not exceed ' + (MaxFileSize / Math.pow(1024, 2)).toFixed(2) + 'MB. The current file size(s) is ' + totalFileSizeMB.toFixed(2) + 'MB.</li>';
+                }
+            }
+
+            if (errors !== '') {
+
+                $('#' + id).addClass('input-validation-error');
+                $(e).val('');
+                $(e).parent('div').parent('div').find('input:text').val('');
+                $(e).parent('div').parent('div').find('input:text').prop('title', '');
+
+                window.top.ClearToast();
+                window.top.ShowToast('danger', 'The following errors have occured', '<ul>' + errors + '</ul>', 0, false);
+            }
+            else {
+
+                $('#' + id).removeClass('input-validation-error');
+                $(e).parent('div').parent('div').find('input:text').val(e.files[0].name);
+                $(e).parent('div').parent('div').find('input:text').prop('title', e.files[0].name);
+
+                // Display the file.
+                var reader = new FileReader();
+                reader.onload = function (element) {
+                    $('#' + id + 'Preview').prop('src', element.target.result);
+                }
+                reader.readAsDataURL($(e)[0].files[0]);
+            }
+
+            CalculateFileSizes();
+        }
+
+    </script>
+}

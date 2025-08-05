@@ -4,11 +4,13 @@
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
-        <label class="fs-5 pe-3"><i class="fa-solid fa-building cus-text-primary-no-hover"></i> Companies</label>
+        <label class="fs-5 pe-3" style="white-space: nowrap;"><i class="fa-solid fa-building cus-text-primary-no-hover"></i> Companies</label>
         <form method="get">
             <div class="input-group">
                 <input asp-for="search" class="form-control" type="search" placeholder="Search companies..." onchange="if (this.value === '') {this.form.submit(); }" />
-                <button type="submit" class="btn btn-primary">Search</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
             </div>
         </form>
     </div>

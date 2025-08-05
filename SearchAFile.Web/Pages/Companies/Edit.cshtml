@@ -8,7 +8,7 @@
 
     <div class="card">
 
-        <div class="card-header">
+        <div class="card-header cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
             <label class="fs-5"><i class="fa-solid fa-pen-to-square text-primary"></i> @Model.Company.Company1</label>
         </div>
 
@@ -33,7 +33,7 @@
                             <option value="True">Locked</option>
                             <option value="False">Unlocked</option>
                         </select>
-                        <label asp-for="Company.Lock" class="control-label">
+                        <label asp-for="Company.Lock" class="control-label" show-asterisk="true">
                             @Html.DisplayNameFor(model => model.Company.Lock)
                             <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your employees" data-bs-placement="top" data-bs-toggle="tooltip"></i>
                         </label>

@@ -9,7 +9,7 @@ public interface ICollectionService
 {
     Task<IEnumerable<Collection>> GetAllAsync(string? search = null);
     Task<Collection?> GetByIdAsync(Guid collectionId);
-    Task CreateAsync(Collection collection);
+    Task<Collection?> CreateAsync(Collection collection);
     Task<bool> UpdateAsync(Collection collection);
     Task<bool> DeleteAsync(Guid collectionId);
 }

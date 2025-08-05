@@ -23,6 +23,7 @@ public class DashboardModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? search { get; set; }
     public List<Collection>? Collections { get; set; } = default!;
+
     public async Task OnGetAsync()
     {
         try
@@ -43,6 +44,7 @@ public class DashboardModel : PageModel
 
             Collections = collectionResult.Data
                 .Where(collection => collection.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId)
+                .Where(collection => collection.Active)
                 .OrderBy(collection => collection.Collection1)
                 .ToList();
 

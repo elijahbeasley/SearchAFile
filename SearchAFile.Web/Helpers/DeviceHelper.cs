@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace SearchAFile.Helpers;
+namespace SearchAFile.Web.Helpers;
 
 public static class DeviceHelper
 {

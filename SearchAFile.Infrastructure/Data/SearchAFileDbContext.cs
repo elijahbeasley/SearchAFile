@@ -90,6 +90,7 @@ public partial class SearchAFileDbContext : DbContext
 
             entity.Property(e => e.UserId).HasDefaultValueSql("(newsequentialid())");
             entity.Property(e => e.EmailVerified).HasDefaultValue(false);
+            entity.Property(e => e.EmailVerificationUrl).HasDefaultValueSql("(newsequentialid())");
 
             entity.HasOne(d => d.Company).WithMany(p => p.Users).HasConstraintName("FK_User_Company");
         });

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
+using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
 using System.Diagnostics.Metrics;
 

@@ -1,4 +1,5 @@
-﻿@model (string PageTitle, string Logo, string BodyClass)
+﻿@model (SystemInfo SystemInfo, Company Company, string PageTitle, string BodyClass)
+@using SearchAFile.Core.Domain.Entities;
 
 <header id="header" class="header cus-bg-primary @Model.BodyClass">
     <div class="header_toggle d-flex align-items-center">
@@ -7,5 +8,5 @@
             @Model.PageTitle
         </span>
     </div>
-    <img class="ms-auto px-2" src="~/SystemFiles/@Model.Logo" style="max-height:50px;" alt="Header Logo" />
+    <img class="ms-auto px-2" src="@(Model.Company != null ? "/CompanyFiles/" + Model.Company.HeaderLogo : "/SystemFiles/" + Model.SystemInfo.HeaderLogo)" style="max-height:50px;" alt="Header Logo" />
 </header>

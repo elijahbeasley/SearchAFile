@@ -1,0 +1,78 @@
+﻿@model List<Collection>?
+
+<style>
+
+    .file-group-card {
+        display: block;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        height: 100%;
+        transition: box-shadow 0.2s, transform 0.2s;
+        cursor: pointer;
+    }
+
+        .file-group-card:hover {
+            box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+    .file-group-card-inner {
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
+
+    .file-group-icon {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        margin-right: 1rem;
+    }
+
+    .file-group-name {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--bs-body-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+</style>
+
+@if (Model != null
+    && Model.Any(collection => collection.FilesCount > 0))
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+        @foreach (var item in Model.Where(collection => collection.FilesCount > 0))
+        {
+            <div class="col">
+                <a href="/Common/Chat?id=@item.CollectionId" class="file-group-card text-decoration-none" target="_top">
+                    <div class="file-group-card-inner">
+                        <img src="~/Collections/@item.ImageUrl" alt="Collection" class="file-group-icon" />
+                        <span class="file-group-name">@item.Collection1</span>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}
+else 
+{
+    <div class="text-center text-secondary cus-no-select">
+        <i>No existing collections</i>
+        @if (Context.Session.GetObject<UserDto>("User") != null
+            && Context.Session.GetObject<UserDto>("User").Role != null
+            && (Context.Session.GetObject<UserDto>("User").Role.Equals("System Admin")
+            || Context.Session.GetObject<UserDto>("User").Role.Equals("Admin")))
+        {
+            <br />
+            <a href="/Collections">
+                <i class="fa-solid fa-plus-circle text-success"></i>
+                Create a collection and upload files
+            </a>
+        }
+    </div>
+}

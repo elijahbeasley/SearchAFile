@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 
-namespace SearchAFile.Helpers;
+namespace SearchAFile.Web.Helpers;
 
 public static class HttpContextHelper
 {

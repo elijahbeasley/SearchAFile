@@ -2,7 +2,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using SearchAFile;
-using SearchAFile.Helpers;
+using SearchAFile.Web.Helpers;
 using SearchAFile.Services;
 using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Interfaces;

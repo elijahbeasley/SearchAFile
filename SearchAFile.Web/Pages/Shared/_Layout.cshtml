@@ -2,12 +2,25 @@
 @using SearchAFile.Core.Domain.Entities;
 @using Microsoft.EntityFrameworkCore;
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject AuthenticatedApiClient _api
 @{
     SystemInfo? SystemInfo = Context.Session.GetObject<SystemInfo>("SystemInfo");
+
+    if (SystemInfo == null)
+    {
+        var systemInfoResult = await _api.GetAsync<IEnumerable<SystemInfo>>("systeminfos");
+
+        SystemInfo = systemInfoResult?.Data?.ElementAt(0);
+
+        if (SystemInfo != null)
+        {
+            Context.Session.SetObject("SystemInfo", SystemInfo);
+            Context.Session.SetString("ContactInfo", SystemInfo.ContactName + " at <a href='mailto:" + SystemInfo.ContactEmailAddress + "?subject=" + SystemInfo.SystemName + " Error'>" + SystemInfo.ContactEmailAddress + "</a>");
+        }
+    }
+
     Company? Company = Context.Session.GetObject<Company>("Company");
     UserDto? user = Context.Session.GetObject<UserDto>("User");
-
-    string logo = SystemInfo.HeaderLogo ?? "";
 
     string showMenu = Context.Request.Cookies["SearchAFile_menu"] != null && Context.Request.Cookies["SearchAFile_menu"].Equals("large") ? "show-menu" : "";
     string bodyClass = Context.Request.Cookies["SearchAFile_menu"] != null && Context.Request.Cookies["SearchAFile_menu"].Equals("large") ? "body-pd" : "";
@@ -66,7 +79,7 @@
 
     <img id="imgLoading" alt="Loading..." src="~/SystemFiles/loading.gif" height="50" width="50" style="display: none;" />
 
-    @await Html.PartialAsync("~/Pages/Shared/Menu/_HeaderPartial.cshtml", (pageTitle, logo, bodyClass))
+    @await Html.PartialAsync("~/Pages/Shared/Menu/_HeaderPartial.cshtml", (SystemInfo, Company,  pageTitle, bodyClass))
 
     @if (User.Identity != null 
         && User.Identity.IsAuthenticated 
@@ -85,7 +98,7 @@
         @RenderBody()
     </div>
 
-    @await Html.PartialAsync("~/Pages/Shared/Menu/_FooterPartial.cshtml", (SystemInfo, footerShow))
+    @await Html.PartialAsync("~/Pages/Shared/Menu/_FooterPartial.cshtml", (SystemInfo, Company, footerShow))
 
     <div id="StartupJavaScript" hidden>@TempData["StartupJavaScript"]</div>
 

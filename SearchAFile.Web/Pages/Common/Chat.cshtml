@@ -53,7 +53,7 @@
 
     <div class="card">
 
-        <div class="card-header">
+        <div class="card-header cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
             <label class="fs-5"><i class="fa-solid fa-comments cus-text-primary-no-hover"></i> @Model.Collection.Collection1</label>
         </div>
 
@@ -105,10 +105,10 @@
             ClearQuestion();
         }
 
-        $(window).resize(function () {
+        // $(window).resize(function () {
 
-            SetHeight();
-        });
+        //     SetHeight();
+        // });
 
         $(document).on('keypress', function (event) {
 
@@ -162,14 +162,22 @@
             }
         }
 
+        // function SetHeight() {
+
+        //     PageHeight = calculateDistanceBetweenElements('#divLoadingBlock', '#footer', 30);
+
+        //     // $('#chatBody').height(calculateDistanceBetweenElements('#chatBody', '#footer', 45));
+        //     $('#divLoadingBlock').height(0);
+        //     $('#divLoadingBlock').animate({ height: PageHeight }, 500);
+
+        //     ScrollToBottom();
+        // }
+
         function SetHeight() {
 
             PageHeight = calculateDistanceBetweenElements('#divLoadingBlock', '#footer', 30);
-
-            // $('#chatBody').height(calculateDistanceBetweenElements('#chatBody', '#footer', 45));
-            $('#divLoadingBlock').height(0);
-
-            $('#divLoadingBlock').animate({ height: PageHeight }, 500);
+            //$('#divLoadingBlock').css('min-height', PageHeight);
+            $('#divLoadingBlock').css('min-height', 0).animate({ 'min-height': PageHeight }, 500);
 
             ScrollToBottom();
         }

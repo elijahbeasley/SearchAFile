@@ -6,7 +6,7 @@ namespace SearchAFile.Core.Interfaces
     {
         Task<IEnumerable<Company>> GetAllAsync(string? search = null);
         Task<Company?> GetByIdAsync(Guid id);
-        Task CreateAsync(Company company);
+        Task<Company?> CreateAsync(Company company);
         Task<bool> UpdateAsync(Company company);
         Task<bool> DeleteAsync(Guid id);
     }

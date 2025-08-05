@@ -5,11 +5,13 @@
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center">
-        <label class="fs-5 pe-3"><i class="fa-solid fa-users cus-text-primary-no-hover"></i> Users</label>
+        <label class="fs-5 pe-3" style="white-space: nowrap;"><i class="fa-solid fa-users cus-text-primary-no-hover"></i> Users</label>
         <form method="get">
             <div class="input-group">
                 <input asp-for="search" class="form-control" type="search" placeholder="Search users..." onchange="if (this.value === '') {this.form.submit(); }" />
-                <button type="submit" class="btn btn-primary">Search</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
             </div>
         </form>
     </div>
@@ -98,6 +100,12 @@
                                                     Delete
                                                 </a>
                                             }
+                                            <div class="dropdown-divider"></div>
+                                            <button class="btn dropdown-item" type="button" onclick="ConfirmPasswordReset('@item.UserId', '@item.FullName.EscapeJsString()', '@item.EmailAddress.EscapeJsString()');" title="Send password reset email">
+                                                <i class="fa-solid fa-paper-plane cus-text-primary"></i>
+                                                &nbsp;
+                                                Send Password Reset Email
+                                            </button>
                                         </div>
                                     </div>
                                 </td>
@@ -173,3 +181,107 @@
     </div>
 
 </div>
+
+<input id="itemID" type="hidden" name="id" />
+
+@* Password Reset Modal *@
+<div class="modal fade" id="divPasswordResetModal" tabindex="-1" data-bs-keyboard="false" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 card">
+
+            <div class="card-header d-flex align-items-center cus-no-select fs-6" style="background-color: var(--primary-color); border-bottom: 2px solid var(--secondary-color);">
+                <label class="cus-card-header h-auto cus-text-secondary-text-no-hover">
+                    <i class="fa-solid fa-paper-plane fs-5 me-1 cus-text-secondary-text-no-hover"></i>
+                    Send Password Reset Email
+                </label>
+                <button id="btnResetClose" type="button" class="btn p-0 m-0 ms-auto cus-text-secondary-text" data-bs-dismiss="modal" data-bs-target="divPasswordResetModal" style="line-height: 1;">
+                    <i class="fa-solid fa-xmark fs-4"></i>
+                </button>
+            </div>
+
+            <div class="modal-body text-center">
+                <label id="lblPasswordResetMessage"></label>
+                <label class="pt-2">Click 'OK' to send the password reset email. Click 'Cancel' to cancel.</label>
+            </div>
+
+            <div class="card-footer text-center cus-no-select">
+                <button id="btnReset" class="btn btn-outline-success" type="button" onclick="PasswordReset($('#itemID').val());" style="min-width: 25%;">
+                    <span id="lblReset" style="color: unset;">
+                        OK
+                        <i class="fa-solid fa-check-circle"></i>
+                    </span>
+                    <img id="imgReset" src="~/SystemFiles/loading.gif" style="display: none;" height="20px" width="20px" />
+                </button>
+                <button id="btnResetCancel" type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-bs-target="divPasswordResetModal" style="min-width: 25%;" title="Cancel">
+                    Cancel
+                    <i class="fa-duotone fa-solid fa-ban"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script type="text/javascript">
+
+        function ConfirmPasswordReset(id, item, email) {
+
+            $('#lblPasswordResetMessage').html('Are you sure you want to send a password reset email to<br /><b>' + item + ' (' + email + ')</b>?');
+            $('#itemID').val(id);
+
+            // Show the modal.
+            $('#divPasswordResetModal').modal('show');
+        }
+
+        function PasswordReset(id) {
+
+            $('#btnReset').prop('disabled', true);
+            $('#btnResetCancel').prop('disabled', true);
+            $('#btnResetClose').prop('disabled', true);
+            $('#lblReset').toggle();
+            $('#imgReset').toggle();
+
+            window.top.ClearToast();
+
+            $.ajax({
+                type: 'GET',
+                url: PageURL + '?handler=ResetPassword',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: {
+                    id: id
+                },
+                success: function (response) {
+                    // Only handle successful outcomes here
+                    window.top.ShowSnack('success', 'Password reset email successfully sent.', 7000, true);
+
+                    $('#itemID').val(null);
+                    CloseModal();
+                    ReloadData();
+                },
+                error: function (xhr) {
+
+                    let message = "An error occurred.";
+
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        message = xhr.responseJSON.error;
+                    }
+
+                    window.top.ShowToast('danger', 'Error!', message, 0, false);
+                    StopLoadingAll();
+                },
+                complete: function () {
+
+                    $('#lblReset').show();
+                    $('#imgReset').hide();
+                    $('#btnReset').prop('disabled', false);
+                    $('#btnResetCancel').prop('disabled', false);
+                    $('#btnResetClose').prop('disabled', false);
+                }
+            });
+        }
+    </script>
+
+}

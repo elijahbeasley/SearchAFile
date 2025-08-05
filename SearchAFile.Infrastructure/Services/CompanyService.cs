@@ -33,10 +33,11 @@ public class CompanyService : ICompanyService
 
     public async Task<Company?> GetByIdAsync(Guid id) => await _context.Companies.FindAsync(id);
 
-    public async Task CreateAsync(Company company)
+    public async Task<Company?> CreateAsync(Company company)
     {
         _context.Companies.Add(company);
         await _context.SaveChangesAsync();
+        return company;
     }
 
     public async Task<bool> UpdateAsync(Company company)

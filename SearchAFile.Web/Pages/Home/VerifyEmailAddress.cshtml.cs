@@ -82,7 +82,7 @@ public class VerifyEmailAddressModel : PageModel
                     <table> 
                         <tr> 
                             <td> 
-                                Hello " + User.FirstName + " " + User.LastName + @", 
+                                Hello " + User.FullName + @", 
                             </td> 
                         </tr> 
                         <tr> 
@@ -97,7 +97,7 @@ public class VerifyEmailAddressModel : PageModel
                 List<KeyValuePair<string, string>> lstTo = new List<KeyValuePair<string, string>>();
 
                 // Add service to the email.
-                lstTo.Add(new KeyValuePair<string, string>(User.EmailAddress, User.FirstName + " " + User.LastName));
+                lstTo.Add(new KeyValuePair<string, string>(User.EmailAddress, User.FullName));
 
                 // CC.
                 List<KeyValuePair<string, string>> lstCC = new List<KeyValuePair<string, string>>();

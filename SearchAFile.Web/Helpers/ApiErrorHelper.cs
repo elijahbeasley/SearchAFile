@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Text;
 
+namespace SearchAFile.Web.Helpers;
+
 public static class ApiErrorHelper
 {
     /// <summary>Returns a readable string for an ApiResult error, including model validation.</summary>

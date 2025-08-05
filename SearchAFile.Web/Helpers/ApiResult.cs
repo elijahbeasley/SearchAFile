@@ -1,5 +1,7 @@
 ﻿using System.Net;
 
+namespace SearchAFile.Web.Helpers;
+
 public class ApiResult<T>
 {
     public bool IsSuccess { get; private set; }

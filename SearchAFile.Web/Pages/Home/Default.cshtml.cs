@@ -17,7 +17,7 @@ public class DefaultModel : PageModel
         _telemetryClient = telemetryClient;
         _api = api;
     }
-    public async Task<IActionResult> OnGetAsync()
+    public async Task<IActionResult> OnGetAsync(Guid? id)
     {
         bool booSuccess = true;
 
@@ -34,19 +34,33 @@ public class DefaultModel : PageModel
 
             if (HttpContext.Session.GetObject<SystemInfo>("SystemInfo") == null)
             {
-                var result = await _api.GetAsync<IEnumerable<SystemInfo>>("systeminfos");
+                var systemInfoResult = await _api.GetAsync<IEnumerable<SystemInfo>>("systeminfos");
 
-                if (!result.IsSuccess || result.Data == null)
+                if (!systemInfoResult.IsSuccess || systemInfoResult.Data == null)
                 {
-                    throw new Exception(result.ErrorMessage ?? "Unable to initiate the system.");
+                    throw new Exception(systemInfoResult.ErrorMessage ?? "Unable to initiate the system.");
                 }
 
-                SystemInfo SystemInfo = result.Data.ElementAt(0);
+                SystemInfo SystemInfo = systemInfoResult.Data.ElementAt(0);
 
                 if (SystemInfo != null)
                 {
                     HttpContext.Session.SetObject("SystemInfo", SystemInfo);
                     HttpContext.Session.SetString("ContactInfo", SystemInfo.ContactName + " at <a href='mailto:" + SystemInfo.ContactEmailAddress + "?subject=" + SystemInfo.SystemName + " Error'>" + SystemInfo.ContactEmailAddress + "</a>");
+
+                    if (id != null)
+                    {
+                        var companyResult = await _api.GetAsync<Company>($"companies/{id}");
+
+                        if (!companyResult.IsSuccess)
+                            throw new Exception(ApiErrorHelper.GetErrorString(companyResult) ?? "Unable to retrieve company.");
+
+                        if (companyResult.Data != null)
+                        {
+                            Company Company = companyResult.Data;
+                            HttpContext.Session.SetObject("Company", Company);
+                        }
+                    }
                 }
                 else
                 {
