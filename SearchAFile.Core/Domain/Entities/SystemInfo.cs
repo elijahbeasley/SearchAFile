@@ -15,69 +15,70 @@ public partial class SystemInfo
     public Guid SystemInfoId { get; set; }
 
     [DisplayName("System Name")]
-    [Required]
+    [Required(ErrorMessage = "System name is required.")]
     [StringLength(50)]
     public required string SystemName { get; set; }
 
     [DisplayName("Contact Name")]
-    [Required]
+    [Required(ErrorMessage = "Contact name is required.")]
     [StringLength(50)]
     public required string ContactName { get; set; }
 
     [DisplayName("Contact Email Address")]
-    [Required]
+    [Required(ErrorMessage = "Contact email address is required.")]
     [StringLength(50)]
     public required string ContactEmailAddress { get; set; }
 
     [DisplayName("Contact Phone Number")]
-    [Required]
+    [Required(ErrorMessage = "Contact phone number is required.")]
     [StringLength(20)]
     public required string ContactPhoneNumber { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Favicon is required.")]
     [StringLength(50)]
     public required string Favicon { get; set; }
     
     [DisplayName("Header Logo")]
-    [Required]
+    [Required(ErrorMessage = "Header logo is required.")]
     [StringLength(50)]
     public required string HeaderLogo { get; set; }
 
     [DisplayName("Footer Logo")]
-    [Required]
+    [Required(ErrorMessage = "Footer logo is required.")]
     [StringLength(50)]
     public required string FooterLogo { get; set; }
 
     [DisplayName("Email Logo")]
-    [Required]
+    [Required(ErrorMessage = "Email logo is required.")]
     [StringLength(50)]
     public required string EmailLogo { get; set; }
 
     [DisplayName("Primary Color")]
-    [Required]
+    [Required(ErrorMessage = "Primary color is required.")]
     [StringLength(50)]
     public required string PrimaryColor { get; set; }
 
     [DisplayName("Secondary Color")]
-    [Required]
+    [Required(ErrorMessage = "Secondary color is required.")]
     [StringLength(50)]
     public required string SecondaryColor { get; set; }
 
     [DisplayName("Primary Text Color")]
-    [Required]
+    [Required(ErrorMessage = "Primary text color is required.")]
     [StringLength(50)]
     public required string PrimaryTextColor { get; set; }
 
     [DisplayName("Secondary Text Color")]
-    [Required]
+    [Required(ErrorMessage = "Secondary text color is required.")]
     [StringLength(50)]
     public required string SecondaryTextColor { get; set; }
 
     [Column("URL")]
-    [Required]
+    [Required(ErrorMessage = "URL is required.")]
     [StringLength(500)]
     public required string Url { get; set; }
 
+    [Required(ErrorMessage = "Version is required.")]
     [StringLength(10)]
     public string? Version { get; set; }
 }

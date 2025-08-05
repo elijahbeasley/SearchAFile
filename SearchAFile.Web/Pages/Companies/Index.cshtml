@@ -3,7 +3,7 @@
 
 <div class="card">
 
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex justify-content-between align-items-center" style="border-bottom: 3px solid var(--secondary-color);">
         <label class="fs-5 pe-3" style="white-space: nowrap;"><i class="fa-solid fa-building cus-text-primary-no-hover"></i> Companies</label>
         <form method="get">
             <div class="input-group">
@@ -51,9 +51,9 @@
                                     <i id="iSort4" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
-                            <th class="text-center">
-                                <a href="javascript:SortTable(5,'N', 'tblData');">
-                                    @Html.DisplayNameFor(model => model.Companies[0].Lock)
+                            <th>
+                                <a href="javascript:SortTable(5,'T', 'tblData');">
+                                    Contact
                                     <i id="iSort6" class="fa-solid fa-sort-up cus-sort-icon" style="color: gray;"></i>
                                 </a>
                             </th>
@@ -111,29 +111,16 @@
                                     }
                                 </td>
                                 <td class="align-middle">
-                                    <label title="@strContactInfo" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" style="cursor: context-menu;">
-                                        @item.Company1
-                                        <i class="fa-solid fa-angle-up"></i>
-                                    </label>
+                                    <label>@item.Company1</label>
                                 </td>
                                 <td class="align-middle">
                                     <a href="@item.Url" target="_blank">@item.Url</a>
                                 </td>
-                                <td class="align-middle text-center cus-no-select" style="width: 0;">
-                                    @if (Convert.ToBoolean(item.Lock))
-                                    {
-                                        <span class="badge bg-success px-4 w-100">
-                                            Locked
-                                            <i class="fa-solid fa-check-circle"></i>
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-warning px-4 w-100">
-                                            Unlocked
-                                            <i class="fa-solid fa-xmark-circle"></i>
-                                        </span>
-                                    }
+                                <td class="align-middle">
+                                    <label title="@strContactInfo" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" style="cursor: context-menu;">
+                                        @item.ContactName
+                                        <i class="fa-solid fa-angle-up"></i>
+                                    </label>
                                 </td>
                             </tr>
                         }
