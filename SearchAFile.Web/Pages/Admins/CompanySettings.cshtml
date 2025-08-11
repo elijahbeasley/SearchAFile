@@ -211,8 +211,11 @@
                 $('#lblSubmit').toggle();
                 $('#imgSubmit').toggle();
 
-                PageIsLoaded = false;
-                StartLoading('divLoadingBlock');
+                if (PageIsLoaded){
+
+                    PageIsLoaded = false;
+                    StartLoading('#divLoadingBlock');
+                }
             }
         }
 

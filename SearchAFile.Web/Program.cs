@@ -76,11 +76,11 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToFolder("/Home");
 
     // Maintenance Pages:
-    options.Conventions.AuthorizeFolder("/MaintainCompanies", "MaintainCompaniesPolicy");
-    options.Conventions.AuthorizeFolder("/MaintainFiles", "MaintainFilesPolicy");
-    options.Conventions.AuthorizeFolder("/MaintainCollections", "MaintainCollectionsPolicy");
-    options.Conventions.AuthorizeFolder("/MaintainSystemInfo", "MaintainSystemInfoPolicy");
-    options.Conventions.AuthorizeFolder("/MaintainUsers", "MaintainUsersPolicy");
+    options.Conventions.AuthorizeFolder("/Collections", "MaintainCollectionsPolicy");
+    options.Conventions.AuthorizeFolder("/Companies", "MaintainCompaniesPolicy");
+    options.Conventions.AuthorizeFolder("/Files", "MaintainFilesPolicy");
+    options.Conventions.AuthorizeFolder("/SystemInfo", "MaintainSystemInfoPolicy");
+    options.Conventions.AuthorizeFolder("/Users", "MaintainUsersPolicy");
 });
 
 // Set session cookie name based on environment

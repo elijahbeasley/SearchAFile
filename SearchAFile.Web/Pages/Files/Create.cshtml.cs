@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
+using SearchAFile.Web.Classes;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
@@ -31,10 +32,12 @@ public class CreateModel : PageModel
         _openAIFileService = openAIFileService;
     }
 
-    public File? File { get; set; } = default;
+    public FileUploaderOptions FileUploaderOptions { get; set; }
+    private int maxLength = DataAnnotationHelpers.GetMaxLenFromAttr<File>(f => f.File1);
 
-    [Required(ErrorMessage = "File is required.")]
-    public IFormFile IFormFile { get; set; }
+    public Guid? Id { get; set; }
+
+    public List<IFormFile> Uploads { get; set; } = new();
 
     public List<string> FileTypes = new List<string>()
     {
@@ -48,7 +51,32 @@ public class CreateModel : PageModel
             if (id == null)
                 return NotFound();
 
-            File.CollectionId = id;
+            Id = id;
+
+            var filesResult = await _api.GetAsync<List<File>>("files");
+
+            if (!filesResult.IsSuccess || filesResult.Data == null)
+            {
+                throw new Exception(filesResult.ErrorMessage ?? "Unable to retrieve files.");
+            }
+
+            List<File> Files = filesResult.Data
+                .Where(file => file.CollectionId == id)
+                .ToList();
+
+            FileUploaderOptions = new FileUploaderOptions
+            {
+                DomId = "uploaderA",
+                InputName = "Uploads",
+                AcceptedTypes = new[] { ".pdf", ".docx", ".csv", ".txt", ".md" },
+                PerFileLimitMB = 10,
+                TotalLimitMB = 25,
+                MaxFiles = 20,
+                AlreadyUploadedCount = Files.Count(),
+                MaxFilenameLength = maxLength,
+                TruncateLongFilenames = true, 
+                ShowDiagnostics = false
+            };
 
             ModelState.Remove("IFormFile");
 
@@ -62,7 +90,7 @@ public class CreateModel : PageModel
 
             // Display an error for the user.
             string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+            TempData["StartupJavaScript"] = "window.top.StopLoading('#divLoadingBlock'); window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
             
             return NotFound();
         }
@@ -76,35 +104,48 @@ public class CreateModel : PageModel
         {
             // Sanitize the data.
             HtmlSanitizer objHtmlSanitizer = new HtmlSanitizer();
-            File.FileId = Guid.NewGuid();
-            File.File1 = objHtmlSanitizer.Sanitize(File.File1.Trim());
-            File.Extension = Path.GetExtension(IFormFile.FileName).Replace(".", "");
 
-            File.Uploaded = DateTime.Now;
-            File.UploadedByUserId = HttpContext.Session.GetObject<UserDto>("User").UserId;
-
-            string strFileName = File.FileId.ToString() + Path.GetExtension(IFormFile.FileName);
-
-            // Upload the file to OpenAI first, because it gives us the OpenAI file id.
-            bool postSuccess = await _openAIFileService.TryPostFileToOpenAIAsync(IFormFile, "File", FileTypes, openAIFileId => File.OpenAIFileId = openAIFileId, strFileName);
-            if (!postSuccess) throw new Exception("Unable to post the file to OpenAI.");
-
-            // Save the file to our local storage using the new FileID.
-            string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "Files");
-
-            bool uploadSuccess = await FileUploadHelper.TryUploadFileAsync(IFormFile, "File", strPath, FileTypes, null, strFileName);
-            if (!uploadSuccess) throw new Exception("Unable to upload the file.");
-
-            // POST the file so that we can get it's ID.
-            var result = await _api.PostAsync<File>("files", File);
-
-            if (!result.IsSuccess)
+            foreach (IFormFile IFormFile in Uploads)
             {
-                ApiErrorHelper.AddErrorsToModelState(result, ModelState, "File");
+                string? strExtension = GetExtensionFromContentTypeHelper.GetExtensionFromContentType(IFormFile);
 
-                string strExceptionMessage = ApiErrorHelper.GetErrorString(result);
-                TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '<ul>" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<li>").EscapeJsString() + "</ul>', 0, false);";
-                return;
+                if (string.IsNullOrEmpty(strExtension))
+                {
+                    throw new Exception("Unable to get the file extension.");
+                }
+
+                File File = new File();
+                File.FileId = Guid.NewGuid();
+                File.CollectionId = Id;
+                File.File1 = FileNameHelper.TruncateFileName(objHtmlSanitizer.Sanitize(IFormFile.FileName.Trim()), maxLength);
+                File.Extension = strExtension?.TrimStart('.')?.ToLower();
+
+                File.Uploaded = DateTime.Now;
+                File.UploadedByUserId = HttpContext.Session.GetObject<UserDto>("User").UserId;
+
+                string strFileName = File.FileId.ToString() + strExtension;
+
+                // Upload the file to OpenAI first, because it gives us the OpenAI file id.
+                bool postSuccess = await _openAIFileService.TryPostFileToOpenAIAsync(IFormFile, "File", FileTypes, openAIFileId => File.OpenAIFileId = openAIFileId, strFileName);
+                if (!postSuccess) throw new Exception("Unable to post the file to OpenAI.");
+
+                // Save the file to our local storage using the new FileID.
+                string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "Files");
+
+                bool uploadSuccess = await FileUploadHelper.TryUploadFileAsync(IFormFile, "File", strPath, FileTypes, null, strFileName);
+                if (!uploadSuccess) throw new Exception("Unable to upload the file.");
+
+                // POST the file so that we can get it's ID.
+                var result = await _api.PostAsync<File>("files", File);
+
+                if (!result.IsSuccess)
+                {
+                    ApiErrorHelper.AddErrorsToModelState(result, ModelState, "File");
+
+                    string strExceptionMessage = ApiErrorHelper.GetErrorString(result);
+                    TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '<ul>" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<li>").EscapeJsString() + "</ul>', 0, false);";
+                    return;
+                }
             }
 
             TempData["StartupJavaScript"] = "window.top.location.reload(); ShowSnack('success', 'File successfully uploaded.', 7000, true)";
@@ -117,7 +158,7 @@ public class CreateModel : PageModel
 
             // Display an error for the user.
             string strExceptionMessage = "File NOT successfully created. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-            TempData["StartupJavaScript"] = "StopLoading('#divLoadingBlockModal'); window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+            TempData["StartupJavaScript"] = "window.top.StopLoading('#divLoadingBlockModal'); window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
         }
     }
 }

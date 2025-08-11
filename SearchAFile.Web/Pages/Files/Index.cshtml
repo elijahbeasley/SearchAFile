@@ -40,6 +40,7 @@
         font-size: 3rem;
     }
 
+    .edit-btn,
     .delete-btn {
         background: transparent;
         border: none;
@@ -48,12 +49,14 @@
         visibility: hidden;
     }
 
+    .file-icon-wrapper:hover .edit-btn,
     .file-icon-wrapper:hover .delete-btn {
         visibility: visible;
     }
 
     /* ✅ Always show trash icon on small screens */
     @@media (max-width: 991.98px) {
+        .edit-btn,
         .delete-btn {
             visibility: visible !important;
         }
@@ -85,79 +88,87 @@
 
     <div class="card-body p-0">
 
-        <div class="p-3">
-            @if (Model.Files == null
-                || Model.Files.Count() < 20)
+        <div id="divLoadingBlock">
+
+            <div class="p-3">
+                @if (Model.Files == null
+                                || Model.Files.Count() < 20)
+                {
+                    <button class="btn btn-outline-success w-100" onclick="UploadFile();">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        Upload File
+                    </button>
+                }
+                else
+                {
+                    <div data-bs-toggle="tooltip" data-bs-title="File limit reached (20)" data-bs-position="top">
+                        <button class="btn btn-outline-success w-100" disabled>
+                            <i class="fa-solid fa-plus-circle"></i>
+                            Upload File
+                        </button>
+                    </div>
+                }
+            </div>
+
+            @if (Model.Files != null
+                && Model.Files.Any())
             {
-                <button class="btn btn-outline-success w-100" onclick="UploadFile();">
-                    <i class="fa-solid fa-plus-circle"></i>
-                    Upload File
-                </button>
+                int columnsPerRow = DeviceHelper.IsMobileDeviceBrowser() ? 4 : 6; // because col-2 means 12 / 2 = 6 columns per row
+                int fileCount = Model.Files.Count();
+                int remainder = fileCount % columnsPerRow;
+                int fillerCount = remainder == 0 ? 0 : columnsPerRow - remainder;
+
+                <div class="container-fluid mb-3">
+                    <div class="row g-3">
+                        @foreach (var item in Model.Files)
+                        {
+                            string iconClass = item.Extension switch
+                            {
+                                "pdf" => "fa-file-pdf text-danger",
+                                "doc" or "docx" => "fa-file-word text-primary",
+                                "xls" or "xlsx" => "fa-file-excel text-success",
+                                "csv" => "fa-file-csv text-success",
+                                "ppt" or "pptx" => "fa-file-powerpoint text-warning",
+                                "jpg" or "jpeg" or "png" or "gif" => "fa-file-image text-info",
+                                "zip" or "rar" => "fa-file-archive text-secondary",
+                                "txt" => "fa-file-lines text-muted",
+                                "mp3" or "wav" => "fa-file-audio text-warning",
+                                "mp4" or "mov" or "avi" => "fa-file-video text-dark",
+                                _ => "fa-file text-secondary" // default
+                            };
+
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                                <a href="~/Files/@item.Path" target="_blank">
+                                    <div class="file-icon-wrapper position-relative text-center">
+                                        <i class="file-icon fa-solid @iconClass"></i>
+                                        <button type="button" class="edit-btn position-absolute top-0 start-0 ms-1" title="Edit" onclick="editFile('@item.FileId', event)">
+                                            <i class="fa-solid fa-pen-to-square cus-bs-text-primary"></i>
+                                        </button>
+                                        <button type="button" class="delete-btn position-absolute top-0 end-0 me-1" title="Delete" onclick="deleteFile('@item.FileId', event)">
+                                            <i class="fa-solid fa-trash cus-text-danger"></i>
+                                        </button>
+                                        <div class="file-name" title="@item.File1">
+                                            @item.File1
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                        @for (int i = 0; i < fillerCount; i++)
+                        {
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2"></div>
+                        }
+                    </div>
+                </div>
+
             }
             else
             {
-                <button class="btn btn-outline-success w-100" disabled>
-                    <i class="fa-solid fa-plus-circle"></i>
-                    Upload File
-                </button>
+                <div class="pb-3 text-center text-secondary cus-no-select">
+                    <i>No existing files</i>
+                </div>
             }
         </div>
-
-        @if (Model.Files != null
-            && Model.Files.Any())
-        {
-            int columnsPerRow =  DeviceHelper.IsMobileDeviceBrowser() ? 4 : 6; // because col-2 means 12 / 2 = 6 columns per row
-            int fileCount = Model.Files.Count();
-            int remainder = fileCount % columnsPerRow;
-            int fillerCount = remainder == 0 ? 0 : columnsPerRow - remainder;
-
-            <div class="container-fluid mb-3">
-                <div class="row g-3">
-                    @foreach (var item in Model.Files)
-                    {
-                        string iconClass = item.Extension switch
-                        {
-                            "pdf" => "fa-file-pdf text-danger",
-                            "doc" or "docx" => "fa-file-word text-primary",
-                            "xls" or "xlsx" => "fa-file-excel text-success",
-                            "csv" => "fa-file-csv text-success",
-                            "ppt" or "pptx" => "fa-file-powerpoint text-warning",
-                            "jpg" or "jpeg" or "png" or "gif" => "fa-file-image text-info",
-                            "zip" or "rar" => "fa-file-archive text-secondary",
-                            "txt" => "fa-file-lines text-muted",
-                            "mp3" or "wav" => "fa-file-audio text-warning",
-                            "mp4" or "mov" or "avi" => "fa-file-video text-dark",
-                            _ => "fa-file text-secondary" // default
-                        };
-
-                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                            <a href="~/Files/@item.Path" target="_blank">
-                                <div class="file-icon-wrapper position-relative text-center">
-                                    <i class="file-icon fa-solid @iconClass"></i>
-                                    <button type="button" class="delete-btn position-absolute top-0 end-0" title="Delete" onclick="deleteFile('@item.FileId', event)">
-                                        <i class="fa-solid fa-trash cus-text-danger"></i>
-                                    </button>
-                                    <div class="file-name" title="@item.File1">
-                                        @item.File1
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    }
-                    @for (int i = 0; i < fillerCount; i++)
-                    {
-                        <div class="col-6 col-sm-4 col-md-3 col-lg-2"></div>
-                    }
-                </div>
-            </div>
-
-        }
-        else
-        {
-            <div class="mb-3 text-center text-secondary cus-no-select">
-                <i>No existing files</i>
-            </div>
-        }
 
     </div>
 
@@ -175,7 +186,29 @@
 
             window.top.ClearToast();
 
+            if (PageIsLoaded){
+
+                PageIsLoaded = false;
+                StartLoading('#divLoadingBlock');
+            }
+
             $('#ifrModal').attr('src', '/Files/Create?id=' + id);
+        }
+
+        function editFile(id, event) {
+
+            event.stopPropagation(); // prevents bubbling to parent
+            event.preventDefault();  // optional: prevents default link/button behavior
+
+            window.top.ClearToast();
+
+            if (PageIsLoaded){
+
+                PageIsLoaded = false;
+                StartLoading('#divLoadingBlock');
+            }
+
+            $('#ifrModal').attr('src', '/Files/Edit?id=' + id);
         }
 
         function deleteFile(id, event) {
@@ -184,6 +217,12 @@
             event.preventDefault();  // optional: prevents default link/button behavior
 
             if (!confirm("Are you sure you want to delete this file?")) return;
+
+            if (PageIsLoaded){
+
+                PageIsLoaded = false;
+                StartLoading('#divLoadingBlock');
+            }
 
             $.ajax({
                 url: PageURL + '/Index?handler=Delete',

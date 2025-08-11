@@ -1,0 +1,77 @@
+﻿@using System.Text.Json
+@model SearchAFile.Web.Classes.FileUploaderOptions
+@{
+    var id = string.IsNullOrWhiteSpace(Model.DomId) ? ("uploader-" + Guid.NewGuid().ToString("N")) : Model.DomId;
+    var accepted = Model.AcceptedTypes ?? Array.Empty<string>();
+    var acceptedJson = JsonSerializer.Serialize(accepted);
+    var perFileBytes = Model.PerFileLimitMB * 1024 * 1024;
+    var totalBytes = Model.TotalLimitMB * 1024 * 1024;
+}
+
+<link href="~/css/FileUploader.css" rel="stylesheet" asp-append-version="true" />
+
+<div id="@id" class="file-uploader" data-input-name="@Model.InputName" data-accepted='@acceptedJson' data-per-file-bytes="@perFileBytes" data-total-bytes="@totalBytes" data-simulate-upload="@Model.SimulateUpload.ToString().ToLower()" data-show-diagnostics="@Model.ShowDiagnostics.ToString().ToLower()" data-max-files="@Model.MaxFiles" data-already-uploaded="@Model.AlreadyUploadedCount" data-max-name-length="@Model.MaxFilenameLength" data-truncate-long-filenames="@Model.TruncateLongFilenames.ToString().ToLower()">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex align-items-center justify-content-between cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
+            <label class="fs-5"><i class="fa-solid fa-file-arrow-up text-success"></i> Upload File</label>
+            <div class="d-flex align-items-center gap-2 small text-muted">
+                <button type="button" class="btn btn-sm btn-link text-muted p-0" data-role="info" data-bs-toggle="tooltip" data-bs-placement="top" title=""><i class="fa-solid fa-circle-question cus-text-primary"></i><span class="visually-hidden">Upload rules</span></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-role="clear" data-bs-toggle="tooltip" data-bs-placement="top" title="Clear all files"><i class="fa-solid fa-rotate-left"></i><span class="d-none d-sm-inline ms-1">Clear all</span></button>
+            </div>
+        </div>
+        <form method="post" enctype="multipart/form-data" data-role="form">
+
+            <div class="card-body pb-0">
+                <div class="dropzone mb-3" tabindex="0" role="button" aria-label="Drag and drop files here or browse" data-role="dropzone">
+                    <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
+                    <span><strong>Drag & Drop</strong> your files or <span class="browse">Browse</span></span>
+                </div>
+                <input type="file" class="visually-hidden-input" multiple data-role="input" name="@Model.InputName">
+
+                <div class="mb-3" data-role="global-wrap" style="display:none;">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <div class="flex-grow-1">
+                            <div class="progress" role="progressbar" aria-label="Overall upload progress">
+                                <div class="progress-bar" data-role="global-bar" style="width:0%"></div>
+                            </div>
+                        </div>
+                        <div class="text-muted small" data-role="global-pct" style="min-width:4rem; text-align:right;">0%</div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted" data-role="global-text">Waiting…</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger d-none" data-role="errors"></div>
+                <ul class="list-group mb-3" data-role="list"></ul>
+
+            </div>
+
+            <div class="card-footer text-center cus-no-select">
+                <button id="btnCancel" type="button" class="btn btn-outline-secondary" onclick="window.top.CloseModal();">
+                    <i class="fa-solid fa-ban"></i>
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-success" data-role="submit" disabled>
+                    Submit
+                    <i class="fa-solid fa-upload"></i>
+                </button>
+            </div>
+        </form>
+
+        @if (Model.ShowDiagnostics)
+        {
+            <details class="mt-3">
+                <summary class="text-muted">Diagnostics / tests</summary>
+                <pre class="bg-light p-3 small border rounded mt-2" data-role="diagnostics"></pre>
+            </details>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/FileUploader.js"></script>
+    <script>
+        window.FileUploader && window.FileUploader.autoInit && window.FileUploader.autoInit('#@id');
+    </script>
+}

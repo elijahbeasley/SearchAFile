@@ -32,4 +32,17 @@
     <Folder Include="wwwroot\UserFiles\" />
   </ItemGroup>
 
+  <!-- ===== Prevent these folders from being published to Azure ===== -->
+  <ItemGroup>
+    <Content Update="wwwroot\CompanyFiles\**">
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+    <Content Update="wwwroot\Files\**">
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+    <Content Update="wwwroot\UserFiles\**">
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

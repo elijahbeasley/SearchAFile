@@ -485,3 +485,7 @@ label:has(i) {
 .form-floating:not(:last-of-type) {
     margin-bottom: 1rem; /* or whatever spacing you want */
 }
+
+textarea.form-control.cus-ask {
+    min-height: calc(2em + .75rem + calc(var(--bs-border-width) * 2));
+}

@@ -19,8 +19,8 @@
 
         .chat-message.user {
             align-self: flex-end;
-            background-color: #d1e7dd;
-            color: #0f5132;
+            background-color: #cfe2ff;
+            color: #41464b;
         }
 
         .chat-message.bot {
@@ -72,15 +72,15 @@
             <div class="input-group">
                 <button asp-page-handler="StartNewChat" asp-route-id="@Model.Id" type="submit" class="btn btn-primary" formnovalidate onclick="return confirm('Are you sure you want to clear the current chat and start a new one?');" title="New Chat">
                     <i class="fa fa-rotate-left"></i>
-                    <span class="d-none d-lg-inline">
+                    @* <span class="d-none d-lg-inline">
                         New Chat
-                    </span>
+                    </span> *@
                 </button>
-                <input id="txtQuestion" type="text" class="form-control" placeholder="Ask a question..." autocomplete="off" />
+                <textarea id="txtQuestion" type="text" class="form-control" placeholder="Ask a question..." autocomplete="off"></textarea>
                 <button id="btnSend" type="button" class="btn btn-success" onclick="Send();" title="Send">
-                    <span class="d-none d-lg-inline">
+                    @* <span class="d-none d-lg-inline">
                         Send
-                    </span>
+                    </span> *@
                     <i class="fa fa-arrow-up"></i>
                 </button>
             </div>
@@ -110,16 +110,16 @@
         //     SetHeight();
         // });
 
-        $(document).on('keypress', function (event) {
+        // $(document).on('keypress', function (event) {
 
-            let keycode = (event.keyCode ? event.keyCode : event.which);
+        //     let keycode = (event.keyCode ? event.keyCode : event.which);
 
-            if (keycode == '13') {
+        //     if (keycode == '13') {
 
-                event.preventDefault();
-                $('#btnSend').click();
-            }
-        });
+        //         event.preventDefault();
+        //         $('#btnSend').click();
+        //     }
+        // });
 
         function Send() {
 

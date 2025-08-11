@@ -1,16 +1,13 @@
-﻿using Microsoft.ApplicationInsights;
+﻿// Cleaned and Commented ChatModel.cs
+using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
-using Org.BouncyCastle.Asn1.Cmp;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Infrastructure.Mapping;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -21,402 +18,272 @@ namespace SearchAFile.Web.Pages.Common;
 [BindProperties(SupportsGet = true)]
 public class ChatModel : PageModel
 {
+    // Injected dependencies
     private readonly TelemetryClient _telemetryClient;
     private readonly AuthenticatedApiClient _api;
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public ChatModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IConfiguration configration, IHttpClientFactory httpClientFactory)
-    {
-        _telemetryClient = telemetryClient;
-        _api = api;
-        _configuration = configration;
-        _httpClientFactory = httpClientFactory;
-    }
+    // OpenAI base URL
+    private readonly string _baseOpenAiUrl = "https://api.openai.com/v1/";
 
+    // Bound properties
+    public Guid? Id { get; set; }
+    public Collection Collection { get; set; }
+
+    // UI messages
     public string MessageColor;
     public string Message;
     public string Answer;
 
+    // HTTP client instance
+    private HttpClient _httpClient;
 
-    // Set the base endpoint URL.
-    private readonly string strBaseEndpointUrl = "https://api.openai.com/v1/";
+    public ChatModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    {
+        _telemetryClient = telemetryClient;
+        _api = api;
+        _configuration = configuration;
+        _httpClientFactory = httpClientFactory;
+    }
 
-    public Guid? Id { get; set; }
-    public Collection Collection { get; set; }
-
-    private HttpClient objHttpClient;
-
+    // Handle GET page load
     public async Task<IActionResult> OnGetAsync([FromQuery] Guid? id)
     {
         try
         {
-            if (Id == null)
+            if (id == null)
                 return Redirect(HttpContext.Session.GetString("DashboardURL") ?? "/");
 
-            if (HttpContext.Session.GetObject<Collection>("Collection") != null
-                && Id != HttpContext.Session.GetObject<Collection>("Collection").CollectionId)
-            {
+            var sessionCollection = HttpContext.Session.GetObject<Collection>("Collection");
+            if (sessionCollection != null && id != sessionCollection.CollectionId)
                 await DeleteThread();
-            }
 
-            // Set the page title.
             HttpContext.Session.SetString("PageTitle", "Chat");
-
             HttpContext.Session.SetObject("id", id);
 
             await LoadData();
 
             if (HttpContext.Session.GetString("strThreadID") != null)
-            {
                 await LoadChat();
-            }
 
             ModelState.Remove("Question");
         }
         catch (Exception ex)
         {
-            // Log the exception to Application Insights.
-            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            _telemetryClient.TrackException(ExceptionTelemetry);
-
-            // Display an error for the user.
-            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
-
+            LogAndNotifyException(ex);
             return Redirect(HttpContext.Session.GetString("DashboardURL") ?? "/");
         }
 
         return Page();
     }
 
-    public async Task<IActionResult> OnGetAsk(string Question)
+    // Ask a question via the assistant
+    public async Task<IActionResult> OnGetAsk(string question)
     {
         try
         {
             Id = HttpContext.Session.GetObject<Guid>("id");
+            if (Id == null || string.IsNullOrWhiteSpace(question))
+                throw new Exception("Missing ID or question.");
 
-            if (Id == null)
-            {
-                throw new Exception("Ask: No ID provided.");
-            }
-
-            if (string.IsNullOrEmpty(Question))
-            {
-                throw new Exception("Ask: No Question provided.");
-            }
-
-            Question = WebUtility.UrlDecode(Question);
-
+            question = WebUtility.UrlDecode(question);
             await LoadData();
 
-            // Create the HttpClient object.
-            if (objHttpClient == null)
-            {
-                objHttpClient = _httpClientFactory.CreateClient("SearchAFIleClient");
-            }
+            _httpClient ??= _httpClientFactory.CreateClient("SearchAFIleClient");
 
-            // Define the ResponseMessageContent string.
-            string strResponseMessageContent;
+            var threadId = await EnsureThreadExists();
+            var fileIds = Collection.Files?.Where(f => !string.IsNullOrEmpty(f.OpenAIFileId)).Select(f => f.OpenAIFileId!).Take(20).ToList();
 
-            // If a thread has not been created yet, create one.
-            string strThreadID = HttpContext.Session.GetString("strThreadID");
-
-            if (strThreadID == null)
-            {
-                // Create the thread.
-                using HttpResponseMessage objHttpResponseMessage1 = await objHttpClient.PostAsync($"{strBaseEndpointUrl}threads", null);
-                if (!objHttpResponseMessage1.IsSuccessStatusCode)
-                {
-                    string errorContent = await objHttpResponseMessage1.Content.ReadAsStringAsync();
-                    throw new Exception($"Failed to create run: {errorContent}");
-                }
-                // Create the JsonDocument object.
-                using JsonDocument objJsonDocument1 = await Conversions.CreateJsonDocumentObject(objHttpResponseMessage1);
-
-                // Get the Thread ID from the JsonDocument object.
-                strThreadID = objJsonDocument1.RootElement.GetProperty("id").GetString();
-
-                // Save the thread in a session variable.
-                HttpContext.Session.SetString("strThreadID", strThreadID);
-            }
-
-            // Get the file IDs:
-            var fileIds = HttpContext.Session.GetObject<Collection>("Collection").Files?
-                .Where(file => !string.IsNullOrEmpty(file.OpenAIFileId))
-                .Select(file => file.OpenAIFileId!)
-                .Take(20) // OpenAI limit
-                .ToList();
-
-            // Define the JsonRequestBody object.
-            var objJsonRequestBody1 = new
+            var messagePayload = new
             {
                 role = "user",
-                content = Question.Trim(),
-                attachments = fileIds?.Select(id => new
-                {
-                    file_id = id,
-                    tools = new[] { new { type = "file_search" } }
-                }).ToList()
+                content = question.Trim(),
+                attachments = fileIds?.Select(id => new { file_id = id, tools = new[] { new { type = "file_search" } } })
             };
 
-            // Create the StringContent object.
-            using StringContent objStringContent1 = Conversions.CreateStringContentObject(objJsonRequestBody1);
+            using var messageContent = Conversions.CreateStringContentObject(messagePayload);
+            using var messageResp = await _httpClient.PostAsync($"{_baseOpenAiUrl}threads/{threadId}/messages", messageContent);
+            if (!messageResp.IsSuccessStatusCode)
+                throw new Exception("Failed to post message: " + await messageResp.Content.ReadAsStringAsync());
 
-            // Add the message to the thread.
-            using HttpResponseMessage objHttpResponseMessage2 = await objHttpClient.PostAsync($"{strBaseEndpointUrl}threads/{strThreadID}/messages", objStringContent1);
-            if (!objHttpResponseMessage2.IsSuccessStatusCode)
-            {
-                string errorContent = await objHttpResponseMessage2.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to create run: {errorContent}");
-            }
+            var runPayload = new { assistant_id = _configuration["OpenAI:AssistantId"] };
+            using var runContent = Conversions.CreateStringContentObject(runPayload);
+            using var runResp = await _httpClient.PostAsync($"{_baseOpenAiUrl}threads/{threadId}/runs", runContent);
+            if (!runResp.IsSuccessStatusCode)
+                throw new Exception("Failed to start run: " + await runResp.Content.ReadAsStringAsync());
 
-            // Define the JsonRequestBody object.
-            var objJsonRequestBody2 = new { assistant_id = _configuration["OpenAI:AssistantId"] };
+            using var runDoc = await Conversions.CreateJsonDocumentObject(runResp);
+            string runId = runDoc.RootElement.GetProperty("id").GetString();
 
-            // Create the StringContent object.
-            using StringContent objStringContent2 = Conversions.CreateStringContentObject(objJsonRequestBody2);
-
-            // Create the run and initiate its execution.
-            using HttpResponseMessage objHttpResponseMessage3 = await objHttpClient.PostAsync($"{strBaseEndpointUrl}threads/{strThreadID}/runs", objStringContent2);
-            if (!objHttpResponseMessage3.IsSuccessStatusCode)
-            {
-                string errorContent = await objHttpResponseMessage3.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to create run: {errorContent}");
-            }
-
-            // Create the JsonDocument object.
-            using JsonDocument objJsonDocument2 = await Conversions.CreateJsonDocumentObject(objHttpResponseMessage3);
-
-            // Get the Run ID from the JsonDocument object.
-            string strRunID = objJsonDocument2.RootElement.GetProperty("id").GetString();
-
-            // Every one seconds, check to see if the run has completed.
-            int maxTries = 300; // 5 Minutes
-            int currentTry = 0;
-            string strRunStatus = "";
-
-            while (strRunStatus != "completed")
-            {
-                currentTry++;
-
-                if (currentTry > maxTries)
-                {
-                    await DeleteThread();
-                    throw new Exception("Call to OpenAI timed out while waiting for run completion.");
-                }
-
-                await Task.Delay(1000);
-
-                using HttpResponseMessage objHttpResponseMessage4 = await objHttpClient.GetAsync($"{strBaseEndpointUrl}threads/{strThreadID}/runs/{strRunID}");
-
-                if (!objHttpResponseMessage4.IsSuccessStatusCode)
-                {
-                    await DeleteThread();
-                    string errorContent = await objHttpResponseMessage4.Content.ReadAsStringAsync();
-                    throw new Exception($"Failed to check run status (Attempt {currentTry}): {errorContent}");
-                }
-
-                using JsonDocument objJsonDocument3 = await JsonDocument.ParseAsync(await objHttpResponseMessage4.Content.ReadAsStreamAsync());
-
-                if (!objJsonDocument3.RootElement.TryGetProperty("status", out JsonElement statusElement))
-                {
-                    await DeleteThread();
-                    throw new Exception($"Run status missing in response (Attempt {currentTry}).");
-                }
-
-                strRunStatus = statusElement.GetString();
-
-                if (strRunStatus == "failed" || strRunStatus == "cancelled" || strRunStatus == "expired")
-                {
-                    throw new Exception($"OpenAI run ended unexpectedly with status: {strRunStatus}");
-                }
-            }
-
+            await PollUntilRunCompletes(threadId, runId);
             await LoadChat();
         }
         catch (Exception ex)
         {
-            // Log the exception to Application Insights.
-            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            _telemetryClient.TrackException(ExceptionTelemetry);
-
-            // Display an error for the user.
-            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-            return StatusCode(500, strExceptionMessage);
+            _telemetryClient.TrackException(new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error });
+            return StatusCode(500, BuildErrorMessage(ex));
         }
 
         return Page();
     }
 
+    // Resets the conversation
     public async Task OnPostStartNewChatAsync(Guid? id)
     {
         try
         {
             if (id == null)
-            {
-                await DeleteThread();
                 throw new Exception("New Chat: No ID provided.");
-            }
 
             await LoadData();
-
             await DeleteThread();
 
             TempData["StartupJavaScript"] = "ShowSnack('success', 'Chat successfully cleared.', 7000, true)";
-
             ModelState.Remove("Question");
         }
         catch (Exception ex)
         {
-            // Log the exception to Application Insights.
-            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            _telemetryClient.TrackException(ExceptionTelemetry);
-
-            // Display an error for the user.
-            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+            LogAndNotifyException(ex);
         }
     }
 
+    // Poll OpenAI until run completes or fails
+    private async Task PollUntilRunCompletes(string threadId, string runId)
+    {
+        for (int i = 0; i < 300; i++) // up to 5 mins
+        {
+            await Task.Delay(1000);
+
+            using var runStatusResp = await _httpClient.GetAsync($"{_baseOpenAiUrl}threads/{threadId}/runs/{runId}");
+            if (!runStatusResp.IsSuccessStatusCode)
+            {
+                await DeleteThread();
+                throw new Exception("Run status check failed: " + await runStatusResp.Content.ReadAsStringAsync());
+            }
+
+            using var runStatusDoc = await JsonDocument.ParseAsync(await runStatusResp.Content.ReadAsStreamAsync());
+            if (!runStatusDoc.RootElement.TryGetProperty("status", out var statusProp))
+            {
+                await DeleteThread();
+                throw new Exception("Run status missing in response.");
+            }
+
+            var status = statusProp.GetString();
+            if (status == "completed") return;
+            if (status is "failed" or "cancelled" or "expired")
+                throw new Exception("OpenAI run ended: " + status);
+        }
+
+        await DeleteThread();
+        throw new Exception("OpenAI run timed out.");
+    }
+
+    // Create a thread if one doesn't exist
+    private async Task<string> EnsureThreadExists()
+    {
+        var threadId = HttpContext.Session.GetString("strThreadID");
+        if (string.IsNullOrEmpty(threadId))
+        {
+            using var resp = await _httpClient.PostAsync($"{_baseOpenAiUrl}threads", null);
+            if (!resp.IsSuccessStatusCode)
+                throw new Exception("Thread creation failed: " + await resp.Content.ReadAsStringAsync());
+
+            using var doc = await Conversions.CreateJsonDocumentObject(resp);
+            threadId = doc.RootElement.GetProperty("id").GetString();
+            HttpContext.Session.SetString("strThreadID", threadId);
+        }
+        return threadId;
+    }
+
+    // Delete the OpenAI thread
     private async Task DeleteThread()
     {
         try
         {
-            // Create the HttpClient object.
-            HttpClient objHttpClient = _httpClientFactory.CreateClient("SearchAFIleClient");
-
-            // Send the delete request to the threads endpoint.
-            string strThreadID = HttpContext.Session.GetString("strThreadID");
-            using HttpResponseMessage objHttpResponseMessage = await objHttpClient.DeleteAsync($"{strBaseEndpointUrl}threads/{strThreadID}");
-
-            // Remove the session variable.
-            HttpContext.Session.Remove("strThreadID");
-
+            var threadId = HttpContext.Session.GetString("strThreadID");
+            if (!string.IsNullOrEmpty(threadId))
+            {
+                var client = _httpClientFactory.CreateClient("SearchAFIleClient");
+                await client.DeleteAsync($"{_baseOpenAiUrl}threads/{threadId}");
+                HttpContext.Session.Remove("strThreadID");
+            }
         }
-        catch
-        {
-            throw;
-        }
+        catch { throw; }
     }
 
+    // Load collection and files
     private async Task LoadData()
     {
-        try
+        var sessionCollection = HttpContext.Session.GetObject<Collection>("Collection");
+        if (sessionCollection == null)
         {
-            if (HttpContext.Session.GetObject<Collection>("Collection") == null)
-            {
-                var collectionResult = await _api.GetAsync<Collection>($"collections/{Id}");
+            var collectionResult = await _api.GetAsync<Collection>($"collections/{Id}");
+            if (!collectionResult.IsSuccess || collectionResult.Data == null)
+                throw new Exception(collectionResult.ErrorMessage ?? "Failed to load collection.");
 
-                if (!collectionResult.IsSuccess || collectionResult.Data == null)
-                {
-                    throw new Exception(collectionResult.ErrorMessage ?? "Unable to retrieve collection.");
-                }
+            var filesResult = await _api.GetAsync<List<File>>("files");
+            if (!filesResult.IsSuccess || filesResult.Data == null)
+                throw new Exception(filesResult.ErrorMessage ?? "Failed to load files.");
 
-                Collection = collectionResult.Data;
-
-                // Load the files.
-                var filesResult = await _api.GetAsync<List<File>>("files");
-
-                if (!filesResult.IsSuccess || filesResult.Data == null)
-                {
-                    throw new Exception(filesResult.ErrorMessage ?? "Unable to retrieve files.");
-                }
-
-                List<File> Files = filesResult.Data.Where(file => file.CollectionId == Collection.CollectionId).ToList();
-
-                CollectionFileCountMapper.MapFilesToCollection(Collection, Files);
-
-                HttpContext.Session.SetObject("Collection", Collection);
-            }
-            else
-            {
-                Collection = HttpContext.Session.GetObject<Collection>("Collection");
-            }
+            var files = filesResult.Data.Where(f => f.CollectionId == collectionResult.Data.CollectionId).ToList();
+            CollectionFileCountMapper.MapFilesToCollection(collectionResult.Data, files);
+            Collection = collectionResult.Data;
+            HttpContext.Session.SetObject("Collection", Collection);
         }
-        catch
+        else
         {
-            throw;
+            Collection = sessionCollection;
         }
     }
 
+    // Load and format assistant response
     private async Task LoadChat()
     {
-        try
+        _httpClient ??= _httpClientFactory.CreateClient("SearchAFIleClient");
+        var threadId = HttpContext.Session.GetString("strThreadID");
+
+        using var resp = await _httpClient.GetAsync($"{_baseOpenAiUrl}threads/{threadId}/messages");
+        if (!resp.IsSuccessStatusCode)
+            throw new Exception("Chat retrieval failed: " + await resp.Content.ReadAsStringAsync());
+
+        using var doc = await Conversions.CreateJsonDocumentObject(resp);
+        foreach (var msg in doc.RootElement.GetProperty("data").EnumerateArray().Reverse())
         {
-            // Create the HttpClient object.
-            if (objHttpClient == null)
+            var role = msg.GetProperty("role").GetString();
+            if (role != "user" && role != "assistant") continue;
+
+            var timestamp = DateTimeOffset.FromUnixTimeSeconds(msg.GetProperty("created_at").GetInt64()).ToLocalTime().ToString("h:mm tt");
+
+            foreach (var part in msg.GetProperty("content").EnumerateArray())
             {
-                objHttpClient = _httpClientFactory.CreateClient("SearchAFIleClient");
-            }
-
-            // If a thread has not been created yet, create one.
-            string strThreadID = HttpContext.Session.GetString("strThreadID");
-
-            // Get the Assistant's message.
-            using HttpResponseMessage objHttpResponseMessage5 = await objHttpClient.GetAsync($"{strBaseEndpointUrl}threads/{strThreadID}/messages");
-            if (!objHttpResponseMessage5.IsSuccessStatusCode)
-            {
-                string errorContent = await objHttpResponseMessage5.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to retrieve the conversation: {errorContent}");
-            }
-
-            // Create the JsonDocument object.
-            using JsonDocument objJsonDocument4 = await Conversions.CreateJsonDocumentObject(objHttpResponseMessage5);
-
-            // Format the answer to include the previous messages.
-            foreach (JsonElement objJsonElement in objJsonDocument4.RootElement.GetProperty("data").EnumerateArray().Reverse())
-            {
-                string strRole = objJsonElement.GetProperty("role").GetString();
-                if (strRole == "user" || strRole == "assistant")
+                var text = part.GetProperty("text").GetProperty("value").GetString();
+                text = Regex.Replace(text, @"(?<fileId>[0-9a-fA-F\-]{36}\.(pdf|docx|xlsx))", m =>
                 {
-                    foreach (JsonElement objJsonElement2 in objJsonElement.GetProperty("content").EnumerateArray())
-                    {
-                        // Get the timestamp
-                        long createdAtUnix = objJsonElement.GetProperty("created_at").GetInt64();
-                        DateTimeOffset createdAt = DateTimeOffset.FromUnixTimeSeconds(createdAtUnix).ToLocalTime();
-                        string formattedTime = createdAt.ToString("h:mm tt");
+                    var fileId = Path.GetFileNameWithoutExtension(m.Groups["fileId"].Value);
+                    var file = Collection.Files.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f.Path.ToString()) == fileId);
+                    return file != null ? $"<a href='/Files/{file.Path}' target='_blank'>{file.File1}</a>" : m.Groups["fileId"].Value;
+                });
+                text = Regex.Replace(text, "\r\n|\n|\r", "<br>");
 
-                        string strMessageText = objJsonElement2.GetProperty("text").GetProperty("value").GetString();
-
-                        // Replace raw file names in the assistant response with download links using FileId
-                        strMessageText = Regex.Replace(strMessageText,
-                            @"(?<fileId>[0-9a-fA-F\-]{36}\.(pdf|docx|xlsx))",
-                            m =>
-                            {
-                                string fileIdWithExt = m.Groups["fileId"].Value;
-                                string fileId = Path.GetFileNameWithoutExtension(fileIdWithExt);
-
-                                // Find the matching file by FileId (GUID string)
-                                var file = Collection.Files
-                                    .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f.Path.ToString()).Equals(fileId, StringComparison.OrdinalIgnoreCase));
-
-                                if (file != null)
-                                {
-                                    string url = $"/Files/{file.Path}";
-                                    string displayName = file.File1; // The friendly name the user uploaded
-                                    return $"<a href='{url}' target='_blank'>{displayName}</a>";
-                                }
-
-                                return fileIdWithExt; // fallback
-                            });
-
-                        strMessageText = Regex.Replace(strMessageText, @"\r\n|\n|\r", "<br>");
-
-                        string roleClass = strRole == "user" ? "user" : "bot";
-
-                        Answer += $@"
-                            <div class='chat-message {roleClass}'>
-                                <div class='message-text'>{strMessageText}</div>
-                                <div class='timestamp'>{formattedTime}</div>
-                            </div>";
-                    }
-                }
+                var cssClass = role == "user" ? "user" : "bot";
+                Answer += $"<div class='chat-message {cssClass}'><div class='message-text'>{text}</div><div class='timestamp'>{timestamp}</div></div>";
             }
         }
-        catch
-        {
-            throw;
-        }
+    }
+
+    // Error tracking and notification
+    private void LogAndNotifyException(Exception ex)
+    {
+        _telemetryClient.TrackException(new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error });
+        TempData["StartupJavaScript"] = BuildErrorMessage(ex);
+    }
+
+    // Build user-safe error message
+    private string BuildErrorMessage(Exception ex)
+    {
+        var contact = HttpContext.Session.GetString("ContactInfo") ?? "support";
+        var msg = ex.InnerException == null ? ex.Message : ex.Message + " (Inner: " + ex.InnerException.Message + ")";
+        return $"window.top.ShowToast('danger', 'Error', 'An error occured. Please report to {contact}: {msg.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString()}', 0, false);";
     }
 }

@@ -13,8 +13,10 @@ public static class FileUploadHelper
                 throw new Exception(fileKey + " is required.");
             }
 
-            string extension = Path.GetExtension(file.FileName).TrimStart('.').ToLower();
-            if (!allowedFileTypes.Contains(extension))
+            string? extension = GetExtensionFromContentTypeHelper.GetExtensionFromContentType(file)?.TrimStart('.')?.ToLower();
+
+            if (string.IsNullOrEmpty(extension)
+                || !allowedFileTypes.Contains(extension))
             {
                 string allowedTypesMsg = string.Join(", ", allowedFileTypes);
                 throw new Exception($"Invalid file type. File must be of type: {allowedTypesMsg}.");

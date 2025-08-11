@@ -1,0 +1,105 @@
+﻿@page
+@model SearchAFile.Web.Pages.Files.EditModel
+@{
+    Layout = "_LayoutModal";
+}
+
+<form id="objForm" method="post" onmouseup="window.top.ResizeModal();" onmouseover="window.top.ResizeModal();" onsubmit="$('#btnSave').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());">
+
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
+    <input asp-for="File.FileId" hidden />
+
+    <div class="card border-0 p-0">
+
+        <div class="card-header cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
+            <label class="fs-5"><i class="fa-solid fa-pen-to-square text-primary"></i> Edit File</label>
+        </div>
+
+        <div class="card-body cus-bootstrap-table-striped p-0">
+
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-sm-12">
+                    <div class="form-floating">
+                        <input type="text" asp-for="File.File1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.File.File1)" onkeyup="window.top.ResizeModal();" />
+                        <label asp-for="File.File1" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="File.File1" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card-footer text-center">
+            <button id="btnCancel" type="button" class="btn btn-outline-secondary" onclick="window.top.CloseModal();">
+                <i class="fa-solid fa-ban"></i>
+                Cancel
+            </button>
+            <button id="btnSave" type="submit" class="btn btn-success" onclick="return Save();">
+                Save
+                <i class="fa-solid fa-save"></i>
+            </button>
+        </div>
+
+    </div>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+
+        if (self == top) {
+
+            history.back();
+        }
+
+        $(window).resize(function () {
+
+            if (self !== top) {
+
+                window.top.ResizeModal();
+            }
+        });
+
+        $(document).on('keypress', function (event) {
+
+            let keycode = (event.keyCode ? event.keyCode : event.which);
+
+            if (keycode == '13') {
+
+                event.preventDefault();
+                $('#btnSave').click();
+            }
+        });
+
+        function Save() {
+
+            // Clear out the messages.
+            window.top.ClearToast();
+
+            // Validate the page.
+            $('#objForm').validate();
+
+            let booIsValid = $('#objForm').valid();
+
+            if (!booIsValid) {
+
+                window.top.ResizeModal();
+
+                // Output the errors.
+                window.top.ShowToast("danger", "The following errors have occured", $('#divValidationSummary').html(), 0, false);
+            }
+            else {
+
+                window.top.StartLoadingModal('#divLoadingBlockModal');
+            }
+
+            return booIsValid;
+        }
+
+    </script>
+
+}

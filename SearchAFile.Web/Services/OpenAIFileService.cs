@@ -19,9 +19,10 @@ public class OpenAIFileService
             if (file == null)
                 throw new Exception($"{fileKey} is required.");
 
-            string extension = Path.GetExtension(file.FileName).TrimStart('.').ToLower();
+            string? extension = GetExtensionFromContentTypeHelper.GetExtensionFromContentType(file)?.TrimStart('.')?.ToLower();
 
-            if (!allowedFileTypes.Contains(extension))
+            if (string.IsNullOrEmpty(extension)
+                || !allowedFileTypes.Contains(extension))
             {
                 string allowedTypesMsg = string.Join(", ", allowedFileTypes);
                 throw new Exception($"Invalid file type. File must be of type: {allowedTypesMsg}.");

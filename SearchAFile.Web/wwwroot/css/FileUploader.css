@@ -1,0 +1,79 @@
+﻿/* ==================================
+ * 3) wwwroot/css/fileUploader.css
+ *    (Component styles)
+ * ================================== */
+/* Animations */
+.list-group-item {
+    position: relative;
+    overflow: hidden
+}
+
+.enter-init {
+    opacity: 0;
+    transform: translateY(-15px)
+}
+
+.enter-active {
+    transition: opacity 1s ease,transform 1s ease;
+    opacity: 1;
+    transform: translateY(0)
+}
+
+.collapsing {
+    transition: height .35s ease,opacity .35s ease,margin .35s ease,padding .35s ease;
+    opacity: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important
+}
+/* Dropzone */
+.dropzone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: 2.25rem 1.25rem;
+    border: 2px dashed rgba(13,110,253,.5);
+    border-radius: .75rem;
+    background: #f8f9fa;
+    color: #6c757d;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color .25s ease,border-color .25s ease,box-shadow .25s ease
+}
+
+    .dropzone:hover, .dropzone.dropzone--hover {
+        background: #f1f3f5;
+        border-color: rgba(13,110,253,.8)
+    }
+
+    .dropzone .browse {
+        text-decoration: underline;
+        font-weight: 600;
+        color: #0d6efd
+    }
+
+.visually-hidden-input {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0
+}
+/* Progress */
+.file-progress {
+    height: .4rem
+}
+
+.file-status {
+    font-size: .8rem
+}
+
+/* NOTE: Replace FILE_UPLOADER_SCOPE with the component root id in a bundler step or at runtime if scoping is needed.
+   If you include this CSS globally, you can remove the prefix.
+*/

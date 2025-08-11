@@ -1,4 +1,13 @@
-﻿.cus-text-primary,
+﻿.cus-bs-text-primary,
+.cus-bs-text-primary-no-hover {
+    color: var(--bs-primary) !important;
+}
+
+    .cus-bs-text-primary:hover {
+        filter: brightness(85%);
+    }
+
+.cus-text-primary,
 .cus-text-primary-no-hover {
     color: var(--primary-color) !important;
 }
