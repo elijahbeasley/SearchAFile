@@ -11,19 +11,22 @@ namespace SearchAFile;
 public class AccountController : Controller
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    public AccountController(IHttpContextAccessor httpContextAccessor)
+    private readonly AuthenticatedApiClient _api;
+    private readonly AuthClient _loginService;
+    public AccountController(IHttpContextAccessor httpContextAccessor, AuthenticatedApiClient api, AuthClient loginService)
     {
         _httpContextAccessor = httpContextAccessor;
+        _api = api;
+        _loginService = loginService;
     }
 
-    public async Task<IActionResult> EndUserImpersonationAsync(string CurrentPage = "~/")
+    public async Task<IActionResult> EndImpersonation(string CurrentPage = "~/")
     {
         string strMessage;
 
         try
         {
-            UserDto User = _httpContextAccessor.HttpContext.Session.GetObject<UserDto>("User");
-            strMessage = "Impersonation of " + User.FullName + " has ended.";
+            UserDto? User = _httpContextAccessor?.HttpContext?.Session.GetObject<UserDto>("User");
 
             if (User == null)
             {
@@ -34,38 +37,44 @@ public class AccountController : Controller
             }
             else
             {
-                // Sign out of cookie authentication
-                await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                strMessage = "Impersonation of " + User?.FullName + " has ended.";
 
-                User = _httpContextAccessor.HttpContext.Session.GetObject<UserDto>("OriginalUser");
-                _httpContextAccessor.HttpContext.Session.SetObject("User", User);
+                User = _httpContextAccessor?.HttpContext?.Session.GetObject<UserDto>("OriginalUser");
 
-                // Add claims and sign in
-                var claims = new List<Claim>
+                // Log the user in. 
+                var loginResult = await _loginService.LoginAsync("", "", User.UserId);
+
+                if (loginResult.Success)
                 {
-                    new Claim(ClaimTypes.NameIdentifier, User.UserId.ToString()),
-                    new Claim(ClaimTypes.Name, User.FullName ?? ""),
-                    new Claim(ClaimTypes.Email, User.EmailAddress),
-                    new Claim(ClaimTypes.Role, User.Role ?? "")
-                };
+                    // Sign out of cookie authentication
+                    _httpContextAccessor?.HttpContext?.Session.SetObject("User", User);
+                    //_httpContextAccessor?.HttpContext?.Session.Remove("OriginalUser");
 
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    // Get the user's company.
+                    var companyResult = await _api.GetAsync<Company>($"companies/{User?.CompanyId}");
 
-                await _httpContextAccessor.HttpContext!.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    new ClaimsPrincipal(claimsIdentity),
-                    new AuthenticationProperties
+                    if (!companyResult.IsSuccess || companyResult.Data == null)
                     {
-                        IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddHours(12)
-                    });
+                        throw new Exception(companyResult.ErrorMessage ?? "Unable to get the user's company.");
+                    }
 
-                // Reset the AllowUserImpersonation session variable. 
-                _httpContextAccessor.HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
+                    HttpContext.Session.SetObject("Company", companyResult.Data);
 
-                TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true)";
+                    // Reset the AllowUserImpersonation session variable. 
+                    _httpContextAccessor?.HttpContext?.Session.SetBoolean("AllowUserImpersonation", true);
 
-                return Redirect(SystemFunctions.GetDashboardURL(User.Role));
+                    TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true)";
+
+                    return Redirect(SystemFunctions.GetDashboardURL(User?.Role));
+                }
+                else if (string.IsNullOrEmpty(loginResult.ErrorMessage))
+                {
+                    throw new Exception("Unable to end impersonation");
+                }
+                else
+                {
+                    throw new Exception(loginResult.ErrorMessage.EscapeJsString());
+                }
             }
         }
         catch

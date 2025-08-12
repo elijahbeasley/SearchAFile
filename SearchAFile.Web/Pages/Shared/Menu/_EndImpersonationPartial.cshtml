@@ -1,0 +1,59 @@
+﻿<!-- Button for stopping impersonation -->
+<button class="cus-btn-danger rounded-circle cus-no-focus cus-end-impersonation" data-bs-toggle="modal" data-bs-target="#divEndImpersonationModal" title="End impersonation">
+    <i class="fas fa-times cus-text-white-no-hover"></i>
+</button>
+
+<div class="modal fade" id="divEndImpersonationModal" tabindex="-1" data-bs-keyboard="false" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 card">
+
+            <div class="card-header d-flex align-items-center cus-no-select fs-6" style="background-color: var(--primary-color); border-bottom: 2px solid var(--secondary-color);">
+                <label class="cus-card-header h-auto cus-text-secondary-text-no-hover">
+                    <i class="fa-regular fa-circle-stop fs-5 me-1 cus-text-secondary-text-no-hover"></i>
+                    End Impersonation
+                </label>
+                <button id="btnEndImpersonationClose" type="button" class="btn p-0 m-0 ms-auto cus-text-secondary-text" data-bs-dismiss="modal" style="line-height: 1;">
+                    <i class="fa-solid fa-xmark fs-4"></i>
+                </button>
+            </div>
+
+            <div class="modal-body text-center">
+                <label>Are you sure you want to stop impersonating <b>@(Context.Session.GetObject<UserDto>("User").FullName)</b>?</label>
+                <label class="pt-2">Click 'End' to end impersonation. Click 'Cancel' to cancel.</label>
+            </div>
+
+            <div class="card-footer text-center cus-no-select">
+                <button id="btnEndImpersonation" class="btn btn-outline-danger" type="button" onclick="EndImpersonation();" style="min-width: 25%;">
+                    <span id="lblEndImpersonation" style="color: unset;">
+                        End
+                        <i class="fa-solid fa-stop-circle"></i>
+                    </span>
+                    <img id="imgEndImpersonation" src="~/SystemFiles/loading.gif" style="display: none; height: 20px; width: 20px;" />
+                </button>
+                <button id="btnEndImpersonationCancel" type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="min-width: 25%;">
+                    Cancel
+                    <i class="fa-duotone fa-solid fa-ban"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<form asp-controller="Account" asp-action="EndImpersonation" method="post" id="end_impersonation">
+    <input type="hidden" name="CurrentPage" value="@Context.Request.Path" />
+</form>
+
+<script type="text/javascript">
+
+    function EndImpersonation() {
+
+        $('#btnEndImpersonation').prop('disabled', true);
+        $('#btnEndImpersonationCancel').prop('disabled', true);
+        $('#btnEndImpersonationClose').prop('disabled', true);
+        $('#lblEndImpersonation').toggle();
+        $('#imgEndImpersonation').toggle();
+
+        $('#end_impersonation').submit();
+    }
+</script>

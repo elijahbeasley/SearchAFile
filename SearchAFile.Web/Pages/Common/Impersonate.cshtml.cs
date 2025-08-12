@@ -15,179 +15,218 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SearchAFile.Infrastructure.Mapping;
 
 namespace SearchAFile.Web.Pages.Common;
 
 [BindProperties(SupportsGet = true)]
 public class ImpersonateModel : PageModel
 {
-    //private readonly TelemetryClient _telemetryClient;
-    //private readonly AuthenticatedApiClient _api;
-    //private readonly AccountController AccountController;
+    private readonly TelemetryClient _telemetryClient;
+    private readonly AuthenticatedApiClient _api;
+    private readonly AuthClient _loginService;
 
-    //public ImpersonateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, AccountController AC)
-    //{
-    //    _telemetryClient = telemetryClient;
-    //    _api = api;
-    //    AccountController = AC;
-    //}
-    //public IList<User> UserIList { get; set; }
+    public ImpersonateModel(TelemetryClient telemetryClient, AuthenticatedApiClient api, AuthClient authClient)
+    {
+        _telemetryClient = telemetryClient;
+        _api = api;
+        _loginService = authClient;
+    }
+    public List<User>? Users { get; set; }
 
-    //[DisplayName("User")]
-    //[Required(ErrorMessage = "User is required.")]
-    //public int UserID { get; set; }
-    //public string Search { get; set; }
+    [DisplayName("User")]
+    [Required(ErrorMessage = "User is required.")]
+    public Guid? id { get; set; }
 
-    //public async Task<IActionResult> OnGetAsync()
-    //{
-    //    if (!Convert.ToBoolean(HttpContext.Session.GetBoolean("AllowUserImpersonation")))
-    //    {
-    //        HttpContext.Session.Clear();
-    //        return Redirect("~/");
-    //    }
+    public async Task<IActionResult> OnGetAsync()
+    {
+        if (!Convert.ToBoolean(HttpContext.Session.GetBoolean("AllowUserImpersonation")))
+        {
+            HttpContext.Session.Clear();
+            return Redirect("/");
+        }
 
-    //    try
-    //    {
-    //        // Set the page title.
-    //        HttpContext.Session.SetString("PageTitle", "Impersonate User");
+        try
+        {
+            // Set the page title.
+            HttpContext.Session.SetString("PageTitle", "Impersonate User");
 
-    //        await BuildUserSelectList();
+            HttpContext.Session.Remove("Users");
 
-    //        ModelState.Remove("UserID");
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        // Log the exception to Application Insights.
-    //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        _telemetryClient.TrackException(ExceptionTelemetry);
+            await BuildUserSelectList();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
-    //        // Display an error for the user.
-    //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-    //        TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
-    //    }
+            // Display an error for the user.
+            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+        }
 
-    //    return Page();
-    //}
+        return Page();
+    }
 
-    //public async Task<IActionResult> OnPostAsync()
-    //{
-    //    string strMessage;
+    public async Task<IActionResult> OnPostAsync()
+    {
+        string strMessage;
 
-    //    try
-    //    {
-    //        await BuildUserSelectList();
+        try
+        {
+            await BuildUserSelectList();
 
-    //        User User = await SearchAFileContext.User
-    //            .AsNoTracking()
-    //            .FirstOrDefaultAsync(e => e.UserId == UserID);
+            var userResult = await _api.GetAsync<UserDto>($"users/{id}");
 
-    //        if (User == null)
-    //        {
-    //            strMessage = "Unable to log in as selected user with ID " + UserID + ".";
-    //            TempData["StartupJavaScript"] = "ShowSnack('warning', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 10000, false)";
-    //        }
-    //        else
-    //        {
-    //            // Check to see if there is an OriginalUser variable that needs to be saved. 
-    //            User OriginalUser = null;
+            if (!userResult.IsSuccess || userResult.Data == null)
+                throw new Exception(ApiErrorHelper.GetErrorString(userResult) ?? "Unable to retrieve user.");
 
-    //            if (HttpContext.Session.GetObject<Models.User>("OriginalUser") == default)
-    //            {
-    //                OriginalUser = HttpContext.Session.GetObject<Models.User>("User");
-    //            }
-    //            else
-    //            {
-    //                OriginalUser = HttpContext.Session.GetObject<Models.User>("OriginalUser");
-    //            }
+            UserDto? User = userResult.Data;
 
-    //            // Log the user member in. 
-    //            await AccountController.LogInUserAsync(User);
+            // Check to see if there is an OriginalUser variable that needs to be saved. 
+            UserDto? OriginalUser = null;
 
-    //            // Reset the AllowUserImpersonation session variable. 
-    //            HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
+            if (HttpContext.Session.GetObject<UserDto>("OriginalUser") == default)
+            {
+                OriginalUser = HttpContext.Session.GetObject<UserDto>("User");
+            }
+            else
+            {
+                OriginalUser = HttpContext.Session.GetObject<UserDto>("OriginalUser");
+            }
 
-    //            // If the selected user member is different from the OriginalUser member then set the OriginalUser variable. 
-    //            if (User.UserId != OriginalUser.UserId)
-    //            {
-    //                HttpContext.Session.SetObject("OriginalUser", OriginalUser);
-    //            }
+            // Log the user in. 
+            var loginResult = await _loginService.LoginAsync("", "", id);
 
-    //            strMessage = "You are now impersonating " + User.FullName + ".";
-    //            TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true)";
+            if (loginResult.Success)
+            {
+                // Reset the AllowUserImpersonation session variable. 
+                HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
 
-    //            return Redirect(SystemFunctions.GetDashboardURL(User.Role));
-    //        }
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        // Log the exception to Application Insights.
-    //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        _telemetryClient.TrackException(ExceptionTelemetry);
+                // Get the user's company.
+                var companyResult = await _api.GetAsync<Company>($"companies/{User.CompanyId}");
 
-    //        // Display an error for the user.
-    //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-    //        TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
-    //    }
+                if (!companyResult.IsSuccess || companyResult.Data == null)
+                {
+                    throw new Exception(companyResult.ErrorMessage ?? "Unable to get the user's company.");
+                }
 
-    //    return Page();
-    //}
+                HttpContext.Session.SetObject("Company", companyResult.Data);
 
-    //public async Task<IActionResult> OnGetReloadUser(string strSearch)
-    //{
-    //    try
-    //    {
-    //        if (string.IsNullOrEmpty(strSearch))
-    //        {
-    //            Search = "";
-    //        }
-    //        else
-    //        {
-    //            Search = HttpUtility.UrlDecode(strSearch).Trim();
-    //        }
+                // If the selected user is different from the OriginalUser then set the OriginalUser variable. 
+                if (User.UserId != OriginalUser.UserId)
+                {
+                    HttpContext.Session.SetObject("OriginalUser", OriginalUser);
+                    strMessage = "You are now impersonating " + User.FullName + " (" + companyResult.Data.Company1 + ").";
+                }
+                else
+                {
+                    strMessage = "You are now impersonating " + User.FullName + " (" + companyResult.Data.Company1 + ").";
+                }
 
-    //        await BuildUserSelectList();
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        // Log the exception to Application Insights.
-    //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        _telemetryClient.TrackException(ExceptionTelemetry);
+                TempData["StartupJavaScript"] = "ShowSnack('success', '" + strMessage.Replace("\r", " ").Replace("\n", "<br>").Replace("'", "\"") + "', 7000, true)";
 
-    //        // Display an error for the user.
-    //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+                return Redirect(SystemFunctions.GetDashboardURL(User?.Role));
+            }
+            else if (string.IsNullOrEmpty(loginResult.ErrorMessage))
+            {
+                TempData["StartupJavaScript"] = "ShowSnack('warning', 'Unable to impersonate user.', 7000, true)";
+            }
+            else
+            {
+                TempData["StartupJavaScript"] = "ShowToast('warning', 'Login Error', '" + loginResult.ErrorMessage.EscapeJsString() + "', 0, false)";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
-    //        return StatusCode(400, strExceptionMessage);
-    //    }
+            // Display an error for the user.
+            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+        }
 
-    //    return Page();
-    //}
+        return Page();
+    }
 
-    //private async Task BuildUserSelectList()
-    //{
-    //    try
-    //    {
-    //        UserIList = await SearchAFileContext.User
-    //            .Include(e => e.Country)
-    //            .Where(e => (string.IsNullOrEmpty(Search) 
-    //                || (e.FirstName + " " + e.LastName).Trim().ToLower().Contains(Search.Trim().ToLower())
-    //                || (e.LastName + ", " + e.FirstName).Trim().ToLower().Contains(Search.Trim().ToLower())
-    //                || (e.Role).Trim().ToLower().Contains(Search.Trim().ToLower())
-    //                || (e.Country.Country1).Trim().ToLower().Contains(Search.Trim().ToLower()))
-    //                && e.UserId != HttpContext.Session.GetObject<User>("User").UserId)
-    //            .OrderBy(e => e.LastName)
-    //            .ThenBy(e => e.FirstName)
-    //            .AsNoTracking()
-    //            .ToListAsync();
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        // Log the exception to Application Insights.
-    //        ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-    //        _telemetryClient.TrackException(ExceptionTelemetry);
+    public IActionResult OnGetReloadUser(string search)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(search))
+            {
+                Users = HttpContext.Session.GetObject<List<User>>("Users");
+            }
+            else
+            {
+                Users = HttpContext.Session.GetObject<List<User>>("Users")
+                    .Where(user => !string.IsNullOrEmpty(search) && (user.FullName.Trim().ToLower().Contains(search.Trim().ToLower())
+                        || user.FullNameReverse.Trim().ToLower().Contains(search.Trim().ToLower())))
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
 
-    //        // Display an error for the user.
-    //        string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-    //        TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
-    //    }
-    //}
+            // Display an error for the user.
+            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+
+            return StatusCode(400, strExceptionMessage);
+        }
+
+        return Page();
+    }
+
+    private async Task BuildUserSelectList()
+    {
+        try
+        {
+            if (HttpContext.Session.GetObject<List<User>>("Users") == null)
+            {
+                var userResult = await _api.GetAsync<List<User>>("users");
+
+                if (!userResult.IsSuccess || userResult.Data == null)
+                {
+                    throw new Exception(userResult.ErrorMessage ?? "Unable to retrieve users.");
+                }
+
+                Users = userResult.Data;
+
+                var companyResult = await _api.GetAsync<List<Company>>("companies");
+
+                if (!companyResult.IsSuccess || companyResult.Data == null)
+                {
+                    throw new Exception(companyResult.ErrorMessage ?? "Unable to retrieve companies.");
+                }
+
+                List<Company>? Companies = companyResult.Data;
+
+                UserCompanyMapper.MapCompaniesToUsers(Users, Companies);
+
+                Users = Users
+                    .Where(user => user.UserId != HttpContext.Session.GetObject<UserDto>("User").UserId)
+                    .OrderBy(user => user.Company?.Company1)
+                    .ThenBy(user => user.FullNameReverse)
+                    .ToList();
+
+                HttpContext.Session.SetObject("Users", Users);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
+
+            // Display an error for the user.
+            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
+        }
+    }
 }

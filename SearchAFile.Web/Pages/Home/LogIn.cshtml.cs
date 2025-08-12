@@ -127,6 +127,8 @@ public class LogInModel : PageModel
                     // Store in session
                     HttpContext.Session.SetObject("Companies", Companies);
                     HttpContext.Session.SetObject("Company", Company);
+
+                    HttpContext.Session.SetBoolean("AllowUserImpersonation", true);
                 }
                 else
                 {

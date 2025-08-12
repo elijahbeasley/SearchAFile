@@ -62,7 +62,7 @@
                             NavLink("/Users", "fa-solid fa-users", "Users");
                             NavLink("/Admins/CompanySettings", "fa-regular fa-building", "Company Settings");
                             NavLink("/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
-                            if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
+                            if (Convert.ToBoolean(Context.Session.GetBoolean("AllowUserImpersonation")))
                             {
                                 NavLink("/Common/Impersonate", "fa-solid fa-sign-in", "Impersonate");
                             }
@@ -72,7 +72,7 @@
                         case "Employee":
                             NavLink("/Users/Dashboard", "fa-solid fa-home", "Dashboard");
                             NavLink("/Common/AccountSettings", "fa-solid fa-user-cog", "Account Settings");
-                            if (Convert.ToBoolean(Context.Session.GetBoolean("IsSystemAdmin")))
+                            if (Convert.ToBoolean(Context.Session.GetBoolean("AllowUserImpersonation")))
                             {
                                 NavLink("/Common/Impersonate", "fa-solid fa-sign-in", "Impersonate");
                             }

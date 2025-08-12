@@ -102,6 +102,12 @@
 
     <div id="StartupJavaScript" hidden>@TempData["StartupJavaScript"]</div>
 
+    @if (Context.Session.GetObject<UserDto>("OriginalUser") != default
+        && Context.Session.GetObject<UserDto>("OriginalUser").UserId != Context.Session.GetObject<UserDto>("User").UserId)
+    {
+        @await Html.PartialAsync("~/Pages/Shared/Menu/_EndImpersonationPartial.cshtml")
+    }
+
     @* jQuery v3.7.1 *@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
