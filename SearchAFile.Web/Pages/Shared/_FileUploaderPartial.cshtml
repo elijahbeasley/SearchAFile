@@ -13,13 +13,19 @@
 <div id="@id" class="file-uploader" data-input-name="@Model.InputName" data-accepted='@acceptedJson' data-per-file-bytes="@perFileBytes" data-total-bytes="@totalBytes" data-simulate-upload="@Model.SimulateUpload.ToString().ToLower()" data-show-diagnostics="@Model.ShowDiagnostics.ToString().ToLower()" data-max-files="@Model.MaxFiles" data-already-uploaded="@Model.AlreadyUploadedCount" data-max-name-length="@Model.MaxFilenameLength" data-truncate-long-filenames="@Model.TruncateLongFilenames.ToString().ToLower()">
     <div class="card shadow-sm">
         <div class="card-header d-flex align-items-center justify-content-between cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
-            <label class="fs-5"><i class="fa-solid fa-file-arrow-up text-success"></i> Upload File</label>
-            <div class="d-flex align-items-center gap-2 small text-muted">
+            <label class="fs-5">
+                <i class="fa-solid fa-file-arrow-up text-success"></i>
+                Upload File
                 <button type="button" class="btn btn-sm btn-link text-muted p-0" data-role="info" data-bs-toggle="tooltip" data-bs-placement="top" title=""><i class="fa-solid fa-circle-question cus-text-primary"></i><span class="visually-hidden">Upload rules</span></button>
+            </label>
+            <div class="d-flex align-items-center gap-2 small text-muted">
                 <button type="button" class="btn btn-sm btn-outline-danger" data-role="clear" data-bs-toggle="tooltip" data-bs-placement="top" title="Clear all files"><i class="fa-solid fa-rotate-left"></i><span class="d-none d-sm-inline ms-1">Clear all</span></button>
+                <button id="btnCloseModal" type="button" class="btn p-0 m-0 cus-bs-text-secondary" onclick="window.top.CloseModal();" title="Cancel">
+                    <i class="fa-solid fa-xmark fs-3"></i>
+                </button>
             </div>
         </div>
-        <form method="post" enctype="multipart/form-data" data-role="form">
+        <form method="post" enctype="multipart/form-data" data-role="form" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());">
 
             <div class="card-body pb-0">
                 <div class="dropzone mb-3" tabindex="0" role="button" aria-label="Drag and drop files here or browse" data-role="dropzone">
@@ -52,7 +58,7 @@
                     <i class="fa-solid fa-ban"></i>
                     Cancel
                 </button>
-                <button type="submit" class="btn btn-success" data-role="submit" disabled>
+                <button id="btnSubmit" type="submit" class="btn btn-success" data-role="submit" disabled>
                     Submit
                     <i class="fa-solid fa-upload"></i>
                 </button>

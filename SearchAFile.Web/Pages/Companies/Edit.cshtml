@@ -1,7 +1,7 @@
 ﻿@page
 @model SearchAFile.Web.Pages.Companies.EditModel
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnCancel').toggleClass('disabled', $(this).valid());">
 
     <input asp-for="Company.CompanyId" hidden />
     <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
@@ -127,7 +127,7 @@
             <div class="row align-items-top m-0">
                 <div class="cus-col col-sm-4">
                     <div class="mb-2">
-                        <label asp-for="Company.HeaderLogo"></label>
+                        <label asp-for="Company.HeaderLogo" show-asterisk="true"></label>
                         <input id="HeaderLogo" class="form-control" type="file" asp-for="IFormFileHeaderLogo" onchange="SelectFile(this, 'HeaderLogo');">
                         <span asp-validation-for="IFormFileHeaderLogo" class="text-danger"></span>
                     </div>
@@ -137,7 +137,7 @@
                 </div>
                 <div class="cus-col col-sm-4">
                     <div class="mb-2">
-                        <label asp-for="Company.FooterLogo"></label>
+                        <label asp-for="Company.FooterLogo" show-asterisk="true"></label>
                         <input id="FooterLogo" class="form-control" type="file" asp-for="IFormFileFooterLogo" onchange="SelectFile(this, 'FooterLogo');">
                         <span asp-validation-for="IFormFileFooterLogo" class="text-danger"></span>
                     </div>
@@ -147,7 +147,7 @@
                 </div>
                 <div class="cus-col col-sm-4">
                     <div class="mb-2">
-                        <label asp-for="Company.EmailLogo"></label>
+                        <label asp-for="Company.EmailLogo" show-asterisk="true"></label>
                         <input id="EmailLogo" class="form-control" type="file" asp-for="IFormFileEmailLogo" onchange="SelectFile(this, 'EmailLogo');">
                         <span asp-validation-for="IFormFileEmailLogo" class="text-danger"></span>
                     </div>
@@ -159,12 +159,12 @@
 
         </div>
 
-        <div class="card-footer text-center">
-            <a asp-page="./Index" class="btn btn-outline-secondary">
+        <div class="card-footer text-center cus-no-select">
+            <a id="btnCancel" asp-page="./Index" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-arrow-left"></i>
                 Back to List
             </a>
-            <button type="submit" class="btn btn-success">
+            <button id="btnSubmit" type="submit" class="btn btn-success">
                 Save
                 <i class="fa-solid fa-save"></i>
             </button>

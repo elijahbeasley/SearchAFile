@@ -568,7 +568,8 @@ a {
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 0.25rem 0.75rem 0.75rem 0.75rem;
+    /*padding: 0.25rem 0.75rem 0.75rem 0.75rem;*/
+    padding: 0rem 0.75rem;
     font-size: 1.5rem;
     color: #999;
 }

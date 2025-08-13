@@ -27,6 +27,7 @@ public partial class Collection
 
     [Column("ImageURL")]
     [DisplayName("Image")]
+    [Required(ErrorMessage = "Image is required.")]
     [StringLength(50)]
     public string? ImageUrl { get; set; }
 

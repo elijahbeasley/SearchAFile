@@ -131,7 +131,7 @@
                     Modify
                     <i class="fa-solid fa-pen-to-square"></i>
                 </button>
-                <button id="btnSave" type="submit" asp-page-handler="Modify" class="btn btn-outline-success" onclick="Save();" style="display: none; min-width: 15%;">
+                <button id="btnSubmit" type="submit" asp-page-handler="Modify" class="btn btn-outline-success" onclick="Save();" style="display: none; min-width: 15%;">
                     <span id="lblSubmit" style="color: unset;">
                         Save
                         <i class="fa-solid fa-save"></i>
@@ -165,7 +165,7 @@
 
                         <div class="row align-items-center m-0">
                             <div class="cus-col col-sm-5 col-md-5 col-lg-3 col-xl-3 fw-bold">
-                                <label asp-for="User.HeadshotPath"></label>
+                                <label asp-for="User.HeadshotPath">@Html.DisplayNameFor(model => model.User.HeadshotPath)<span class="text-danger">*</span></label>
                                 <i class="fa-solid fa-circle-question cus-text-primary" data-bs-boundary="viewport" data-bs-container="body" title="Allowed File Types" data-bs-content="<ul class='cus-popover-list'><li>png</li><li>jpeg</li><li>jpg</li></ul>" data-bs-html="true" data-bs-placement="top" data-bs-toggle="popover" onclick="$(this).popover('show');" onmouseleave="$(this).popover('hide');" style="cursor: pointer;"></i>
                             </div>
                             <div class="cus-col col-sm-7 col-md-7 col-lg-9 col-xl-9">
@@ -230,7 +230,7 @@
             $('select').prop('disabled', false);
             $('input').prop('disabled', false);
             $('#btnModify').toggle();
-            $('#btnSave').toggle();
+            $('#btnSubmit').toggle();
             $('#btnCancel').toggle();
         }
 
@@ -268,7 +268,7 @@
             $('input').prop('disabled', true);
 
             $('#btnModify').toggle();
-            $('#btnSave').toggle();
+            $('#btnSubmit').toggle();
             $('#btnCancel').toggle();
             ReloadData();
         }

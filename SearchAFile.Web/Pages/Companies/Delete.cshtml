@@ -148,14 +148,14 @@
 
     </div>
 
-    <div class="card-footer text-center">
-        <form method="post">
+    <div class="card-footer text-center cus-no-select">
+        <form method="post" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnCancel').toggleClass('disabled', $(this).valid());">
             <input type="hidden" asp-for="Company.CompanyId" />
-            <a asp-page="./Index" class="btn btn-outline-secondary">
+            <a id="btnCancel" asp-page="./Index" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-arrow-left"></i>
                 Back to List
             </a>
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete @Model.Company.Company1? This cannot be undone.');">
+            <button id="btnSubmit" type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete @Model.Company.Company1? This cannot be undone.');">
                 Delete
                 <i class="fa-solid fa-trash"></i>
             </button>

@@ -2,6 +2,7 @@
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Services;
@@ -66,10 +67,36 @@ public class DeleteModel : PageModel
             if (id == null)
                 return NotFound();
 
-            var result = await _api.DeleteAsync<object>($"companies/{id}");
+            var deleteResult = await _api.DeleteAsync<object>($"companies/{id}");
 
-            if (!result.IsSuccess)
-                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to delete company.");
+            if (!deleteResult.IsSuccess)
+                throw new Exception(ApiErrorHelper.GetErrorString(deleteResult) ?? "Unable to delete company.");
+
+            if (HttpContext.Session.GetObject<UserDto>("User") != null
+                && HttpContext.Session.GetObject<UserDto>("User").Role.Equals("System Admin")
+                && HttpContext.Session.GetObject<List<SelectListItem>>("Companies") != null)
+            {
+                // Get the user's company.
+                var getCompaniesResult = await _api.GetAsync<List<Company>>("companies");
+
+                if (!getCompaniesResult.IsSuccess || getCompaniesResult.Data == null)
+                {
+                    throw new Exception(getCompaniesResult.ErrorMessage ?? "Unable to retrieve the companies.");
+                }
+
+                List<SelectListItem> Companies = getCompaniesResult.Data
+                    .OrderBy(company => company.Company1)
+                    .Select(company => new SelectListItem
+                    {
+                        Text = company.Company1,
+                        Value = company.CompanyId.ToString(),
+                        Selected = company.CompanyId.ToString() == HttpContext.Session.GetObject<List<SelectListItem>>("Companies")?.FirstOrDefault(item => item.Selected)?.Value
+                    })
+                    .ToList();
+
+                // Store in session
+                HttpContext.Session.SetObject("Companies", Companies);
+            }
 
             TempData["StartupJavaScript"] = "ShowSnack('success', 'Company successfully deleted.', 7000, true)";
 

@@ -3,6 +3,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.CodeAnalysis.Emit;
 using SearchAFile.Core.Domain.Entities;
@@ -100,15 +101,41 @@ public class CreateModel : PageModel
             Company.ContactPhoneNumber = objHtmlSanitizer.Sanitize(Company.ContactPhoneNumber.Trim());
             Company.Url = objHtmlSanitizer.Sanitize(Company.Url.Trim());
 
-            var result = await _api.PostAsync<Company>("companies", Company);
+            var createResult = await _api.PostAsync<Company>("companies", Company);
 
-            if (!result.IsSuccess)
+            if (!createResult.IsSuccess)
             {
-                ApiErrorHelper.AddErrorsToModelState(result, ModelState, "Company");
+                ApiErrorHelper.AddErrorsToModelState(createResult, ModelState, "Company");
 
-                string strExceptionMessage = ApiErrorHelper.GetErrorString(result);
+                string strExceptionMessage = ApiErrorHelper.GetErrorString(createResult);
                 TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '<ul>" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<li>").EscapeJsString() + "</ul>', 0, false);";
                 return Page();
+            }
+
+            if (HttpContext.Session.GetObject<UserDto>("User") != null
+                && HttpContext.Session.GetObject<UserDto>("User").Role.Equals("System Admin")
+                && HttpContext.Session.GetObject<List<SelectListItem>>("Companies") != null)
+            {
+                // Get the user's company.
+                var getCompaniesResult = await _api.GetAsync<List<Company>>("companies");
+
+                if (!getCompaniesResult.IsSuccess || getCompaniesResult.Data == null)
+                {
+                    throw new Exception(getCompaniesResult.ErrorMessage ?? "Unable to retrieve the companies.");
+                }
+
+                List<SelectListItem> Companies = getCompaniesResult.Data
+                    .OrderBy(company => company.Company1)
+                    .Select(company => new SelectListItem
+                    {
+                        Text = company.Company1,
+                        Value = company.CompanyId.ToString(),
+                        Selected = company.CompanyId.ToString() == HttpContext.Session.GetObject<List<SelectListItem>>("Companies")?.FirstOrDefault(item => item.Selected)?.Value
+                    })
+                    .ToList();
+
+                // Store in session
+                HttpContext.Session.SetObject("Companies", Companies);
             }
 
             TempData["StartupJavaScript"] = "ShowSnack('success', 'Company successfully created.', 7000, true)";

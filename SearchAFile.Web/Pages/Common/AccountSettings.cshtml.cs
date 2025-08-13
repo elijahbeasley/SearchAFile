@@ -54,6 +54,8 @@ public class AccountSettingsModel : PageModel
             HttpContext.Session.SetString("PageTitle", "Account Settings");
 
             LoadData();
+
+            ModelState.Remove("IFormFile");
         }
         catch (Exception ex)
         {

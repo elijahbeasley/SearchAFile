@@ -13,6 +13,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design;
 using System.Web;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace SearchAFile.Web.Pages.Home;
 
@@ -103,26 +104,29 @@ public class LogInModel : PageModel
                 if (User.Role.Equals("System Admin"))
                 {
                     // Get the user's company.
-                    var result = await _api.GetAsync<List<Company>>("companies");
+                    var getCompaniesResult = await _api.GetAsync<List<Company>>("companies");
 
-                    if (!result.IsSuccess || result.Data == null)
+                    if (!getCompaniesResult.IsSuccess || getCompaniesResult.Data == null)
                     {
-                        throw new Exception(result.ErrorMessage ?? "Unable to retrieve the companies.");
+                        throw new Exception(getCompaniesResult.ErrorMessage ?? "Unable to retrieve the companies.");
                     }
 
-                    Company? Company = result.Data.FirstOrDefault(c => c.CompanyId == User.CompanyId);
+                    Company? Company = getCompaniesResult.Data.FirstOrDefault(c => c.CompanyId == User.CompanyId);
 
                     if (Company == null)
                     {
-                        throw new Exception(result.ErrorMessage ?? "Companies did not contain the user's company.");
+                        throw new Exception(getCompaniesResult.ErrorMessage ?? "Companies did not contain the user's company.");
                     }
 
-                    List<SelectListItem> Companies = result.Data.Select(c => new SelectListItem
-                    {
-                        Text = c.Company1,
-                        Value = c.CompanyId.ToString(),
-                        Selected = c.CompanyId == User.CompanyId
-                    }).ToList();
+                    List<SelectListItem> Companies = getCompaniesResult.Data
+                        .OrderBy(company => company.Company1)
+                        .Select(company => new SelectListItem
+                        {
+                            Text = company.Company1,
+                            Value = company.CompanyId.ToString(),
+                            Selected = company.CompanyId == User.CompanyId
+                        })
+                        .ToList();
 
                     // Store in session
                     HttpContext.Session.SetObject("Companies", Companies);

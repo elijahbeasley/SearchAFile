@@ -1,7 +1,7 @@
 ﻿@page
 @model SearchAFile.Web.Pages.Collections.EditModel
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnCancel').toggleClass('disabled', $(this).valid());">
 
     <input asp-for="Collection.CollectionId" hidden />
     <input asp-for="Collection.ImageUrl" hidden />
@@ -23,10 +23,6 @@
             </label>
         </div>
 
-        @* <div class="card-header cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
-            <label class="fs-5"><i class="fa-solid fa-pen-to-square text-primary"></i> @Model.Collection.Collection1</label>
-        </div> *@
-
         <div class="card-body cus-bootstrap-table-striped p-0">
 
             <div class="row align-items-center m-0">
@@ -43,6 +39,13 @@
                 </div>
                 <div class="cus-col col-sm-4">
                     <div class="form-floating">
+                        <input type="text" asp-for="Collection.Collection1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Collection.Collection1)" />
+                        <label asp-for="Collection.Collection1" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Collection.Collection1" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-4">
+                    <div class="form-floating">
                         <select asp-for="Collection.Private" class="form-select">
                             <option value="" hidden>- Private/Public -</option>
                             <option value="True">Private</option>
@@ -52,39 +55,19 @@
                         <span asp-validation-for="Collection.Private" class="text-danger"></span>
                     </div>
                 </div>
-                <div class="cus-col col-sm-4">
-                    <div class="form-floating">
-                        <input type="text" asp-for="Collection.Collection1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Collection.Collection1)" />
-                        <label asp-for="Collection.Collection1" class="control-label" show-asterisk="true"></label>
-                        <span asp-validation-for="Collection.Collection1" class="text-danger"></span>
-                    </div>
-                </div>
             </div>
-
-            @* <div class="row align-items-top m-0">
-                <div class="cus-col col-sm-4">
-                    <div class="mb-2">
-                        <label asp-for="Collection.ImageUrl"></label>
-                        <input id="ImageUrl" class="form-control" type="file" asp-for="IFormFile" onchange="SelectFile(this, 'ImageUrl');">
-                        <span asp-validation-for="IFormFile" class="text-danger"></span>
-                    </div>
-                    <div class="d-flex justify-content-center" style="height: 75px;">
-                        <img id="ImageUrlPreview" class="d-block" style="max-height: 75px; max-width: 100%;" src="@(string.IsNullOrEmpty(Model.Collection.ImageUrl) ? SystemFunctions.EmptyImageSource : "/Collections/" + Model.Collection.ImageUrl)">
-                    </div>
-                </div>
-            </div> *@
 
         </div>
 
-        <div class="card-footer text-center">
+        <div class="card-footer text-center cus-no-select">
             <div id="divSaveHeadshotNotice" style="display: none;">
                 <span class="text-danger">Click Save to save the uploaded file.</span>
             </div>
-            <a asp-page="./Index" class="btn btn-outline-secondary">
+            <a id="btnCancel" asp-page="./Index" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-arrow-left"></i>
                 Back to List
             </a>
-            <button type="submit" class="btn btn-success">
+            <button id="btnSubmit" type="submit" class="btn btn-success">
                 Save
                 <i class="fa-solid fa-save"></i>
             </button>
@@ -111,7 +94,7 @@
 
                     <div class="row align-items-center m-0">
                         <div class="cus-col col-sm-5 col-md-5 col-lg-3 col-xl-3 fw-bold">
-                            <label asp-for="Collection.ImageUrl"></label>
+                            <label asp-for="Collection.ImageUrl">@Html.DisplayNameFor(model => model.Collection.ImageUrl)<span class="text-danger">*</span></label>
                             <i class="fa-solid fa-circle-question cus-text-primary" data-bs-boundary="viewport" data-bs-container="body" title="Allowed File Types" data-bs-content="<ul class='cus-popover-list'><li>png</li><li>jpeg</li><li>jpg</li></ul>" data-bs-html="true" data-bs-placement="top" data-bs-toggle="popover" onclick="$(this).popover('show');" onmouseleave="$(this).popover('hide');" style="cursor: pointer;"></i>
                         </div>
                         <div class="cus-col col-sm-7 col-md-7 col-lg-9 col-xl-9">

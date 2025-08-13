@@ -4,15 +4,18 @@
     Layout = "_LayoutModal";
 }
 
-<form id="objForm" method="post" onmouseup="window.top.ResizeModal();" onmouseover="window.top.ResizeModal();" onsubmit="$('#btnSave').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());">
+<form id="objForm" method="post" onmouseup="window.top.ResizeModal();" onmouseover="window.top.ResizeModal();" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());">
 
     <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
     <input asp-for="File.FileId" hidden />
 
     <div class="card border-0 p-0">
 
-        <div class="card-header cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
+        <div class="card-header cus-no-select d-flex align-items-center" style="border-bottom: 3px solid var(--secondary-color);">
             <label class="fs-5"><i class="fa-solid fa-pen-to-square text-primary"></i> Edit File</label>
+            <button id="btnCloseModal" type="button" class="btn p-0 m-0 ms-auto cus-bs-text-secondary" onclick="window.top.CloseModal();" title="Cancel">
+                <i class="fa-solid fa-xmark fs-3"></i>
+            </button>
         </div>
 
         <div class="card-body cus-bootstrap-table-striped p-0">
@@ -29,12 +32,12 @@
 
         </div>
 
-        <div class="card-footer text-center">
+        <div class="card-footer text-center cus-no-select">
             <button id="btnCancel" type="button" class="btn btn-outline-secondary" onclick="window.top.CloseModal();">
                 <i class="fa-solid fa-ban"></i>
                 Cancel
             </button>
-            <button id="btnSave" type="submit" class="btn btn-success" onclick="return Save();">
+            <button id="btnSubmit" type="submit" class="btn btn-success" onclick="return Save();">
                 Save
                 <i class="fa-solid fa-save"></i>
             </button>
@@ -71,7 +74,7 @@
             if (keycode == '13') {
 
                 event.preventDefault();
-                $('#btnSave').click();
+                $('#btnSubmit').click();
             }
         });
 

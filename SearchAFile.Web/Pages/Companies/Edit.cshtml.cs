@@ -3,6 +3,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SearchAFile.Core.Domain.Entities;
 using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
@@ -125,6 +126,32 @@ public class EditModel : PageModel
             {
                 ApiErrorHelper.AddErrorsToModelState(updateResult, ModelState, "Company");
                 return Page();
+            }
+
+            if (HttpContext.Session.GetObject<UserDto>("User") != null
+                && HttpContext.Session.GetObject<UserDto>("User").Role.Equals("System Admin")
+                && HttpContext.Session.GetObject<List<SelectListItem>>("Companies") != null)
+            {
+                // Get the user's company.
+                var getCompaniesResult = await _api.GetAsync<List<Company>>("companies");
+
+                if (!getCompaniesResult.IsSuccess || getCompaniesResult.Data == null)
+                {
+                    throw new Exception(getCompaniesResult.ErrorMessage ?? "Unable to retrieve the companies.");
+                }
+
+                List<SelectListItem> Companies = getCompaniesResult.Data
+                    .OrderBy(company => company.Company1)
+                    .Select(company => new SelectListItem
+                    {
+                        Text = company.Company1,
+                        Value = company.CompanyId.ToString(),
+                        Selected = company.CompanyId.ToString() == HttpContext.Session.GetObject<List<SelectListItem>>("Companies")?.FirstOrDefault(item => item.Selected)?.Value
+                    })
+                    .ToList();
+
+                // Store in session
+                HttpContext.Session.SetObject("Companies", Companies);
             }
 
             TempData["StartupJavaScript"] = "ShowSnack('success', 'Company successfully updated.', 7000, true)";

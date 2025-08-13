@@ -27,15 +27,14 @@
                             <div class="input-group dropdown">
                                 <button id="ddlUser" class="btn cus-btn-outline-primary cus-dropdown-button form-control rounded text-start d-flex" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="if (!is_mobile || focus_on_mobile) { setTimeout(function () { $('#txtSearchUser').focus(); }, 500); }">
                                     <span id="lblSelectedItem" class="cus-dropdown-selected-item w-100" style="font-size: smaller; line-height: 1.25rem;">-User-</span>
-                                    <i class="fa-solid fa-chevron-down cus-dropdown-chevron"></i>
+                                    <i class="fa-solid fa-chevron-down cus-dropdown-chevron ps-2"></i>
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="ddlUser">
-                                    <div style="border-bottom: 2px solid lightgray;">
-                                        <input id="txtSearchUser" type="text" class="cus-dropdown-search w-100" placeholder="Search User (@Model.Users?.Count())" maxlength="100" style="height: 2rem !important; padding-right: 2rem !important;" />
-                                    </div>
+                                    <input id="txtSearchUser" type="text" class="form-control w-100" placeholder="Search users (@Model.Users?.Count())" maxlength="100" style="height: 2rem !important; padding-right: 2rem !important;" />
                                     <div style="max-height: 17.5rem; overflow-y: auto;">
                                         <div id="divUser" class="cus-no-select" style="cursor: pointer; min-width: fit-content; width: 100%;">
-                                            @if (Model.Users.Any())
+                                            @if (Model.Users != null
+                                                && Model.Users.Any())
                                             {
                                                 @foreach (var item in Model.Users)
                                                 {

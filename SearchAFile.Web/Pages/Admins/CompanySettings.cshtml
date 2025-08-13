@@ -8,7 +8,7 @@
     }
 </style>
 
-<form id="objForm" method="post" enctype="multipart/form-data" onsubmit="$('#btnSave').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());" autocomplete="off">
+<form id="objForm" method="post" enctype="multipart/form-data" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnCancel').prop('disabled', $(this).valid()); $('#btnCloseModal').prop('disabled', $(this).valid());" autocomplete="off">
 
     <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
     <input type="hidden" asp-for="Company.CompanyId" />
@@ -124,7 +124,7 @@
             <div class="row align-items-top m-0">
                 <div class="cus-col col-sm-4">
                     <div class="mb-2">
-                        <label asp-for="Company.HeaderLogo"></label>
+                        <label asp-for="Company.HeaderLogo" show-asterisk="true"></label>
                         <input id="HeaderLogo" class="form-control" type="file" asp-for="IFormFileHeaderLogo" onchange="SelectFile(this, 'HeaderLogo');" disabled>
                         <span asp-validation-for="IFormFileHeaderLogo" class="text-danger"></span>
                     </div>
@@ -134,7 +134,7 @@
                 </div>
                 <div class="cus-col col-sm-4">
                     <div class="mb-2">
-                        <label asp-for="Company.FooterLogo"></label>
+                        <label asp-for="Company.FooterLogo" show-asterisk="true"></label>
                         <input id="FooterLogo" class="form-control" type="file" asp-for="IFormFileFooterLogo" onchange="SelectFile(this, 'FooterLogo');" disabled>
                         <span asp-validation-for="IFormFileFooterLogo" class="text-danger"></span>
                     </div>
@@ -144,7 +144,7 @@
                 </div>
                 <div class="cus-col col-sm-4">
                     <div class="mb-2">
-                        <label asp-for="Company.EmailLogo"></label>
+                        <label asp-for="Company.EmailLogo" show-asterisk="true"></label>
                         <input id="EmailLogo" class="form-control" type="file" asp-for="IFormFileEmailLogo" onchange="SelectFile(this, 'EmailLogo');" disabled>
                         <span asp-validation-for="IFormFileEmailLogo" class="text-danger"></span>
                     </div>
@@ -161,7 +161,7 @@
                 Modify
                 <i class="fa-solid fa-pen-to-square"></i>
             </button>
-            <button id="btnSave" type="submit" asp-page-handler="Modify" class="btn btn-outline-success" onclick="Save();" style="display: none; min-width: 15%;">
+            <button id="btnSubmit" type="submit" asp-page-handler="Modify" class="btn btn-outline-success" onclick="Save();" style="display: none; min-width: 15%;">
                 <span id="lblSubmit" style="color: unset;">
                     Save
                     <i class="fa-solid fa-save"></i>
@@ -188,7 +188,7 @@
 
             $('input').prop('disabled', false);
             $('#btnModify').toggle();
-            $('#btnSave').toggle();
+            $('#btnSubmit').toggle();
             $('#btnCancel').toggle();
         }
 
@@ -224,7 +224,7 @@
             $('input').prop('disabled', true);
 
             $('#btnModify').toggle();
-            $('#btnSave').toggle();
+            $('#btnSubmit').toggle();
             $('#btnCancel').toggle();
             ClearToast();
             ShowSnack('warning', 'Operation cancelled. No data was affected.', 3000, true);

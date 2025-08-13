@@ -5,7 +5,7 @@
     string str = "";
 }
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnCancel').toggleClass('disabled', $(this).valid());">
 
     <input asp-for="User.UserId" hidden />
     <input asp-for="User.HeadshotPath" hidden />
@@ -103,15 +103,15 @@
 
         </div>
 
-        <div class="card-footer text-center">
+        <div class="card-footer text-center cus-no-select">
             <div id="divSaveHeadshotNotice" style="display: none;">
                 <span class="text-danger">Click Save to save the uploaded headshot.</span>
             </div>
-            <a asp-page="./Index" class="btn btn-outline-secondary">
+            <a id="btnCancel" asp-page="./Index" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-arrow-left"></i>
                 Back to List
             </a>
-            <button type="submit" class="btn btn-success">
+            <button id="btnSubmit" type="submit" class="btn btn-success">
                 Save
                 <i class="fa-solid fa-save"></i>
             </button>

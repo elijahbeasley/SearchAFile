@@ -1,44 +1,9 @@
-﻿@page 
+﻿@page
 @model SearchAFile.Web.Pages.Common.ChatModel
 
-<style>
-
-    .chat-body {
-        /* background-color: #f8f9fa; */
-        display: flex;
-        flex-direction: column;
-    }
-
-    .chat-message {
-        margin-bottom: 1rem;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        max-width: 80%;
-        word-wrap: break-word;
-    }
-
-        .chat-message.user {
-            align-self: flex-end;
-            background-color: #cfe2ff;
-            color: #41464b;
-        }
-
-        .chat-message.bot {
-            align-self: flex-start;
-            background-color: #e2e3e5;
-            color: #41464b;
-        }
-
-    .timestamp {
-        color: #555;
-        font-size: x-small;
-        justify-self: right;
-        margin-bottom: -0.2rem;
-        padding-left: 1rem;
-        white-space: nowrap;
-    }
-
-</style>
+<link rel="stylesheet" href="/css/composer.css">
+<script src="/js/composer.js" defer></script>
+<script src="/js/chat-async.js" defer></script>
 
 <div class="pb-3">
     <a asp-page="@HttpContext.Session.GetString("DashboardURL")" title="Collections">
@@ -47,9 +12,11 @@
     </a>
 </div>
 
-<form id="objForm" method="post">
+<form id="objForm" method="post" onsubmit="$('.saf-composer').find('button, textarea').prop('disabled', true);">
 
     <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
+    <input type="hidden" id="askAjaxUrl" value="@Url.Page(null, null, new { handler = "AskAjax" })" />
+    @Html.AntiForgeryToken()
 
     <div class="card">
 
@@ -57,32 +24,26 @@
             <label class="fs-5"><i class="fa-solid fa-comments cus-text-primary-no-hover"></i> @Model.Collection.Collection1</label>
         </div>
 
-        <div id="divLoadingBlock" class="card-body pb-0" style="height: 0; overflow-y: auto;">
-            <div id="divData">
-                <div class="chat-body">
-                    @Html.Raw(Model.Answer)
-                </div>
-                <div id="divEllipses" class="typing-indicator" style="display: none;">
-                    <span></span><span></span><span></span>
-                </div>
-            </div>
-        </div>
+        <div id="divLoadingBlock" class="card-body pb-0" style="height:0; overflow: auto;">
 
-        <div class="card-footer">
-            <div class="input-group">
-                <button asp-page-handler="StartNewChat" asp-route-id="@Model.Id" type="submit" class="btn btn-primary" formnovalidate onclick="return confirm('Are you sure you want to clear the current chat and start a new one?');" title="New Chat">
-                    <i class="fa fa-rotate-left"></i>
-                    @* <span class="d-none d-lg-inline">
-                        New Chat
-                    </span> *@
-                </button>
-                <textarea id="txtQuestion" type="text" class="form-control" placeholder="Ask a question..." autocomplete="off"></textarea>
-                <button id="btnSend" type="button" class="btn btn-success" onclick="Send();" title="Send">
-                    @* <span class="d-none d-lg-inline">
-                        Send
-                    </span> *@
-                    <i class="fa fa-arrow-up"></i>
-                </button>
+            <div class="chat-body">
+                @Html.Raw(Model.Answer)  @* Render server-built HTML (links included) *@
+            </div>
+            <div id="divEllipses" class="typing-indicator" style="display:none;">
+                <span></span><span></span><span></span>
+            </div>
+
+            <!-- Floating composer -->
+            <div class="saf-composer-wrap" aria-live="polite">
+                <div class="saf-composer" role="group" aria-label="Message composer">
+                    <button asp-page-handler="StartNewChat" asp-route-id="@Model.Id" type="submit" class="saf-btn saf-reset" title="New chat" aria-label="New chat" formnovalidate>
+                        <i class="fa fa-rotate-left"></i>
+                    </button>
+                    <textarea id="txtQuestion" asp-for="question" class="saf-input" placeholder="Ask a question..." rows="1" autocomplete="off" aria-label="Message input"></textarea>
+                    <button class="saf-btn saf-send" type="button" title="Send" aria-label="Send" onclick="Send();">
+                        <i class="fa fa-arrow-up"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -102,102 +63,22 @@
         window.onload = function () {
 
             SetHeight();
-            ClearQuestion();
         }
-
-        // $(window).resize(function () {
-
-        //     SetHeight();
-        // });
-
-        // $(document).on('keypress', function (event) {
-
-        //     let keycode = (event.keyCode ? event.keyCode : event.which);
-
-        //     if (keycode == '13') {
-
-        //         event.preventDefault();
-        //         $('#btnSend').click();
-        //     }
-        // });
-
-        function Send() {
-
-            $('.card-footer').find('button, input').prop('disabled', true);
-
-            // Clear out the messages.
-            ClearToast();
-
-            // Validate the page.
-            $('#objForm').validate();
-
-            // Is the form valid?
-            if (!$('#objForm').valid()) {
-
-                // Output the errors.
-                window.top.ShowToast("danger", "The following errors have occured", $('#divValidationSummary').html(), 0, false);
-            }
-            else {
-
-                const question = encodeURIComponent($('#txtQuestion').val()?.trim());
-
-                $('#divEllipses').show();
-
-                ScrollToBottom();
-
-                // Refresh the table.
-                $('#divData').load(`${PageURL}?Question=${question}&handler=Ask #divData>*`, function (response, status, xhr) {
-
-                    $('#divEllipses').hide();
-
-                    if (status == "error") {
-
-                        window.top.ShowToast("danger", "Error!", xhr.responseText, 0, false);
-                    }
-
-                    ScrollToBottom();
-                    ClearQuestion();
-                    $('.card-footer').find('button, input').prop('disabled', false);
-                });
-            }
-        }
-
-        // function SetHeight() {
-
-        //     PageHeight = calculateDistanceBetweenElements('#divLoadingBlock', '#footer', 30);
-
-        //     // $('#chatBody').height(calculateDistanceBetweenElements('#chatBody', '#footer', 45));
-        //     $('#divLoadingBlock').height(0);
-        //     $('#divLoadingBlock').animate({ height: PageHeight }, 500);
-
-        //     ScrollToBottom();
-        // }
 
         function SetHeight() {
 
-            PageHeight = calculateDistanceBetweenElements('#divLoadingBlock', '#footer', 30);
-            //$('#divLoadingBlock').css('min-height', PageHeight);
-            $('#divLoadingBlock').css('min-height', 0).animate({ 'min-height': PageHeight }, 500);
+            PageHeight = calculateDistanceBetweenElements('#divLoadingBlock', '#footer', -30);
+            $('#divLoadingBlock').css('height', 0).animate({ 'height': PageHeight }, 500);
 
-            ScrollToBottom();
+            scrollToBottom();
         }
 
-        // Clear the question.
-        function ClearQuestion() {
+        function scrollToBottom() {
 
-            $("#txtQuestion").val('');
-            $("#txtQuestion").focus();
+            //$('html, body').animate({ scrollTop: $(document).height() }, 500);
 
-            ScrollToBottom();
-        }
-
-        function ScrollToBottom() {
-
-            $('#divLoadingBlock').animate({
-                scrollTop: $('#divLoadingBlock')[0].scrollHeight
-            }, 500);
+            $('#divLoadingBlock').animate({ scrollTop: $('#divLoadingBlock')[0].scrollHeight }, 500);
         }
 
     </script>
-
 }

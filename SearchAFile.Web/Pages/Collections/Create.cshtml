@@ -1,7 +1,7 @@
 ﻿@page
 @model SearchAFile.Web.Pages.Collections.CreateModel
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" onsubmit="$('#btnSubmit').prop('disabled', $(this).valid()); $('#btnCancel').toggleClass('disabled', $(this).valid());">
 
     <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
 
@@ -27,6 +27,13 @@
                 </div>
                 <div class="cus-col col-sm-4">
                     <div class="form-floating">
+                        <input type="text" asp-for="Collection.Collection1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Collection.Collection1)" />
+                        <label asp-for="Collection.Collection1" class="control-label" show-asterisk="true"></label>
+                        <span asp-validation-for="Collection.Collection1" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="cus-col col-sm-4">
+                    <div class="form-floating">
                         <select asp-for="Collection.Private" class="form-select">
                             <option value="" hidden>- Private/Public -</option>
                             <option value="True">Private</option>
@@ -36,19 +43,12 @@
                         <span asp-validation-for="Collection.Private" class="text-danger"></span>
                     </div>
                 </div>
-                <div class="cus-col col-sm-4">
-                    <div class="form-floating">
-                        <input type="text" asp-for="Collection.Collection1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Collection.Collection1)" />
-                        <label asp-for="Collection.Collection1" class="control-label" show-asterisk="true"></label>
-                        <span asp-validation-for="Collection.Collection1" class="text-danger"></span>
-                    </div>
-                </div>
             </div>
 
             <div class="row align-items-top m-0">
                 <div class="cus-col col-12">
                     <div class="mb-2">
-                        <label asp-for="Collection.ImageUrl"></label>
+                        <label asp-for="Collection.ImageUrl" show-asterisk="true"></label>
                         <input id="ImageUrl" class="form-control" type="file" asp-for="IFormFile" onchange="SelectFile(this, 'ImageUrl');">
                         <span asp-validation-for="IFormFile" class="text-danger"></span>
                     </div>
@@ -60,12 +60,12 @@
 
         </div>
 
-        <div class="card-footer text-center">
-            <a asp-page="./Index" class="btn btn-outline-secondary">
+        <div class="card-footer text-center cus-no-select">
+            <a id="btnCancel" asp-page="./Index" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-arrow-left"></i>
                 Back to List
             </a>
-            <button type="submit" class="btn btn-success">
+            <button id="btnSubmit" type="submit" class="btn btn-success">
                 Create
                 <i class="fa-solid fa-save"></i>
             </button>

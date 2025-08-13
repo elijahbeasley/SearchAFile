@@ -7,6 +7,15 @@
         filter: brightness(85%);
     }
 
+.cus-bs-text-secondary,
+.cus-bs-text-secondary-no-hover {
+    color: var(--bs-secondary) !important;
+}
+
+    .cus-bs-text-secondary:hover {
+        filter: brightness(85%);
+    }
+
 .cus-text-primary,
 .cus-text-primary-no-hover {
     color: var(--primary-color) !important;
