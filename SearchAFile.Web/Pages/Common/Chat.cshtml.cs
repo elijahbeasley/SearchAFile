@@ -9,6 +9,7 @@ using SearchAFile.Web.Extensions;
 using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Services;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using File = SearchAFile.Core.Domain.Entities.File;
@@ -291,8 +292,77 @@ public class ChatModel : PageModel
     JsonElement? annotationsOpt,
     Dictionary<string, (string url, string display)> fileLinkMap)
     {
+        // Helper: encode text, render **bold**, [label](url), and raw URLs.
+        static string EncodeWithSimpleMarkdownAndLinks(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+
+            // Build output incrementally by scanning for three token types:
+            // 1) Markdown links: [label](https://url)
+            // 2) Raw URLs (http/https/www.)
+            // 3) Bold spans: **text**
+            //
+            // Priority is important: links are handled before bold so we don't
+            // create <strong> inside <a> text accidentally.
+            //
+            // We process left-to-right with a single alternation regex.
+            var pattern = string.Join("|", new[]
+            {
+            // [label](url) — url stops before whitespace or ')'
+            @"\[(?<mdlabel>[^\]]+)\]\((?<mdurl>https?:\/\/[^\s)]+)\)",
+            // raw URL (captures trailing punctuation separately so it stays outside the <a>)
+            @"(?<raw>(?:https?:\/\/|www\.)[^\s<)]+?)(?<trail>[.,;:!?)]+)?",
+            // **bold**
+            @"\*\*(?<bold>.+?)\*\*"
+        });
+
+            var rx = new Regex(pattern, RegexOptions.Compiled | RegexOptions.Singleline);
+            var sb = new StringBuilder();
+            int last = 0;
+
+            foreach (Match m in rx.Matches(text))
+            {
+                if (m.Index > last)
+                    sb.Append(System.Net.WebUtility.HtmlEncode(text.Substring(last, m.Index - last)));
+
+                if (m.Groups["mdlabel"].Success && m.Groups["mdurl"].Success)
+                {
+                    var label = System.Net.WebUtility.HtmlEncode(m.Groups["mdlabel"].Value);
+                    var href = m.Groups["mdurl"].Value;
+                    var safeHref = System.Net.WebUtility.HtmlEncode(href);
+                    sb.Append($"<a href='{safeHref}' target='_blank' rel='noopener noreferrer' class='citation-link'>{label}</a>");
+                }
+                else if (m.Groups["raw"].Success)
+                {
+                    var raw = m.Groups["raw"].Value;
+                    var display = System.Net.WebUtility.HtmlEncode(raw);
+                    // Normalize www. -> https://www.
+                    var href = raw.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? $"https://{raw}" : raw;
+                    var safeHref = System.Net.WebUtility.HtmlEncode(href);
+                    sb.Append($"<a href='{safeHref}' target='_blank' rel='noopener noreferrer' class='citation-link'>{display}</a>");
+
+                    // Put any trailing punctuation *outside* the link
+                    if (m.Groups["trail"].Success)
+                        sb.Append(System.Net.WebUtility.HtmlEncode(m.Groups["trail"].Value));
+                }
+                else if (m.Groups["bold"].Success)
+                {
+                    var inner = System.Net.WebUtility.HtmlEncode(m.Groups["bold"].Value);
+                    sb.Append("<strong>").Append(inner).Append("</strong>");
+                }
+
+                last = m.Index + m.Length;
+            }
+
+            if (last < text.Length)
+                sb.Append(System.Net.WebUtility.HtmlEncode(text.Substring(last)));
+
+            return sb.ToString();
+        }
+
+        // If there are no annotations, just encode with bold + links
         if (annotationsOpt == null || annotationsOpt.Value.ValueKind != JsonValueKind.Array || annotationsOpt.Value.GetArrayLength() == 0)
-            return System.Net.WebUtility.HtmlEncode(rawText);
+            return EncodeWithSimpleMarkdownAndLinks(rawText);
 
         var annotations = annotationsOpt.Value;
         var spans = new List<(int s, int e, string html)>();
@@ -318,43 +388,41 @@ public class ChatModel : PageModel
             string html;
             if (!string.IsNullOrWhiteSpace(openAiFileId) && fileLinkMap.TryGetValue(openAiFileId!, out var link))
             {
-                // Use your file’s display name as the anchor text (not the bracketed marker)
                 var anchorText = System.Net.WebUtility.HtmlEncode(link.display);
-                var safeTitle = anchorText; // fine to reuse for title
-                html = $"<a href=\"{link.url}\" target=\"_blank\" class=\"citation-link\" title=\"{safeTitle}\">{anchorText}</a>";
+                var safeUrl = System.Net.WebUtility.HtmlEncode(link.url);
+                html = $" <strong>source:</strong> <a href='{safeUrl}' target='_blank' rel='noopener noreferrer' class='citation-link' title='{anchorText}'>{anchorText}</a>";
             }
             else
             {
-                // No mapping? keep the original text safely
-                html = System.Net.WebUtility.HtmlEncode(snippet);
+                // For annotated-but-unknown spans, still apply bold + links inside them
+                html = EncodeWithSimpleMarkdownAndLinks(snippet);
             }
 
             spans.Add((s, e, html));
         }
 
         if (spans.Count == 0)
-            return System.Net.WebUtility.HtmlEncode(rawText);
+            return EncodeWithSimpleMarkdownAndLinks(rawText);
 
         spans.Sort((a, b) => a.s.CompareTo(b.s));
 
-        var sb = new System.Text.StringBuilder();
+        var outSb = new StringBuilder();
         var cur = 0;
         foreach (var (s, e, html) in spans)
         {
             if (cur < s)
-                sb.Append(System.Net.WebUtility.HtmlEncode(rawText.Substring(cur, s - cur)));
-            sb.Append(html);
+                outSb.Append(EncodeWithSimpleMarkdownAndLinks(rawText.Substring(cur, s - cur)));
+
+            outSb.Append(html);
             cur = e;
         }
         if (cur < rawText.Length)
-            sb.Append(System.Net.WebUtility.HtmlEncode(rawText.Substring(cur)));
+            outSb.Append(EncodeWithSimpleMarkdownAndLinks(rawText.Substring(cur)));
 
-        return sb.ToString();
+        return outSb.ToString();
     }
 
-    private static (string Plain, string Html) BuildAssistantMessage(
-        JsonElement assistantMessage,
-        Dictionary<string, (string url, string display)> fileLinkMap)
+    private static (string Plain, string Html) BuildAssistantMessage(JsonElement assistantMessage, Dictionary<string, (string url, string display)> fileLinkMap)
     {
         var plainSb = new System.Text.StringBuilder();
         var htmlSb = new System.Text.StringBuilder();

@@ -121,10 +121,10 @@
     }
 
     /* Optional invalid state */
-    .saf-input.input-validation-error {
+    /*.saf-input.input-validation-error {
         box-shadow: inset 0 0 0 1px #dc3545;
         border-radius: 8px;
-    }
+    }*/
 
 /* Make sure your scrollable chat area has bottom room for the composer */
 .saf-pad-bottom {

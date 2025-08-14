@@ -58,8 +58,6 @@
 
     <script type="text/javascript">
 
-        let PageHeight;
-
         window.onload = function () {
 
             SetHeight();
@@ -67,15 +65,13 @@
 
         function SetHeight() {
 
-            PageHeight = calculateDistanceBetweenElements('#divLoadingBlock', '#footer', -30);
+            let PageHeight = calculateDistanceBetweenElements('#divLoadingBlock', '#footer', -30);
             $('#divLoadingBlock').css('height', 0).animate({ 'height': PageHeight }, 500);
 
             scrollToBottom();
         }
 
         function scrollToBottom() {
-
-            //$('html, body').animate({ scrollTop: $(document).height() }, 500);
 
             $('#divLoadingBlock').animate({ scrollTop: $('#divLoadingBlock')[0].scrollHeight }, 500);
         }

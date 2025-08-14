@@ -15,12 +15,29 @@
     const chatBody = document.querySelector('.chat-body');
     const scroller = document.getElementById('divLoadingBlock');
 
-    //function scrollToBottom() {
-    //    if (!scroller) return;
-    //    scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
-    //}
-    //// Ensure we start pinned to bottom on page load (shows history correctly)
-    //window.addEventListener('load', scrollToBottom);
+    // ---- Smart follow behavior (like ChatGPT) ------------------------------
+    const NEAR_BOTTOM_PX = 120;   // how close counts as "near bottom"
+    let followOutput = true;      // whether to auto-follow right now
+
+    function isNearBottom() {
+        if (!scroller) return true;
+        const distance = scroller.scrollHeight - (scroller.scrollTop + scroller.clientHeight);
+        return distance <= NEAR_BOTTOM_PX;
+    }
+
+    function maybeFollow() {
+        if (!scroller) return;
+        if (followOutput) scroller.scrollTop = scroller.scrollHeight;
+    }
+
+    function onUserScroll() {
+        // If user scrolls up, stop following; resume when they come back near bottom
+        followOutput = isNearBottom();
+    }
+    if (scroller) scroller.addEventListener('scroll', onUserScroll, { passive: true });
+
+    // Set initial state based on where the user is when the page loads
+    followOutput = isNearBottom();
 
     // Create a chat bubble
     function bubble(role, html, ts) {
@@ -44,7 +61,7 @@
     }
 
     function escapeHtml(s) {
-        return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     }
 
     // Inline typing dots
@@ -79,22 +96,22 @@
 
     // Types PLAIN text with visible newlines, then swaps to FINAL HTML
     async function typeOutPlainThenSwap(el, plainText, finalHtml, chunk = 1, delay = 12) {
-        // While typing, preserve \n visually
         const prevWhiteSpace = el.style.whiteSpace;
-        el.style.whiteSpace = 'pre-wrap';   // <-- key change for line breaks during typing
+        el.style.whiteSpace = 'pre-wrap';   // preserve line breaks during typing
 
         el.textContent = '';
         let i = 0;
         while (i < plainText.length) {
             el.textContent += plainText.slice(i, i + chunk);
             i += chunk;
-            scrollToBottom();
+            // follow only if the user hasn't scrolled away
+            maybeFollow();
             if (delay) await new Promise(r => setTimeout(r, delay));
         }
 
         // Swap to final HTML (links + <br>) and restore white-space
         el.innerHTML = finalHtml || escapeHtml(plainText).replace(/\n/g, '<br>');
-        el.style.whiteSpace = prevWhiteSpace || ''; // back to normal after swap
+        el.style.whiteSpace = prevWhiteSpace || '';
     }
 
     // ---- Send handler (hooked to Send button) ------------------------------
@@ -116,23 +133,25 @@
 
         // Echo user bubble
         bubble('user', escapeHtml(text).replace(/\n/g, '<br>'), ts);
-        window.SAF_Composer?.reset();
-        scrollToBottom();
+        window.SAF_Composer?.reset?.();
+
+        // If we were at the bottom when sending, stay following
+        followOutput = isNearBottom();
+        maybeFollow();
 
         // Create assistant bubble and show typing dots
         const assistantEl = bubble('bot', '', ts);
         const removeTyping = showInlineTyping(assistantEl);
-        scrollToBottom();
+        maybeFollow();
 
         try {
             const data = await postAsk(text); // returns { ok, assistantPlain, assistantHtml }
-
             removeTyping();
 
             let plain = data.assistantPlain || '';
             let html = data.assistantHtml || '';
 
-            // Fallback (if ever only HTML returned)
+            // Fallback (if only HTML returned)
             if (!plain && html) {
                 const withNewlines = html.replace(/<br\s*\/?>/gi, '\n');
                 const tmp = document.createElement('div');
@@ -145,8 +164,10 @@
             removeTyping();
             assistantEl.innerHTML = `<em style="color:#b42318;">${escapeHtml(String(err.message || err))}</em>`;
         } finally {
-            scrollToBottom();
             setComposerBusy(false);
+            // If the user stayed near the bottom, snap once; otherwise leave their scroll alone
+            if (isNearBottom()) followOutput = true;
+            maybeFollow();
         }
     };
 
