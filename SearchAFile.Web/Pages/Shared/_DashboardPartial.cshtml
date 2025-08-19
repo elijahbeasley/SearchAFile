@@ -49,7 +49,7 @@
         @foreach (var item in Model.Where(collection => collection.FilesCount > 0))
         {
             <div class="col">
-                <a href="/Common/Chat?id=@item.CollectionId" class="file-group-card text-decoration-none" target="_top">
+                <a href="/@(Context.Session.GetObject<UserDto>("User") == null ? "Home" : "Common")/Chat?id=@item.CollectionId" class="file-group-card text-decoration-none" target="_top">
                     <div class="file-group-card-inner">
                         <img src="~/Collections/@item.ImageUrl" alt="Collection" class="file-group-icon" />
                         <span class="file-group-name">@item.Collection1</span>

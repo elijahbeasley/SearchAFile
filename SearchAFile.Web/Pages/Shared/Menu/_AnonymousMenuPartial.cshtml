@@ -6,10 +6,21 @@
             <div class="nav_logo cus-text-secondary-text-no-hover cus-no-select" style="border-bottom: 2px solid var(--secondary-text-color);">
                 <img src="~/UserFiles/Generic.jpg" alt="" style="border-radius: 50%;" width="45px" height="45px"> <span class="nav_logo-name" style="cursor: context-menu;"></span>
             </div>
+            <div class="overflow-auto" style="display:flex; flex-direction:column; height:var(--body-height);">
+                <div class="nav_list">
+                    @if (Context.Session.GetObject<Company>("Company") != null)
+                    {
+                        <a href="/Home/Dashboard?id=@(Context.Session.GetObject<Company>("Company").CompanyId)" class="nav_link cus-text-secondary-text" title="Dashboard">
+                            <i class="fa-solid fa-house nav_icon" style="width:25px;"></i>
+                            <span class="nav_name">Dashboard</span>
+                        </a>
+                    }
+                </div>
+                <a href="~/Home/LogIn" class="nav_link cus-text-secondary-text mb-0 mt-auto" title="Log In">
+                    <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
+                </a>
+            </div>
         </div>
-        <a href="~/Home/LogIn" class="nav_link cus-text-secondary-text mb-0" title="Log In">
-            <i class="fa-solid fa-sign-in nav_icon" style="width: 25px;"></i> <span class="nav_name">Log In</span>
-        </a>
     </nav>
     <input id="MenuLoadCompleteFlag" type="hidden" value="1" />
 </div>

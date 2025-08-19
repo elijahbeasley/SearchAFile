@@ -9,7 +9,7 @@ public class OpenAIFileService
     private readonly HttpClient _httpClient;
     public OpenAIFileService(IHttpClientFactory httpClient)
     {
-        _httpClient = httpClient.CreateClient("SearchAFIleClient");
+        _httpClient = httpClient.CreateClient("SearchAFileClient");
     }
 
     public async Task<bool> TryPostFileToOpenAIAsync(IFormFile file, string fileKey, List<string> allowedFileTypes, Action<string> assignOpenAIFileIdToModel, string newFileName)

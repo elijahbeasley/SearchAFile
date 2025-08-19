@@ -105,7 +105,7 @@ public class ChatxxModel : PageModel
             // Create the HttpClient object.
             if (objHttpClient == null)
             {
-                objHttpClient = _httpClientFactory.CreateClient("SearchAFIleClient");
+                objHttpClient = _httpClientFactory.CreateClient("SearchAFileClient");
             }
 
             // Define the ResponseMessageContent string.
@@ -276,7 +276,7 @@ public class ChatxxModel : PageModel
         try
         {
             // Create the HttpClient object.
-            HttpClient objHttpClient = _httpClientFactory.CreateClient("SearchAFIleClient");
+            HttpClient objHttpClient = _httpClientFactory.CreateClient("SearchAFileClient");
 
             // Send the delete request to the threads endpoint.
             string strThreadID = HttpContext.Session.GetString("strThreadID");
@@ -333,7 +333,7 @@ public class ChatxxModel : PageModel
             // Create the HttpClient object.
             if (objHttpClient == null)
             {
-                objHttpClient = _httpClientFactory.CreateClient("SearchAFIleClient");
+                objHttpClient = _httpClientFactory.CreateClient("SearchAFileClient");
             }
 
             // If a thread has not been created yet, create one.

@@ -1,0 +1,80 @@
+﻿@page
+@model SearchAFile.Web.Pages.Home.ChatModel
+
+<link rel="stylesheet" href="/css/composer.css">
+<script src="/js/composer.js" defer></script>
+<script src="/js/chat-async.js" defer></script>
+
+<div class="pb-3">
+    <a asp-page="/Home/Dashboard" asp-route-id="@(HttpContext.Session.GetObject<Company>("Company").CompanyId)" title="Collections">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back
+    </a>
+</div>
+
+<form id="objForm" method="post" onsubmit="$('.saf-composer').find('button, textarea').prop('disabled', true);">
+
+    <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
+    <input type="hidden" id="askAjaxUrl" value="@Url.Page(null, null, new { handler = "AskAjax" })" />
+    @Html.AntiForgeryToken()
+
+    <div class="card">
+
+        <div class="card-header cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
+            <label class="fs-5"><i class="fa-solid fa-comments cus-text-primary-no-hover"></i> @Model.Collection.Collection1</label>
+        </div>
+
+        <div id="divLoadingBlock" class="card-body pb-0" style="height:0; overflow: auto;">
+
+            <div class="chat-body">
+                @Html.Raw(Model.Answer)  @* Render server-built HTML (links included) *@
+            </div>
+            <div id="divEllipses" class="typing-indicator" style="display:none;">
+                <span></span><span></span><span></span>
+            </div>
+
+            <!-- Floating composer -->
+            <div class="saf-composer-wrap" aria-live="polite">
+                <div class="saf-composer" role="group" aria-label="Message composer">
+                    <button asp-page-handler="StartNewChat" asp-route-id="@Model.Id" type="submit" class="saf-btn saf-reset" title="New chat" aria-label="New chat" formnovalidate>
+                        <i class="fa fa-rotate-left"></i>
+                    </button>
+                    <textarea id="txtQuestion" asp-for="question" class="saf-input" placeholder="Ask a question..." rows="1" autocomplete="off" aria-label="Message input"></textarea>
+                    <button class="saf-btn saf-send" type="button" title="Send" aria-label="Send" onclick="Send();">
+                        <i class="fa fa-arrow-up"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+
+        window.onload = function () {
+
+            SetHeight();
+        }
+
+        function SetHeight() {
+
+            let PageHeight = calculateDistanceBetweenElements('#divLoadingBlock', '#footer', -30);
+            $('#divLoadingBlock').css('height', 0).animate({ 'height': PageHeight }, 500);
+
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+
+            $('#divLoadingBlock').animate({ scrollTop: $('#divLoadingBlock')[0].scrollHeight }, 500);
+        }
+
+    </script>
+}

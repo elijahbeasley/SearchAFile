@@ -14,7 +14,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using File = SearchAFile.Core.Domain.Entities.File;
 
-namespace SearchAFile.Web.Pages.Common;
+namespace SearchAFile.Web.Pages.Home;
 
 [BindProperties(SupportsGet = true)]
 public class ChatModel : PageModel
@@ -533,6 +533,11 @@ public class ChatModel : PageModel
             if (!collectionResult.IsSuccess || collectionResult.Data == null)
                 throw new Exception(collectionResult.ErrorMessage ?? "Failed to load collection.");
 
+            if (collectionResult.Data.Private)
+            {
+                throw new Exception("Selected collection is not set to public.");
+            }
+
             var filesResult = await _api.GetAsync<List<File>>("files");
             if (!filesResult.IsSuccess || filesResult.Data == null)
                 throw new Exception(filesResult.ErrorMessage ?? "Failed to load files.");
@@ -559,6 +564,5 @@ public class ChatModel : PageModel
         var contact = HttpContext.Session.GetString("ContactInfo") ?? "support";
         var msg = ex.InnerException == null ? ex.Message : ex.Message + " (Inner: " + ex.InnerException.Message + ")";
         return $"window.top.ShowToast('danger', 'Error', 'An error occured. {msg.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString()}', 0, false);";
-        //return $"window.top.ShowToast('danger', 'Error', 'An error occured. Please report to {contact}: {msg.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString()}', 0, false);";
     }
 }

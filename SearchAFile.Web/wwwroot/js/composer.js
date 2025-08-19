@@ -70,12 +70,15 @@
     });
 
     // --- New Chat --------------------------------------------------------------
-    btnReset.addEventListener('click', () => {
-        // Optional confirm — add your own UI if preferred
-        if (confirm('Start a new chat? This will clear the current conversation.')) {
-            onNewChat();
+    btnReset.addEventListener('click', (e) => {
+        // stop the form from submitting by default
+        if (!confirm('Start a new chat? This will clear the current conversation.')) {
+            e.preventDefault();   // cancel submit
+            e.stopPropagation();
         }
+        // else: do nothing → form posts back normally
     });
+
 
     // --- Keep chat content visible above the composer --------------------------
     // Add .saf-pad-bottom to your scrollable chat body container in code,

@@ -28,7 +28,7 @@ public class IndexModel : PageModel
         _telemetryClient = telemetryClient;
         _iWebHostEnvironment = iWebHostEnvironment;
         _api = api;
-        _httpClient = httpClient.CreateClient("SearchAFIleClient");
+        _httpClient = httpClient.CreateClient("SearchAFileClient");
     }
 
     [BindProperty(SupportsGet = true)]

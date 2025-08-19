@@ -121,7 +121,7 @@ builder.Services.AddHttpClient<AuthenticatedApiClient>(client =>
 builder.Services.AddHttpClient("SearchAFileClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["OpenAI:BaseUrl"]);
-    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", builder.Configuration["OpenAI:ApiKey"]);
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", builder.Configuration["OpenAI:APIKey"]);
     client.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
 });
 
