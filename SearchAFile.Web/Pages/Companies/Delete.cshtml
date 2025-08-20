@@ -10,7 +10,10 @@
     <div class="card-body cus-bootstrap-table-striped p-0">
 
         <div class="row align-items-center m-0">
-            <div class="cus-col col-sm-6">
+        </div>
+
+        <div class="row align-items-center m-0">
+            <div class="cus-col col-sm-4">
                 <div class="form-floating">
                     <div class="form-control div-disabled">
                         @if (Model.Company.Active)
@@ -31,40 +34,13 @@
                     <label asp-for="Company.Active" class="control-label"></label>
                 </div>
             </div>
-            <div class="cus-col col-sm-6">
-                <div class="form-floating">
-                    <div class="form-control div-disabled">
-                        @if (Model.Company.Lock)
-                        {
-                            <span class="badge bg-success cus-no-select w-100">
-                                Lock
-                                <i class="fa-solid fa-check"></i>
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning cus-no-select w-100">
-                                Unlocked
-                                <i class="fa-solid fa-xmark"></i>
-                            </span>
-                        }
-                    </div>
-                    <label asp-for="Company.Active" class="control-label p-0 h-auto">
-                        @Html.DisplayNameFor(model => model.Company.Lock)
-                        <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your users or open to the public" data-bs-placement="top" data-bs-toggle="tooltip"></i>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row align-items-center m-0">
-            <div class="cus-col col-sm-6">
+            <div class="cus-col col-sm-4">
                 <div class="form-floating">
                     <input type="text" asp-for="Company.Company1" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.Company1)" disabled />
                     <label asp-for="Company.Company1" class="control-label"></label>
                 </div>
             </div>
-            <div class="cus-col col-sm-6">
+            <div class="cus-col col-sm-4">
                 <div class="form-floating">
                     <input type="text" asp-for="Company.Url" class="form-control" placeholder="@Html.DisplayNameFor(model => model.Company.Url)" disabled />
                     <label asp-for="Company.Url" class="control-label"></label>
