@@ -8,7 +8,7 @@
 
     <div class="card">
 
-        <div class="card-header d-flex align-items-center">
+        <div class="card-header d-flex align-items-center cus-no-select">
             <div class="cus-hover-image-container pe-2" onclick="$('#divUploadImage').modal('show');" title="Upload Headshot" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" style="width: max-content;">
                 <img id="imgNewImage" class="cus-hover-image" src="~/UserFiles/Generic.jpg" style="border-radius: 50%; height: 75px; width: 75px;" />
                 <div class="cus-hover-image-middle">
@@ -55,9 +55,9 @@
                             <option value="Admin">Admin</option>
                             <option value="User">User</option>
                         </select>
-                        <label asp-for="User.Role" class="control-label" show-asterisk="true">
+                        <label asp-for="User.Role" class="control-label pb-0 h-auto" show-asterisk="true">
                             @Html.DisplayNameFor(model => model.User.Role)
-                            <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your employees" data-bs-placement="top" data-bs-toggle="tooltip"></i>
+                            <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your users or if it is open to the public" data-bs-placement="top" data-bs-toggle="tooltip"></i>
                         </label>
                         <span asp-validation-for="User.Role" class="text-danger"></span>
                     </div>

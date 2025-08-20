@@ -164,7 +164,8 @@ public class ImpersonateModel : PageModel
             {
                 Users = HttpContext.Session.GetObject<List<User>>("Users")
                     .Where(user => !string.IsNullOrEmpty(search) && (user.FullName.Trim().ToLower().Contains(search.Trim().ToLower())
-                        || user.FullNameReverse.Trim().ToLower().Contains(search.Trim().ToLower())))
+                        || user.FullNameReverse.Trim().ToLower().Contains(search.Trim().ToLower()))
+                        || user.Company.Company1.Trim().ToLower().Contains(search.Trim().ToLower()))
                     .ToList();
             }
         }

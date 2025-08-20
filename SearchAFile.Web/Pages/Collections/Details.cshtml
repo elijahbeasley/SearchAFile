@@ -3,12 +3,12 @@
 
 <div class="card">
 
-    <div class="card-header d-flex align-items-center">
+    <div class="card-header d-flex align-items-center cus-no-select">
         <a class="pe-2" href="~/Collections/@(string.IsNullOrEmpty(Model.Collection.ImageUrl) ? "Generic.jpg" : Model.Collection.ImageUrl)" target="_blank" title="View Image">
             <img src="~/Collections/@(string.IsNullOrEmpty(Model.Collection.ImageUrl) ? "Generic.jpg" : Model.Collection.ImageUrl)" style="border-radius: 50%; height: 75px; width: 75px;" />
         </a>
         <label class="fs-5 ms-auto">
-            <i class="fa-solid fa-trash text-danger"></i> @Model.Collection.Collection1
+            <i class="fa-solid fa-eye cus-text-primary-no-hover"></i> @Model.Collection.Collection1
         </label>
     </div>
 

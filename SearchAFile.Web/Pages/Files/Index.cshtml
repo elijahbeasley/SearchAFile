@@ -73,7 +73,7 @@
 
 <div class="card">
 
-    <div class="card-header d-flex justify-content-between align-items-center" style="border-bottom: 3px solid var(--secondary-color);">
+    <div class="card-header d-flex justify-content-between align-items-center cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
         <label class="fs-5 pe-3" style="white-space: nowrap;"><i class="fa-solid fa-folder-open cus-text-primary-no-hover"></i> @Model.Collection.Collection1 Files (@(Model.Files == null ? "0" : Model.Files.Count())/20)</label>
         <form method="get">
             <input type="hidden" name="id" value="@Request.Query["id"]" />
@@ -141,10 +141,10 @@
                                 <a href="~/Files/@item.Path" target="_blank">
                                     <div class="file-icon-wrapper position-relative text-center">
                                         <i class="file-icon fa-solid @iconClass"></i>
-                                        <button type="button" class="edit-btn position-absolute top-0 start-0 ms-1" title="Edit" onclick="editFile('@item.FileId', event)">
+                                        <button type="button" class="edit-btn position-absolute top-0 start-0 ms-1" title="Edit" onclick="editFile('@item.FileId', event);">
                                             <i class="fa-solid fa-pen-to-square cus-bs-text-primary"></i>
                                         </button>
-                                        <button type="button" class="delete-btn position-absolute top-0 end-0 me-1" title="Delete" onclick="deleteFile('@item.FileId', event)">
+                                        <button type="button" class="delete-btn position-absolute top-0 end-0 me-1" title="Delete" onclick="deleteFile('@item.FileId', event);">
                                             <i class="fa-solid fa-trash cus-text-danger"></i>
                                         </button>
                                         <div class="file-name" title="@item.File1">

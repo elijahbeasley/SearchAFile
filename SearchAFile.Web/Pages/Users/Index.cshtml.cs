@@ -67,6 +67,114 @@ public class IndexModel : PageModel
         }
     }
 
+    public async Task<IActionResult> OnGetResendEmailVerificationEmail(Guid? id)
+    {
+        try
+        {
+            if (id == null)
+                return BadRequest(new { error = "ID was null." });
+
+            var result = await _api.GetAsync<List<User>>("users");
+
+            if (!result.IsSuccess || result.Data == null)
+            {
+                throw new Exception(result.ErrorMessage ?? "Unable to retrieve user.");
+            }
+
+            Users = result.Data
+                .Where(u => u.CompanyId == HttpContext.Session.GetObject<Company>("Company").CompanyId)
+                .OrderBy(user => user.FullNameReverse)
+                .ToList();
+
+            User? User = result.Data.FirstOrDefault(user => user.UserId == id);
+
+            if (User != null)
+            {
+                // Create the email verification info.
+                SystemInfo SystemInfo = HttpContext.Session.GetObject<SystemInfo>("SystemInfo");
+
+                // Send the password reset email.
+
+                BodyBuilder objBodyBuilder = new BodyBuilder();
+
+                objBodyBuilder.HtmlBody = @"
+                <table> 
+                    <tr> 
+                        <td> 
+                            Hello " + User.FullName + @", 
+                        </td> 
+                    </tr> 
+                    <tr> 
+                        <td style='padding: 0rem 1rem;'> 
+                            <br />";
+
+                if (User.CompanyId != null)
+                {
+                    Company Company = HttpContext.Session.GetObject<Company>("Company");
+
+                    if (Company != null)
+                    {
+                        objBodyBuilder.HtmlBody += "A " + SystemInfo.SystemName + " account for " + Company.Company1 + " has been created using this email address. Please <a href='" + UrlHelper.Combine(SystemInfo.Url, "Home", "VerifyEmailAddress") + "?id=" + User.EmailVerificationUrl + @"'>click here</a> to verify your email address.";
+                    }
+                    else
+                    {
+                        objBodyBuilder.HtmlBody += "A " + SystemInfo.SystemName + " account has been created using this email address. Please <a href='" + UrlHelper.Combine(SystemInfo.Url, "Home", "VerifyEmailAddress") + "?id=" + User.EmailVerificationUrl + @"'>click here</a> to verify your email address.";
+                    }
+                }
+                else
+                {
+                    objBodyBuilder.HtmlBody += "A " + SystemInfo.SystemName + " account has been created using this email address. Please <a href='" + UrlHelper.Combine(SystemInfo.Url, "Home", "VerifyEmailAddress") + "?id=" + User.EmailVerificationUrl + @"'>click here</a> to verify your email address.";
+                }
+
+                objBodyBuilder.HtmlBody += @"
+                        </td> 
+                    </tr> 
+                </table> ";
+
+                // To.
+                List<KeyValuePair<string, string>> lstTo = new List<KeyValuePair<string, string>>();
+
+                // Add service to the email.
+                lstTo.Add(new KeyValuePair<string, string>(User.EmailAddress, User.FullName));
+
+                // CC.
+                List<KeyValuePair<string, string>> lstCC = new List<KeyValuePair<string, string>>();
+
+                // BCC.
+                List<KeyValuePair<string, string>> lstBCC = new List<KeyValuePair<string, string>>();
+
+                await _emailService.SendEmail(lstTo, lstCC, lstBCC, SystemInfo.SystemName + " - Verify Email Address", objBodyBuilder);
+            }
+            else
+            {
+                return BadRequest(new { error = "'" + id.ToString() + "' is not a valid ID." });
+            }
+        }
+        catch (Exception ex)
+        {
+            string strException = "An error has occured. Please contact " + HttpContext.Session.GetString("ContactInfo") + " and report the following error: ";
+
+            // Is there an inner exception?
+            if (ex.InnerException == null) // No.
+            {
+                strException += ex.Message;
+            }
+            else // Yes.
+            {
+                strException += ex.InnerException.Message;
+            }
+
+            // Log the exception to Application Insights.
+            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
+            _telemetryClient.TrackException(ExceptionTelemetry);
+
+            // Return 400 with JSON error
+            return BadRequest(new { error = strException });
+        }
+
+        return new JsonResult(new { success = true });
+    }
+
     public async Task<IActionResult> OnGetResetPassword(Guid? id)
     {
         try

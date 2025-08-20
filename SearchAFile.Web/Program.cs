@@ -48,11 +48,11 @@ builder.Services.AddAuthorization(options =>
 {
     // User Roles:
     options.AddPolicy("AdminsPolicy", policy => policy.RequireRole("System Admin", "Admin"));
-    options.AddPolicy("EmployeePolicy", policy => policy.RequireRole("System Admin", "Employee"));
+    options.AddPolicy("UserPolicy", policy => policy.RequireRole("System Admin", "User"));
     options.AddPolicy("SystemAdminsPolicy", policy => policy.RequireRole("System Admin"));
 
     // Misc.
-    options.AddPolicy("CommonPolicy", policy => policy.RequireRole("System Admin", "Admin", "Employee")); // Add all user roles to this policy.
+    options.AddPolicy("CommonPolicy", policy => policy.RequireRole("System Admin", "Admin", "User")); // Add all user roles to this policy.
 
     // Maintenance Pages:
     options.AddPolicy("MaintainCompaniesPolicy", policy => policy.RequireRole("System Admin", "Admin"));
@@ -68,7 +68,7 @@ builder.Services.AddRazorPages(options =>
     // Folder Permissions:
     // User Roles:
     options.Conventions.AuthorizeFolder("/Admins", "AdminsPolicy");
-    options.Conventions.AuthorizeFolder("/Employees", "EmployeePolicy");
+    options.Conventions.AuthorizeFolder("/Users", "UserPolicy");
     options.Conventions.AuthorizeFolder("/SystemAdmins", "SystemAdminsPolicy");
 
     // Common and Home:

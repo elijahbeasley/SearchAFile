@@ -550,6 +550,11 @@ a {
     cursor: not-allowed !important;
 }
 
+/* Apply to labels that are NOT `.control-label` inside `.form-floating` */
+/*label:not(.form-floating > .control-label) {
+    color: var(--primary-text-color);
+}*/
+
 /* Scope it to your form if you like */
 /*.form-floating:not(:has(input.input-validation-error)) label,
 .form-floating:not(:has(input.input-validation-error)) span {

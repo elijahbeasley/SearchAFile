@@ -48,43 +48,50 @@
                             NavLink("/Collections", "fa-solid fa-layer-group", "Collections");
                             NavLink("/Companies", "fa-regular fa-building", "Companies");
                             NavLink("/Users", "fa-solid fa-users", "Users");
-                            NavLink("/Admins/CompanySettings", "fa-solid fa-users-gear", "Company Settings");
-                            NavLink("/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
-                            NavLink("/SystemAdmins/SystemSettings", "fa-solid fa-gears", "System Settings");
-                            NavLink("/Common/Impersonate", "fa-solid fa-user-secret", "Impersonate");
-                            NavLink("javascript:copyToClipboard('" + UrlHelper.Combine(Context.Session.GetObject<SystemInfo>("SystemInfo")?.Url ?? "", "Home", "Dashboard") + "?id=" + Context.Session.GetObject<Company>("Company")?.CompanyId + "'); SetMenuHighlight();", "fa-solid fa-copy", "Copy Share Link");
                             break;
 
                         case "Admin":
                             NavLink("/Common/Dashboard", "fa-solid fa-house", "Dashboard");
                             NavLink("/Collections", "fa-solid fa-layer-group", "Collections");
                             NavLink("/Users", "fa-solid fa-users", "Users");
-                            NavLink("/Admins/CompanySettings", "fa-regular fa-building", "Company Settings");
-                            NavLink("/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
-                            if (Convert.ToBoolean(Context.Session.GetBoolean("AllowUserImpersonation")))
-                            {
-                                NavLink("/Common/Impersonate", "fa-solid fa-user-secret", "Impersonate");
-                            }
-                            NavLink("javascript:copyToClipboard('" + UrlHelper.Combine(Context.Session.GetObject<SystemInfo>("SystemInfo")?.Url ?? "", "Home", "Dashboard") + "?id=" + Context.Session.GetObject<Company>("Company")?.CompanyId + "'); SetMenuHighlight();", "fa-solid fa-copy", "Copy Share Link");
                             break;
 
-                        case "Employee":
-                            NavLink("/Users/Dashboard", "fa-solid fa-home", "Dashboard");
-                            NavLink("/Common/AccountSettings", "fa-solid fa-user-cog", "Account Settings");
-                            if (Convert.ToBoolean(Context.Session.GetBoolean("AllowUserImpersonation")))
-                            {
-                                NavLink("/Common/Impersonate", "fa-solid fa-user-secret", "Impersonate");
-                            }
-                            NavLink("javascript:copyToClipboard('" + UrlHelper.Combine(Context.Session.GetObject<SystemInfo>("SystemInfo")?.Url ?? "", "Home", "Dashboard") + "?id=" + Context.Session.GetObject<Company>("Company")?.CompanyId + "'); SetMenuHighlight();", "fa-solid fa-copy", "Copy Share Link");
+                        case "User":
+                            NavLink("/Common/Dashboard", "fa-solid fa-home", "Dashboard");
                             break;
                     }
+                    @{
+                        NavLink("javascript:copyToClipboard('" + UrlHelper.Combine(Context.Session.GetObject<SystemInfo>("SystemInfo")?.Url ?? "", "Home", "Dashboard") + "?id=" + Context.Session.GetObject<Company>("Company")?.CompanyId + "'); SetMenuHighlight();", "fa-solid fa-copy", "Copy Share Link");
+                    }
                 </div>
-
                 @* always show logout at bottom *@
-                <a class="nav_link cus-text-secondary-text mt-auto" onclick="$('#logout_form').submit();" style="cursor:pointer;" title="Log Out">
-                    <i class="fa-solid fa-sign-out nav_icon" style="width:25px;"></i>
-                    <span class="nav_name">Log Out</span>
-                </a>
+                <div class="mt-auto">
+                    @{
+                        NavLink("/Common/AccountSettings", "fa-solid fa-user-gear", "Account Settings");
+                    }
+                    @switch (Model.User.Role)
+                    {
+                        case "System Admin":
+                            NavLink("/Admins/CompanySettings", "fa-solid fa-users-gear", "Company Settings");
+                            NavLink("/SystemAdmins/SystemSettings", "fa-solid fa-gears", "System Settings");
+                            break;
+
+                        case "Admin":
+                            NavLink("/Admins/CompanySettings", "fa-regular fa-building", "Company Settings");
+                            break;
+
+                        case "User":
+                            break;
+                    }
+                    @if (Convert.ToBoolean(Context.Session.GetBoolean("AllowUserImpersonation")))
+                    {
+                        NavLink("/Common/Impersonate", "fa-solid fa-user-secret", "Impersonate");
+                    }
+                    <a class="nav_link cus-text-secondary-text" onclick="$('#logout_form').submit();" style="cursor:pointer;" title="Log Out">
+                        <i class="fa-solid fa-sign-out nav_icon" style="width:25px;"></i>
+                        <span class="nav_name">Log Out</span>
+                    </a>
+                </div>
             </div>
         </div>
     </nav>

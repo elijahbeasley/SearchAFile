@@ -38,7 +38,9 @@ public partial class Collection
     [DisplayName("Created By")]
     public Guid CreatedByUserId { get; set; }
 
-    [Required(ErrorMessage = "Private/public is required.")]
+    [DisplayName("Public/Private")]
+
+    [Required(ErrorMessage = "Public/private is required.")]
     public bool Private { get; set; }
 
     [DisplayName("Sort Order")]

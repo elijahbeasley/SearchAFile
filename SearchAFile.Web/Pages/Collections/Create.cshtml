@@ -35,9 +35,9 @@
                 <div class="cus-col col-sm-4">
                     <div class="form-floating">
                         <select asp-for="Collection.Private" class="form-select">
-                            <option value="" hidden>- Private/Public -</option>
-                            <option value="True">Private</option>
+                            <option value="" hidden>- Public/Private -</option>
                             <option value="False">Public</option>
+                            <option value="True">Private</option>
                         </select>
                         <label asp-for="Collection.Private" class="control-label" show-asterisk="true"></label>
                         <span asp-validation-for="Collection.Private" class="text-danger"></span>

@@ -4,7 +4,7 @@
 
 <div class="card">
 
-    <div class="card-header d-flex justify-content-between align-items-center" style="border-bottom: 3px solid var(--secondary-color);">
+    <div class="card-header d-flex justify-content-between align-items-center cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
         <label class="fs-5 pe-3" style="white-space: nowrap;"><i class="fa-solid fa-users cus-text-primary-no-hover"></i> Users</label>
         <form method="get">
             <div class="input-group">
@@ -83,7 +83,7 @@
                                         </button>
                                         <div class="dropdown-menu" style="min-width: unset;">
                                             <a asp-page="./Details" asp-route-id="@item.UserId" class="btn dropdown-item" title="Details">
-                                                <i class="fa-solid fa-eye cus-text-primary"></i>
+                                                <i class="fa-solid fa-eye cus-text-primary-no-hover"></i>
                                                 &nbsp;
                                                 Details
                                             </a>
@@ -101,8 +101,16 @@
                                                 </a>
                                             }
                                             <div class="dropdown-divider"></div>
+                                            @if (!item.EmailVerified)
+                                            {
+                                                <button class="btn dropdown-item" type="button" onclick="ConfirmResendEmailVerificationEmail('@item.UserId', '@item.FullName.EscapeJsString()', '@item.EmailAddress.EscapeJsString()');" title="Resend email verification email">
+                                                    <i class="fa-solid fa-envelope-circle-check text-info"></i>
+                                                    &nbsp;
+                                                    Resend Email Verification Email
+                                                </button>
+                                            }
                                             <button class="btn dropdown-item" type="button" onclick="ConfirmPasswordReset('@item.UserId', '@item.FullName.EscapeJsString()', '@item.EmailAddress.EscapeJsString()');" title="Send password reset email">
-                                                <i class="fa-solid fa-paper-plane cus-text-primary"></i>
+                                                <i class="fa-solid fa-paper-plane text-info"></i>
                                                 &nbsp;
                                                 Send Password Reset Email
                                             </button>
@@ -113,13 +121,13 @@
                                     @if (string.IsNullOrEmpty(item.HeadshotPath)) 
                                     {
                                         <a href="~/UserFiles/Generic.jpg" target="_blank" style="cursor: pointer;">
-                                            <img alt="headshot" src="~/UserFiles/Generic.jpg" style="height: 35px;" title="<img src='/UserFiles/Generic.jpg' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
+                                            <img alt="headshot" src="~/UserFiles/Generic.jpg" style="max-height: 35px; max-width: 100px;" title="<img src='/UserFiles/Generic.jpg' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
                                         </a>
                                     }
                                     else
                                     {
                                         <a href="~/UserFiles/@item.HeadshotPath" target="_blank" style="cursor: pointer;">
-                                            <img alt="headshot" onerror="this.onerror=null;this.src='/UserFiles/Generic.jpg';" src="~/UserFiles/@item.HeadshotPath" style="height: 35px;" title="<img src='/UserFiles/@item.HeadshotPath' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
+                                            <img alt="headshot" onerror="this.onerror=null;this.src='/UserFiles/Generic.jpg';" src="~/UserFiles/@item.HeadshotPath" style="max-height: 35px; max-width: 100px;" title="<img src='/UserFiles/@item.HeadshotPath' height='100' />" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" />
                                         </a>
                                     }
                                 </td>
@@ -184,6 +192,44 @@
 
 <input id="itemID" type="hidden" name="id" />
 
+@* Verification Email Modal *@
+<div class="modal fade" id="divResendEmailVerificationEmailModal" tabindex="-1" data-bs-keyboard="false" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 card">
+
+            <div class="card-header d-flex align-items-center cus-no-select fs-6" style="background-color: var(--primary-color); border-bottom: 2px solid var(--secondary-color);">
+                <label class="cus-card-header h-auto cus-text-secondary-text-no-hover">
+                    <i class="fa-solid fa-paper-plane fs-5 me-1 cus-text-secondary-text-no-hover"></i>
+                    Resend Email Verification Email
+                </label>
+                <button id="btnResetClose" type="button" class="btn p-0 m-0 ms-auto cus-text-secondary-text" data-bs-dismiss="modal" data-bs-target="divResendEmailVerificationEmailModal" style="line-height: 1;">
+                    <i class="fa-solid fa-xmark fs-4"></i>
+                </button>
+            </div>
+
+            <div class="modal-body text-center">
+                <label id="lblResendEmailVerificationEmailMessage"></label>
+                <label class="pt-2">Click 'OK' to resend the email verification email. Click 'Cancel' to cancel.</label>
+            </div>
+
+            <div class="card-footer text-center cus-no-select">
+                <button id="btnReset" class="btn btn-outline-success" type="button" onclick="ResendEmailVerificationEmail($('#itemID').val());" style="min-width: 25%;">
+                    <span id="lblReset" style="color: unset;">
+                        OK
+                        <i class="fa-solid fa-check-circle"></i>
+                    </span>
+                    <img id="imgReset" src="~/SystemFiles/loading.gif" style="display: none;" height="20px" width="20px" />
+                </button>
+                <button id="btnResetCancel" type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-bs-target="divResendEmailVerificationEmailModal" style="min-width: 25%;" title="Cancel">
+                    Cancel
+                    <i class="fa-duotone fa-solid fa-ban"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @* Password Reset Modal *@
 <div class="modal fade" id="divPasswordResetModal" tabindex="-1" data-bs-keyboard="false" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
@@ -225,6 +271,63 @@
 @section Scripts {
 
     <script type="text/javascript">
+
+        function ConfirmResendEmailVerificationEmail(id, item, email) {
+
+            $('#lblResendEmailVerificationEmailMessage').html('Are you sure you want to resend an email verification email to<br /><b>' + item + ' (' + email + ')</b>?');
+            $('#itemID').val(id);
+
+            // Show the modal.
+            $('#divResendEmailVerificationEmailModal').modal('show');
+        }
+
+        function ResendEmailVerificationEmail(id) {
+
+            $('#btnReset').prop('disabled', true);
+            $('#btnResetCancel').prop('disabled', true);
+            $('#btnResetClose').prop('disabled', true);
+            $('#lblReset').toggle();
+            $('#imgReset').toggle();
+
+            window.top.ClearToast();
+
+            $.ajax({
+                type: 'GET',
+                url: PageURL + '?handler=ResendEmailVerificationEmail',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: {
+                    id: id
+                },
+                success: function (response) {
+                    // Only handle successful outcomes here
+                    window.top.ShowSnack('success', 'Email verification email successfully sent.', 7000, true);
+
+                    $('#itemID').val(null);
+                    CloseModal();
+                    ReloadData();
+                },
+                error: function (xhr) {
+
+                    let message = "An error occurred.";
+
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        message = xhr.responseJSON.error;
+                    }
+
+                    window.top.ShowToast('danger', 'Error!', message, 0, false);
+                    StopLoadingAll();
+                },
+                complete: function () {
+
+                    $('#lblReset').show();
+                    $('#imgReset').hide();
+                    $('#btnReset').prop('disabled', false);
+                    $('#btnResetCancel').prop('disabled', false);
+                    $('#btnResetClose').prop('disabled', false);
+                }
+            });
+        }
 
         function ConfirmPasswordReset(id, item, email) {
 
@@ -282,6 +385,7 @@
                 }
             });
         }
+
     </script>
 
 }

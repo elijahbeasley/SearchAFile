@@ -3,7 +3,7 @@
 
 <div class="card">
 
-    <div class="card-header d-flex align-items-center">
+    <div class="card-header d-flex align-items-center cus-no-select">
         <a class="pe-2" href="~/UserFiles/@(string.IsNullOrEmpty(Model.User.HeadshotPath) ? "Generic.jpg" : Model.User.HeadshotPath)" target="_blank" title="View Headshot">
             <img src="~/UserFiles/@(string.IsNullOrEmpty(Model.User.HeadshotPath) ? "Generic.jpg" : Model.User.HeadshotPath)" style="border-radius: 50%; height: 75px; width: 75px;" />
         </a>
@@ -43,9 +43,9 @@
                             @Model.User.Role
                         </span>
                     </div>
-                    <label asp-for="User.Role" class="control-label">
+                    <label asp-for="User.Role" class="control-label p-0 h-auto">
                         @Html.DisplayNameFor(model => model.User.Role)
-                        <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your employees" data-bs-placement="top" data-bs-toggle="tooltip"></i>
+                        <i class="fa-solid fa-circle-question cus-text-primary" title="This sets whether or not your content is locked behind a login for all of your users or open to the public" data-bs-placement="top" data-bs-toggle="tooltip"></i>
                     </label>
                 </div>
             </div>

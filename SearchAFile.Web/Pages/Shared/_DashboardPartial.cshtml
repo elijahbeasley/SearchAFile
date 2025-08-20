@@ -11,6 +11,8 @@
         height: 100%;
         transition: box-shadow 0.2s, transform 0.2s;
         cursor: pointer;
+        /* This line makes absolute children position correctly */
+        position: relative;
     }
 
         .file-group-card:hover {
@@ -54,6 +56,17 @@
                         <img src="~/Collections/@item.ImageUrl" alt="Collection" class="file-group-icon" />
                         <span class="file-group-name">@item.Collection1</span>
                     </div>
+                    @if (Context.Session.GetObject<UserDto>("User") != null)
+                    {
+                        if (item.Private)
+                        {
+                            <i class="fa-solid fa-lock cus-text-success position-absolute top-0 end-0 m-1" onclick="noAction(event);" style="cursor: context-menu;" data-bs-toggle="tooltip" data-bs-title="Private"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-lock-open cus-text-warning position-absolute top-0 end-0 m-1" onclick="noAction(event);" style="cursor: context-menu;" data-bs-toggle="tooltip" data-bs-title="Public"></i>
+                        }
+                    }
                 </a>
             </div>
         }

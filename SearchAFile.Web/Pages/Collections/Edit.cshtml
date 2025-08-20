@@ -9,7 +9,7 @@
 
     <div class="card">
 
-        <div class="card-header d-flex align-items-center">
+        <div class="card-header d-flex align-items-center cus-no-select">
             <div class="cus-hover-image-container pe-2" onclick="$('#divUploadImage').modal('show');" title="Upload Image" data-bs-custom-class="cus-tooltip-light" data-bs-html="true" data-bs-placement="top" data-bs-toggle="tooltip" style="width: max-content;">
                 <img id="imgNewImage" class="cus-hover-image" src="~/Collections/@(string.IsNullOrEmpty(Model.Collection.ImageUrl) ? "Generic.jpg" : Model.Collection.ImageUrl)" style="border-radius: 50%; height: 75px; width: 75px;" />
                 <div class="cus-hover-image-middle">
@@ -47,9 +47,8 @@
                 <div class="cus-col col-sm-4">
                     <div class="form-floating">
                         <select asp-for="Collection.Private" class="form-select">
-                            <option value="" hidden>- Private/Public -</option>
-                            <option value="True">Private</option>
                             <option value="False">Public</option>
+                            <option value="True">Private</option>
                         </select>
                         <label asp-for="Collection.Private" class="control-label" show-asterisk="true"></label>
                         <span asp-validation-for="Collection.Private" class="text-danger"></span>
