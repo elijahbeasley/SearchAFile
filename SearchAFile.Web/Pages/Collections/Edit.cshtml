@@ -56,6 +56,30 @@
                 </div>
             </div>
 
+            <div class="row align-items-center m-0">
+                <div class="cus-col col-12">
+                    <label class="fw-bold fs-5 control-label">Files (<span class="@(Model.Collection.Files.Any() ? "" : "text-danger")">@Model.Collection.Files.Count()</span>)</label>
+                    <hr class="my-1" />
+                    @if (Model.Collection.Files.Any())
+                    {
+                        <ul class="mt-2 mb-0">
+                            @foreach (var File in Model.Collection.Files)
+                            {
+                                <li>
+                                    <a href="/Files/@File.FileId.@File.Extension" target="_blank">@File.File1</a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="mt-1 cus-no-select">
+                            <i class="text-secondary">No existing files</i>
+                        </div>
+                    }
+                </div>
+            </div>
+
         </div>
 
         <div class="card-footer text-center cus-no-select">

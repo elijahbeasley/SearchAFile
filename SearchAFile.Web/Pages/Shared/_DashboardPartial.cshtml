@@ -60,11 +60,11 @@
                     {
                         if (item.Private)
                         {
-                            <i class="fa-solid fa-lock cus-text-success position-absolute top-0 end-0 m-1" onclick="noAction(event);" style="cursor: context-menu;" data-bs-toggle="tooltip" data-bs-title="Private"></i>
+                            <i class="fa-solid fa-lock cus-text-success position-absolute top-0 end-0 m-1" onclick="event.preventDefault();" style="cursor: context-menu;" data-bs-toggle="tooltip" data-bs-title="Private"></i>
                         }
                         else
                         {
-                            <i class="fa-solid fa-lock-open cus-text-warning position-absolute top-0 end-0 m-1" onclick="noAction(event);" style="cursor: context-menu;" data-bs-toggle="tooltip" data-bs-title="Public"></i>
+                            <i class="fa-solid fa-lock-open cus-text-warning position-absolute top-0 end-0 m-1" onclick="event.preventDefault();" style="cursor: context-menu;" data-bs-toggle="tooltip" data-bs-title="Public"></i>
                         }
                     }
                 </a>

@@ -40,12 +40,24 @@ public class DeleteModel : PageModel
             if (id == null)
                 return NotFound();
 
-            var result = await _api.GetAsync<Collection>($"collections/{id}");
+            var collectionResult = await _api.GetAsync<Collection>($"collections/{id}");
 
-            if (!result.IsSuccess || result.Data == null)
-                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to retrieve collection.");
+            if (!collectionResult.IsSuccess || collectionResult.Data == null)
+                throw new Exception(ApiErrorHelper.GetErrorString(collectionResult) ?? "Unable to retrieve collection.");
 
-            Collection = result.Data;
+            Collection = collectionResult.Data;
+
+            var filesResult = await _api.GetAsync<List<File>>("files");
+
+            if (!filesResult.IsSuccess || filesResult.Data == null)
+                throw new Exception(ApiErrorHelper.GetErrorString(filesResult) ?? "Unable to retrieve collection.");
+
+            List<File> Files = filesResult.Data;
+
+            Collection.Files = Files
+                .Where(file => file.CollectionId == Collection.CollectionId)
+                .OrderBy(file => file.File1)
+                .ToList();
 
             return Page();
         }

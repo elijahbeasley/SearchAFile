@@ -39,13 +39,19 @@ $(document).ready(function () {
     });
 
     // Desktop-only: initialize Bootstrap tooltips and popovers
-    if (!is_mobile) {
-        document.querySelectorAll('[data-bs-toggle="tooltip"], [data-bs-toggle="popover"]').forEach(el => {
-            const mode = el.getAttribute('data-bs-toggle');
-            if (mode === 'tooltip') new bootstrap.Tooltip(el);
-            else if (mode === 'popover') new bootstrap.Popover(el);
-        });
-    }
+    //if (!is_mobile) {
+    //    document.querySelectorAll('[data-bs-toggle="tooltip"], [data-bs-toggle="popover"]').forEach(el => {
+    //        const mode = el.getAttribute('data-bs-toggle');
+    //        if (mode === 'tooltip') new bootstrap.Tooltip(el);
+    //        else if (mode === 'popover') new bootstrap.Popover(el);
+    //    });
+    //}
+
+    document.querySelectorAll('[data-bs-toggle="tooltip"], [data-bs-toggle="popover"]').forEach(el => {
+        const mode = el.getAttribute('data-bs-toggle');
+        if (mode === 'tooltip') new bootstrap.Tooltip(el);
+        else if (mode === 'popover') new bootstrap.Popover(el);
+    });
 
     // Execute any server-provided startup script (beware of eval risks)
     const startupScript = $('#StartupJavaScript').text().trim();
