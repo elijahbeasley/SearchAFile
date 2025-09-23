@@ -81,6 +81,10 @@ public class DeleteModel : PageModel
             if (id == null)
                 return NotFound();
 
+            // Instead of deleting all the associated Open AI Files, just delete the whole OpenAI Assistant?
+
+
+
             // Delete all the associated files.
             var filesResult = await _api.GetAsync<List<File>>("files");
 

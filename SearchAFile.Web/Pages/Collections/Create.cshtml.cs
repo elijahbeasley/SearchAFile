@@ -66,6 +66,9 @@ public class CreateModel : PageModel
     {
         try
         {
+            // Create a new OpenAI Assistant and get the Assistant ID to put in the Collection.
+
+
             string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "Collections");
 
             if (IFormFile != null)

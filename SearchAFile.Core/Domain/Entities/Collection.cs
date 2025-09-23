@@ -25,6 +25,11 @@ public partial class Collection
     [StringLength(50)]
     public string? Collection1 { get; set; }
 
+    [Column("OpenAIAssistantID")]
+    [DisplayName("Assistant ID")]
+    [StringLength(50)]
+    public string? OpenAiAssistantId { get; set; }
+
     [Column("ImageURL")]
     [DisplayName("Image")]
     [Required(ErrorMessage = "Image is required.")]
