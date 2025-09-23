@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /SearchAFile.Web/appsettings.Development.json
 /SearchAFile.Api/appsettings.Development.json
+/JwtKeyGen/JwtKeyGen.csproj
