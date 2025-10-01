@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
+using SearchAFile.Core.Interfaces;
 using SearchAFile.Infrastructure.Mappers;
 using SearchAFile.Infrastructure.Mapping;
 using SearchAFile.Web.Extensions;
@@ -19,22 +20,33 @@ namespace SearchAFile.Web.Pages.Files;
 public class IndexModel : PageModel
 {
     private readonly TelemetryClient _telemetryClient;
+    private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _iWebHostEnvironment;
     private readonly AuthenticatedApiClient _api;
-    private readonly HttpClient _httpClient;
+    private readonly IOpenAIVectorStoreService _vectorStores;
+    private readonly IOpenAIFileService _openAIFileService;
 
-    public IndexModel(TelemetryClient telemetryClient, IWebHostEnvironment iWebHostEnvironment, AuthenticatedApiClient api, IHttpClientFactory httpClient)
+    public IndexModel(
+        TelemetryClient telemetryClient, 
+        IConfiguration configuration, 
+        IWebHostEnvironment iWebHostEnvironment,
+        AuthenticatedApiClient api,
+        IOpenAIVectorStoreService vectorStores,
+        IOpenAIFileService openAIFileService)
     {
         _telemetryClient = telemetryClient;
+        _configuration = configuration;
         _iWebHostEnvironment = iWebHostEnvironment;
         _api = api;
-        _httpClient = httpClient.CreateClient("SearchAFileClient");
+        _vectorStores = vectorStores;
+        _openAIFileService = openAIFileService;
     }
 
     [BindProperty(SupportsGet = true)]
     public string? search { get; set; }
     public Collection Collection { get; set; }
     public List<File>? Files { get;set; } = default!;
+    public int MaxFilesAllowed { get; set; }
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
@@ -45,6 +57,8 @@ public class IndexModel : PageModel
 
             // Set the page title.
             HttpContext.Session.SetString("PageTitle", "Maintain Files");
+
+            MaxFilesAllowed = _configuration.GetValue<int>("OpenAI:MaxFilesAllowed");
 
             var collectionResult = await _api.GetAsync<Collection>($"collections/{id}");
 
@@ -89,71 +103,74 @@ public class IndexModel : PageModel
         }
     }
 
-    public async Task<IActionResult> OnGetDeleteAsync(Guid? id)
+    public async Task<IActionResult> OnGetDeleteAsync(Guid? id, CancellationToken ct = default)
     {
         try
         {
-            if (id == null)
-                return NotFound();
+            if (id is null) return NotFound();
 
-            // Get the OpenAIFileID.
-            var fileResult = await _api.GetAsync<File>($"files/{id}");
+            // 1) Load file record (has OpenAIFileId and CollectionId)
+            var fileRes = await _api.GetAsync<File>($"files/{id}");
+            if (!fileRes.IsSuccess || fileRes.Data is null)
+                throw new Exception(fileRes.ErrorMessage ?? "Unable to retrieve file.");
 
-            if (!fileResult.IsSuccess || fileResult.Data == null)
+            var file = fileRes.Data;
+
+            // 2) Load collection to get its Vector Store id (for detach)
+            var collRes = await _api.GetAsync<Collection>($"collections/{file.CollectionId}");
+            if (!collRes.IsSuccess || collRes.Data is null)
+                throw new Exception(collRes.ErrorMessage ?? "Unable to retrieve collection.");
+
+            var collection = collRes.Data;
+
+            // 3) Detach from vector store (if we have both ids)
+            if (!string.IsNullOrWhiteSpace(collection.OpenAiVectorStoreId) &&
+                !string.IsNullOrWhiteSpace(file.OpenAIFileId))
             {
-                throw new Exception(fileResult.ErrorMessage ?? "Unable to retrieve file.");
-            }
-
-            string OpenAIFileID = fileResult.Data.OpenAIFileId;
-
-            if (string.IsNullOrEmpty(OpenAIFileID))
-            {
-                throw new Exception("Unable to retrieve the OpenAI file ID.");
-            }
-
-            // Delete the file from OpenAI.
-            var response = await _httpClient.DeleteAsync($"https://api.openai.com/v1/files/{OpenAIFileID}");
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to delete OpenAI file: {error}");
-            }
-
-            // Delete the file from local storage.
-            if (!string.IsNullOrEmpty(fileResult.Data.Path))
-            {
-                string strPath = Path.Combine(_iWebHostEnvironment.WebRootPath, "Files", fileResult.Data.Path);
-
-                // Delete the old tile image from the folder.
-                string strDeletePath = Path.Combine(strPath, strPath);
-
-                if (System.IO.File.Exists(strDeletePath))
+                // ignore 404s: file might already be gone or not attached
+                try
                 {
-                    System.IO.File.Delete(strDeletePath);
+                    await _vectorStores.DetachFileAsync(collection.OpenAiVectorStoreId!, file.OpenAIFileId!, ct);
                 }
+                catch (Exception) { /* log if you want; keep delete best-effort */ }
             }
 
-            // Delete the file from our DB.
-            var result = await _api.DeleteAsync<object>($"files/{id}");
+            // 4) Delete from OpenAI Files (global)
+            if (!string.IsNullOrWhiteSpace(file.OpenAIFileId))
+            {
+                try
+                {
+                    await _openAIFileService.DeleteAsync(file.OpenAIFileId!, ct);
+                }
+                catch (Exception) { /* log; continue */ }
+            }
 
-            if (!result.IsSuccess)
-                throw new Exception(ApiErrorHelper.GetErrorString(result) ?? "Unable to delete file.");
+            // 5) Delete local physical file (build absolute path safely)
+            if (!string.IsNullOrWhiteSpace(file.Path))
+            {
+                // If Path is already absolute, use it; otherwise resolve under wwwroot/Files
+                var absolutePath = Path.IsPathFullyQualified(file.Path)
+                    ? file.Path
+                    : Path.Combine(_iWebHostEnvironment.WebRootPath, "Files", file.Path);
+
+                if (System.IO.File.Exists(absolutePath))
+                    System.IO.File.Delete(absolutePath);
+            }
+
+            // 6) Delete DB record
+            var delRes = await _api.DeleteAsync<object>($"files/{id}");
+            if (!delRes.IsSuccess)
+                throw new Exception(ApiErrorHelper.GetErrorString(delRes) ?? "Unable to delete file.");
 
             TempData["StartupJavaScript"] = "window.top.ShowSnack('success', 'File successfully deleted.', 7000, true)";
-
             return new JsonResult(new { success = true }) { StatusCode = 200 };
         }
         catch (Exception ex)
         {
-            // Log the exception to Application Insights.
-            ExceptionTelemetry ExceptionTelemetry = new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error };
-            _telemetryClient.TrackException(ExceptionTelemetry);
-
-            // Display an error for the user.
-            string strExceptionMessage = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " + (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
-            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + strExceptionMessage.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
-
+            _telemetryClient.TrackException(new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error });
+            string msg = "An error occured. Please report the following error to " + HttpContext.Session.GetString("ContactInfo") + ": " +
+                         (ex.InnerException == null ? ex.Message : ex.Message + " (Inner Exception: " + ex.InnerException.Message + ")");
+            TempData["StartupJavaScript"] = "window.top.ShowToast('danger', 'Error', '" + msg.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString() + "', 0, false);";
             return NotFound();
         }
     }

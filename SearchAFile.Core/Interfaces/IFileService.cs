@@ -13,4 +13,5 @@ public interface IFileService
     Task<File?> CreateAsync(File file);
     Task<bool> UpdateAsync(File file);
     Task<bool> DeleteAsync(Guid fileId);
+    Task<int> GetFilesCountAsync(Guid? collectionId);
 }

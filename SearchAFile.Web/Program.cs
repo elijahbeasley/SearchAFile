@@ -1,81 +1,66 @@
-using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.EntityFrameworkCore;
 using SearchAFile;
-using SearchAFile.Web.Helpers;
+using SearchAFile.Core.Options;
 using SearchAFile.Services;
-using SearchAFile.Web.Helpers;
 using SearchAFile.Web.Interfaces;
-using SearchAFile.Web.Services;
-using System.Net.Http.Headers;
-using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Determine the environment
 var env = builder.Environment;
+
+// ---- Configuration sources ----
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+// Make configuration available to your static helper (your pattern)
+SystemFunctions.Configuration = builder.Configuration;
 
 // Add the account controller for shared account funtionality. 
 builder.Services.AddScoped<AccountController>();
 
-// Uses the appsettings.Development.json file when developing.
-builder.Configuration
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
-
-// Assign configuration to the static class
-SystemFunctions.Configuration = builder.Configuration;
-
-// Add Application Insights telemetry using the connection string from appsettings.json
+// ---- Telemetry ----
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
     options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
 });
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
-{
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(720);
-    options.LoginPath = new PathString("/");
-    options.AccessDeniedPath = PathString.FromUriComponent("/Home/AccessDenied");
-    options.LogoutPath = new PathString("/");
-    options.SlidingExpiration = true;
-});
+// ---- AuthN / AuthZ ----
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(720);
+        options.LoginPath = "/";
+        options.AccessDeniedPath = "/Home/AccessDenied";
+        options.LogoutPath = "/";
+        options.SlidingExpiration = true;
+    });
 
-// These are authorization groups.
 builder.Services.AddAuthorization(options =>
 {
-    // User Roles:
-    options.AddPolicy("AdminsPolicy", policy => policy.RequireRole("System Admin", "Admin"));
-    options.AddPolicy("UserPolicy", policy => policy.RequireRole("System Admin", "User"));
-    options.AddPolicy("SystemAdminsPolicy", policy => policy.RequireRole("System Admin"));
-
-    // Misc.
-    options.AddPolicy("CommonPolicy", policy => policy.RequireRole("System Admin", "Admin", "User")); // Add all user roles to this policy.
-
-    // Maintenance Pages:
-    options.AddPolicy("MaintainCompaniesPolicy", policy => policy.RequireRole("System Admin", "Admin"));
-    options.AddPolicy("MaintainFilesPolicy", policy => policy.RequireRole("System Admin", "Admin"));
-    options.AddPolicy("MaintainCollectionsPolicy", policy => policy.RequireRole("System Admin", "Admin"));
-    options.AddPolicy("MaintainSystemInfoPolicy", policy => policy.RequireRole("System Admin", "Admin"));
-    options.AddPolicy("MaintainUsersPolicy", policy => policy.RequireRole("System Admin", "Admin"));
+    // Roles / policies (your originals preserved)
+    options.AddPolicy("AdminsPolicy", p => p.RequireRole("System Admin", "Admin"));
+    options.AddPolicy("UserPolicy", p => p.RequireRole("System Admin", "User"));
+    options.AddPolicy("SystemAdminsPolicy", p => p.RequireRole("System Admin"));
+    options.AddPolicy("CommonPolicy", p => p.RequireRole("System Admin", "Admin", "User"));
+    options.AddPolicy("MaintainCompaniesPolicy", p => p.RequireRole("System Admin", "Admin"));
+    options.AddPolicy("MaintainFilesPolicy", p => p.RequireRole("System Admin", "Admin"));
+    options.AddPolicy("MaintainCollectionsPolicy", p => p.RequireRole("System Admin", "Admin"));
+    options.AddPolicy("MaintainSystemInfoPolicy", p => p.RequireRole("System Admin", "Admin"));
+    options.AddPolicy("MaintainUsersPolicy", p => p.RequireRole("System Admin", "Admin"));
 });
 
-// This is the link between authorization groups and folders (OR pages).
+// ---- Razor Pages + (optional) Controllers ----
 builder.Services.AddRazorPages(options =>
 {
-    // Folder Permissions:
-    // User Roles:
+    // Folder conventions (your originals preserved)
     options.Conventions.AuthorizeFolder("/Admins", "AdminsPolicy");
     options.Conventions.AuthorizeFolder("/Users", "UserPolicy");
     options.Conventions.AuthorizeFolder("/SystemAdmins", "SystemAdminsPolicy");
-
-    // Common and Home:
     options.Conventions.AuthorizeFolder("/Common", "CommonPolicy");
     options.Conventions.AllowAnonymousToFolder("/Home");
-
-    // Maintenance Pages:
     options.Conventions.AuthorizeFolder("/Collections", "MaintainCollectionsPolicy");
     options.Conventions.AuthorizeFolder("/Companies", "MaintainCompaniesPolicy");
     options.Conventions.AuthorizeFolder("/Files", "MaintainFilesPolicy");
@@ -83,63 +68,57 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Users", "MaintainUsersPolicy");
 });
 
-// Set session cookie name based on environment
-string sessionCookieName = env.IsDevelopment()
-    ? ".SearchAFile.Development.Session"
-    : ".SearchAFile.Session";
+// If you actually use MVC controllers (you map a controller route below), register them:
+builder.Services.AddControllers();
 
+// ---- Session ----
 builder.Services.AddSession(options =>
 {
-    options.Cookie.Name = sessionCookieName;
+    options.Cookie.Name = env.IsDevelopment() ? ".SearchAFile.Development.Session" : ".SearchAFile.Session";
     options.IdleTimeout = TimeSpan.FromMinutes(720);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
 
-// This is to be able to access the httpcontext in the account controller.
+// ---- Cross-cutting helpers ----
+// Only one HttpContextAccessor registration needed
 builder.Services.AddHttpContextAccessor();
 
-// This is for AppContext used in the SystemFunction.css file.
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
-// Add for email sending
+// Email + SMS services (your originals)
 builder.Services.AddTransient<IEmailService, EmailServiceMailKit>();
-
-// Add for SMS sending
 builder.Services.AddTransient<ISMSService, SMSServiceAzure>();
 
-// Register the Login Service.
+// Your auth/login helper
 builder.Services.AddScoped<AuthClient>();
 
-// Register the authenticated api client. 
+// ---- Typed API client (recommended pattern) ----
+
+// Bind ApiAuth options (ClientId/Secret)
+builder.Services.Configure<ApiAuthOptions>(builder.Configuration.GetSection(ApiAuthOptions.SectionName));
+
+// Typed HttpClient for your API (AuthenticatedApiClient ctor accepts HttpClient)
 builder.Services.AddHttpClient<AuthenticatedApiClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]);
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]!);
+
+    // Simple: set headers from config at startup (rotate requires app restart)
+    client.DefaultRequestHeaders.Add("X-Client-Id", builder.Configuration["ApiAuth:ClientId"]!);
+    client.DefaultRequestHeaders.Add("X-Client-Secret", builder.Configuration["ApiAuth:ClientSecret"]!);
 });
 
-// Register the client factory with the OpenAI service.
-builder.Services.AddHttpClient("SearchAFileClient", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["OpenAI:BaseUrl"]);
-    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", builder.Configuration["OpenAI:APIKey"]);
-    client.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
-});
-
-// Register the OpenAI service.
-builder.Services.AddScoped<OpenAIFileService>();
+// ---- OpenAI + physical storage (typed clients + singleton storage) ----
+builder.Services.AddOpenAIAndStorage(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ---- Middleware pipeline ----
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for Companyion scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseHsts(); // default 30 days
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 
 app.UseSession();
@@ -147,17 +126,16 @@ app.UseSession();
 app.UseRouting();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Default}/{id?}");
+// Endpoint mapping
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Default}/{id?}");
 
-    endpoints.MapRazorPages();
-});
+app.MapRazorPages();
 
-// This is for AppContext used in the SystemFunction.cs file.
+// Make DI available to your static helpers (your existing pattern)
 HttpContextHelper.Services = app.Services;
 
 app.Run();

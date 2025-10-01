@@ -1,7 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SearchAFile.Core.Interfaces;
-using SearchAFile.Infrastructure.Data;
-using SearchAFile.Infrastructure.Services;
 using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +23,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
 {
-    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+    ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]
 });
 
 var app = builder.Build();

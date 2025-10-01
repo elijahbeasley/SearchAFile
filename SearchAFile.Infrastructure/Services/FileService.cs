@@ -52,4 +52,12 @@ public class FileService : IFileService
         _context.Files.Remove(file);
         return await _context.SaveChangesAsync() > 0;
     }
+
+    public async Task<int> GetFilesCountAsync(Guid? id)
+    {
+        if (id == null)
+            return await _context.Files.CountAsync();
+        else
+            return await _context.Files.CountAsync(file => file.CollectionId == id);
+    }
 }

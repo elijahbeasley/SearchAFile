@@ -15,17 +15,22 @@ namespace SearchAFile.Web.Pages.Collections;
 public class IndexModel : PageModel
 {
     private readonly TelemetryClient _telemetryClient;
+    private readonly IConfiguration _configuration;
     private readonly AuthenticatedApiClient _api;
 
-    public IndexModel(TelemetryClient telemetryClient, AuthenticatedApiClient api)
+    public IndexModel(TelemetryClient telemetryClient, 
+        IConfiguration configuration, 
+        AuthenticatedApiClient api)
     {
         _telemetryClient = telemetryClient;
+        _configuration = configuration;
         _api = api;
     }
 
     [BindProperty(SupportsGet = true)]
     public string? search { get; set; }
     public List<Collection>? Collections { get;set; } = default!;
+    public int MaxFilesAllowed { get; set; }
 
     public async Task OnGetAsync()
     {
@@ -33,6 +38,8 @@ public class IndexModel : PageModel
         {
             // Set the page title.
             HttpContext.Session.SetString("PageTitle", "Maintain Collections");
+
+            MaxFilesAllowed = _configuration.GetValue<int>("OpenAI:MaxFilesAllowed");
 
             string url = string.IsNullOrWhiteSpace(search)
                 ? "collections"

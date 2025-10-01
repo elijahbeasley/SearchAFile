@@ -93,4 +93,18 @@ public class FileController : ControllerBase
             return StatusCode(500, new { message = "Failed to delete file.", detail = ex.Message });
         }
     }
+
+    [HttpGet("filescount")]
+    public async Task<IActionResult> GetFilesCount(Guid? id)
+    {
+        try
+        {
+            var filesCount = await _service.GetFilesCountAsync(id);
+            return Ok(filesCount);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to delete file.", detail = ex.Message });
+        }
+    }
 }

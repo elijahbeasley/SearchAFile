@@ -71,7 +71,7 @@
                     <tbody>
                         @foreach (var item in Model.Collections)
                         {
-                            string strFileCounts = item.FilesCount == 0 ? "text-danger" : "";
+                            string strFileCounts = item.FilesCount == 0 || item.FilesCount == Model.MaxFilesAllowed ? "text-danger" : "";
 
                             <tr style="white-space: nowrap;" data-href="@Url.Page("/Files/Index", new { id = item.CollectionId })">
                                 <td class="cus-fixed-col-td">
@@ -99,7 +99,7 @@
                                             <a asp-page="/Files/Index" asp-route-id="@item.CollectionId" class="btn dropdown-item" title="Files">
                                                 <i class="fa-solid fa-folder-open text-info"></i>
                                                 &nbsp;
-                                                Files (<label class="@strFileCounts">@item.FilesCount</label>)
+                                                Files (<label class="@strFileCounts">@item.FilesCount/@Model.MaxFilesAllowed</label>)
                                             </a>
                                         </div>
                                     </div>
@@ -148,7 +148,7 @@
                                     }
                                 </td>
                                 <td class="align-middle text-center cus-clickable">
-                                    <label class="@strFileCounts">@item.FilesCount/20</label>
+                                    <label class="@strFileCounts">@item.FilesCount/@Model.MaxFilesAllowed</label>
                                     @* <a asp-page="/Files/Index" asp-route-id="@item.CollectionId" title="Files">
                                         @item.FilesCount
                                         <i class="fa-solid fa-arrow-up-right-from-square"></i>

@@ -74,7 +74,7 @@
 <div class="card">
 
     <div class="card-header d-flex justify-content-between align-items-center cus-no-select" style="border-bottom: 3px solid var(--secondary-color);">
-        <label class="fs-5 pe-3" style="white-space: nowrap;"><i class="fa-solid fa-folder-open cus-text-primary-no-hover"></i> @Model.Collection.Collection1 Files (@(Model.Files == null ? "0" : Model.Files.Count())/20)</label>
+        <label class="fs-5 pe-3" style="white-space: nowrap;"><i class="fa-solid fa-folder-open cus-text-primary-no-hover"></i> @Model.Collection.Collection1 Files (@(Model.Files == null ? "0" : Model.Files.Count())/@Model.MaxFilesAllowed)</label>
         <form method="get">
             <input type="hidden" name="id" value="@Request.Query["id"]" />
             <div class="input-group">
@@ -92,7 +92,7 @@
 
             <div class="p-3">
                 @if (Model.Files == null
-                                || Model.Files.Count() < 20)
+                    || Model.Files.Count() < Model.MaxFilesAllowed)
                 {
                     <button class="btn btn-outline-success w-100" onclick="UploadFile();">
                         <i class="fa-solid fa-plus-circle"></i>
@@ -101,7 +101,7 @@
                 }
                 else
                 {
-                    <div data-bs-toggle="tooltip" data-bs-title="File limit reached (20)" data-bs-position="top">
+                    <div data-bs-toggle="tooltip" data-bs-title="File limit reached (@Model.MaxFilesAllowed)" data-bs-position="top">
                         <button class="btn btn-outline-success w-100" disabled>
                             <i class="fa-solid fa-plus-circle"></i>
                             Upload File
