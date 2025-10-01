@@ -35,6 +35,11 @@ public partial class Collection
     [StringLength(50)]
     public string? OpenAiVectorStoreId { get; set; }
 
+    [Column("OpenAIThreadID")]
+    [DisplayName("Thread ID")]
+    [StringLength(50)]
+    public string? OpenAiThreadId { get; set; }
+
     [Column("ImageURL")]
     [DisplayName("Image")]
     [Required(ErrorMessage = "Image is required.")]

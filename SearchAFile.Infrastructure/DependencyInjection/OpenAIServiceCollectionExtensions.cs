@@ -18,6 +18,7 @@ public static class OpenAIServiceCollectionExtensions
 
         services.AddHttpClient<IOpenAIVectorStoreService, OpenAIVectorStoreService>();
         services.AddHttpClient<IOpenAIFileService, OpenAIFileService>();
+        services.AddHttpClient<IOpenAIChatService, OpenAIChatService>();
 
         // Physical file service can stay singleton
         services.AddSingleton<IPhysicalFileService, PhysicalFileService>();

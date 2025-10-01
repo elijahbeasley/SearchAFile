@@ -191,7 +191,7 @@ public class CreateModel : PageModel
             // 6) SUCCESS
             // ============================================================
             TempData["StartupJavaScript"] = "ShowSnack('success', 'Collection successfully created.', 7000, true)";
-            return RedirectToPage("./Index");
+            return RedirectToPage($"../Files?id={Collection.CollectionId}");
         }
         catch (Exception ex)
         {

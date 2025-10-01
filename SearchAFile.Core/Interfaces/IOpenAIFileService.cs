@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using SearchAFile.Core.Domain.Entities;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 

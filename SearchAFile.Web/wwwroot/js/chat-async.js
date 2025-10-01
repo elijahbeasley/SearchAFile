@@ -1,28 +1,67 @@
-﻿(function () {
+﻿/* ============================================================================
+   SearchAFile - Async Chat (front-end)
+   ----------------------------------------------------------------------------
+   Responsibilities:
+     - Collect the user's question from #txtQuestion
+     - Show the user's message and a "typing…" state for the assistant
+     - POST to ?handler=AskAjax (or a custom URL in #askAjaxUrl)
+     - Stream-like effect: type plain text, then swap to final HTML
+     - Smart autoscroll that pauses when user scrolls up
+     - Robust error handling for HTML redirects / non-JSON responses
+   Dependencies:
+     - Minimal: vanilla JS. (jQuery optional; used only for a tiny Enter guard)
+     - CSS expects .chat-body container and .saf-composer wrapper
+   ----------------------------------------------------------------------------
+   Public surface:
+     - window.SAF_Chat.send()      -> triggers a send (hook your button to this)
+     - window.SAF_Chat.setBusy(on) -> toggle busy UI if you need externally
+   ========================================================================== */
+(() => {
+    'use strict';
+
+    /* ------------------------------------------------------------------------
+       Section 1: DOM lookups + small guards
+       ---------------------------------------------------------------------- */
+    const chatBody = document.querySelector('.chat-body');       // where bubbles go
+    const scroller = document.getElementById('divLoadingBlock'); // scrollable container
+    const textarea = document.getElementById('txtQuestion');     // user input
+    const askUrl = document.getElementById('askAjaxUrl')?.value || '?handler=AskAjax';
+    const antiforgeryToken =
+        document.querySelector('input[name="__RequestVerificationToken"]')?.value || null;
+
+    if (!chatBody) console.warn('[chat-async] .chat-body not found. Messages won’t render.');
+    if (!scroller) console.warn('[chat-async] #divLoadingBlock not found. Autoscroll disabled.');
+    if (!textarea) console.warn('[chat-async] #txtQuestion not found. Input disabled.');
+
+    /* ------------------------------------------------------------------------
+       Section 2: Busy-state helpers (disables composer UI)
+       ---------------------------------------------------------------------- */
     let isBusy = false;
-
-    // ---- Busy UI helpers ---------------------------------------------------
-    function setComposerBusy(on) {
+    function setBusy(on) {
         isBusy = !!on;
-        const $wrap = $('.saf-composer');
-        $wrap.toggleClass('is-busy', isBusy);
-        $wrap.find('button, textarea').prop('disabled', isBusy);
-        $wrap.attr('aria-busy', isBusy ? 'true' : 'false');
+        const wrap = document.querySelector('.saf-composer');
+        if (!wrap) return;
+        wrap.classList.toggle('is-busy', isBusy);
+        wrap.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+        // Disable only interactive elements inside composer
+        wrap.querySelectorAll('button, textarea, input, select').forEach(el => {
+            el.disabled = isBusy;
+        });
     }
-    function composerIsBusy() { return isBusy; }
 
-    // ---- DOM refs ----------------------------------------------------------
-    const chatBody = document.querySelector('.chat-body');
-    const scroller = document.getElementById('divLoadingBlock');
-
-    // ---- Smart follow behavior (like ChatGPT) ------------------------------
-    const NEAR_BOTTOM_PX = 120;   // how close counts as "near bottom"
-    let followOutput = true;      // whether to auto-follow right now
+    /* ------------------------------------------------------------------------
+       Section 3: Smart follow (autoscroll like ChatGPT)
+       - Follow output if user is near the bottom
+       - If user scrolls up, stop following until they come back down
+       ---------------------------------------------------------------------- */
+    const NEAR_BOTTOM_PX = 120;
+    let followOutput = true;
 
     function isNearBottom() {
         if (!scroller) return true;
         const distance = scroller.scrollHeight - (scroller.scrollTop + scroller.clientHeight);
         return distance <= NEAR_BOTTOM_PX;
+        // distance < 0 can happen briefly during layout; still treated as near bottom
     }
 
     function maybeFollow() {
@@ -31,127 +70,163 @@
     }
 
     function onUserScroll() {
-        // If user scrolls up, stop following; resume when they come back near bottom
         followOutput = isNearBottom();
     }
-    if (scroller) scroller.addEventListener('scroll', onUserScroll, { passive: true });
 
-    // Set initial state based on where the user is when the page loads
-    followOutput = isNearBottom();
+    if (scroller) {
+        scroller.addEventListener('scroll', onUserScroll, { passive: true });
+        // Initialize once after first layout tick
+        queueMicrotask(() => (followOutput = isNearBottom()));
+    }
 
-    // Create a chat bubble
-    function bubble(role, html, ts) {
+    /* ------------------------------------------------------------------------
+       Section 4: Message bubble rendering
+       ---------------------------------------------------------------------- */
+    function bubble(role /* 'user' | 'bot' | 'system' */, html, tsText) {
         const outer = document.createElement('div');
         outer.className = `chat-message ${role}`;
 
         const msg = document.createElement('div');
         msg.className = 'message-text';
-        if (html) msg.innerHTML = html; // server already returns safe HTML
+        if (html) msg.innerHTML = html; // NOTE: server-provided HTML is assumed safe
         outer.appendChild(msg);
 
-        if (ts) {
+        if (tsText) {
             const time = document.createElement('div');
             time.className = 'timestamp';
-            time.textContent = ts;
+            time.textContent = tsText;
             outer.appendChild(time);
         }
 
-        chatBody.appendChild(outer);
-        return msg; // return the inner text container for typing
+        chatBody?.appendChild(outer);
+        return msg; // return inner message element for dynamic updates
     }
 
     function escapeHtml(s) {
-        return s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        return String(s).replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&gt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[ch]));
     }
 
-    // Inline typing dots
-    function showInlineTyping(targetEl) {
+    // Inline "typing…" dots; returns a cleanup function
+    function showTyping(targetEl) {
         const wrap = document.createElement('span');
         wrap.className = 'saf-typing';
         wrap.innerHTML = '<span></span><span></span><span></span>';
         targetEl.appendChild(wrap);
-        return () => wrap.remove(); // cleanup
+        return () => wrap.remove();
     }
 
-    // POST helper for ?handler=AskAjax
+    /* ------------------------------------------------------------------------
+       Section 5: Network call (robust)
+       - Sends cookies for auth (credentials: 'same-origin')
+       - Sends antiforgery header if present
+       - Ensures JSON content-type before parsing
+       - Gives helpful errors when HTML is returned (login redirect / error page)
+       ---------------------------------------------------------------------- */
     async function postAsk(question) {
-        const url = document.getElementById('askAjaxUrl')?.value || '?handler=AskAjax';
-        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-
-        const resp = await fetch(url, {
+        const resp = await fetch(askUrl, {
             method: 'POST',
+            credentials: 'same-origin',                 // send auth cookies
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                ...(token ? { 'RequestVerificationToken': token } : {})
+                'X-Requested-With': 'XMLHttpRequest',     // ASP.NET treats as AJAX
+                ...(antiforgeryToken ? { 'RequestVerificationToken': antiforgeryToken } : {})
             },
             body: JSON.stringify({ question })
         });
 
+        // Non-OK -> read text to surface server error content
         if (!resp.ok) {
-            const body = await resp.text();
-            throw new Error(`HTTP ${resp.status} ${resp.statusText}: ${body || '(no body)'}`);
+            const body = await resp.text().catch(() => '');
+            throw new Error(`HTTP ${resp.status} ${resp.statusText}: ${body?.slice(0, 400) || '(no body)'}`);
         }
-        return resp.json();
+
+        // Check we really got JSON (not a login page)
+        const ct = (resp.headers.get('content-type') || '').toLowerCase();
+        if (!ct.includes('application/json')) {
+            const body = await resp.text().catch(() => '');
+            if (body.toLowerCase().includes('<!doctype html')) {
+                throw new Error('Unexpected HTML response (likely a login redirect or server error page).');
+            }
+            throw new Error(`Expected JSON but got: ${body.slice(0, 400)}`);
+        }
+
+        return resp.json(); // expected shape: { ok, assistantPlain, assistantHtml }
     }
 
-    // Types PLAIN text with visible newlines, then swaps to FINAL HTML
-    async function typeOutPlainThenSwap(el, plainText, finalHtml, chunk = 1, delay = 12) {
+    /* ------------------------------------------------------------------------
+       Section 6: Typing effect (plain text first, then swap to final HTML)
+       - We "type" the plain text (with preserved newlines) for a live feel
+       - Then we replace with the final HTML which may include links and <br>
+       ---------------------------------------------------------------------- */
+    async function typeOutThenSwap(el, plainText, finalHtml, chunk = 1, delayMs = 12) {
         const prevWhiteSpace = el.style.whiteSpace;
-        el.style.whiteSpace = 'pre-wrap';   // preserve line breaks during typing
+        el.style.whiteSpace = 'pre-wrap'; // show \n as line breaks while typing
 
         el.textContent = '';
         let i = 0;
         while (i < plainText.length) {
             el.textContent += plainText.slice(i, i + chunk);
             i += chunk;
-            // follow only if the user hasn't scrolled away
             maybeFollow();
-            if (delay) await new Promise(r => setTimeout(r, delay));
+            if (delayMs > 0) {
+                // micro-sleep without blocking layout/scroll
+                await new Promise(r => setTimeout(r, delayMs));
+            }
         }
 
-        // Swap to final HTML (links + <br>) and restore white-space
+        // Swap to final HTML (or a safe fallback)
         el.innerHTML = finalHtml || escapeHtml(plainText).replace(/\n/g, '<br>');
         el.style.whiteSpace = prevWhiteSpace || '';
     }
 
-    // ---- Send handler (hooked to Send button) ------------------------------
-    window.Send = async function () {
-        if (composerIsBusy()) return;
+    /* ------------------------------------------------------------------------
+       Section 7: Main send flow
+       ---------------------------------------------------------------------- */
+    async function send() {
+        if (isBusy) return;
+        if (!textarea) return;
 
-        const ta = document.getElementById('txtQuestion');
-        const text = (ta.value || '').trim();
+        const text = (textarea.value || '').trim();
         if (!text) {
-            ta.classList.add('input-validation-error');
-            ta.focus();
+            textarea.classList.add('input-validation-error');
+            textarea.focus();
             return;
         }
-        ta.classList.remove('input-validation-error');
+        textarea.classList.remove('input-validation-error');
 
-        setComposerBusy(true);
+        setBusy(true);
 
         const ts = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
-        // Echo user bubble
+        // 1) Echo the user message
         bubble('user', escapeHtml(text).replace(/\n/g, '<br>'), ts);
-        window.SAF_Composer?.reset?.();
+        // If you have a separate composer object that resets the form, call it:
+        // window.SAF_Composer?.reset?.();
+        textarea.value = '';
 
-        // If we were at the bottom when sending, stay following
+        // 2) Ensure we follow if the user was already near the bottom
         followOutput = isNearBottom();
         maybeFollow();
 
-        // Create assistant bubble and show typing dots
+        // 3) Create assistant bubble with typing dots
         const assistantEl = bubble('bot', '', ts);
-        const removeTyping = showInlineTyping(assistantEl);
+        const removeTyping = showTyping(assistantEl);
         maybeFollow();
 
         try {
-            const data = await postAsk(text); // returns { ok, assistantPlain, assistantHtml }
+            const data = await postAsk(text); // -> { ok, assistantPlain, assistantHtml }
+
+            // Remove typing indicator as soon as we have a response
             removeTyping();
 
-            let plain = data.assistantPlain || '';
-            let html = data.assistantHtml || '';
+            // Normalize outputs
+            let plain = data?.assistantPlain || '';
+            let html = data?.assistantHtml || '';
 
-            // Fallback (if only HTML returned)
+            // Fallback: derive plain from html if only HTML was returned
             if (!plain && html) {
                 const withNewlines = html.replace(/<br\s*\/?>/gi, '\n');
                 const tmp = document.createElement('div');
@@ -159,25 +234,60 @@
                 plain = tmp.textContent || tmp.innerText || '';
             }
 
-            await typeOutPlainThenSwap(assistantEl, plain, html);
+            await typeOutThenSwap(assistantEl, plain || '', html || '');
         } catch (err) {
-            removeTyping();
-            assistantEl.innerHTML = `<em style="color:#b42318;">${escapeHtml(String(err.message || err))}</em>`;
+            // Swap typing for a readable error bubble
+            try { removeTyping(); } catch { }
+            assistantEl.innerHTML =
+                `<em style="color:#b42318;">${escapeHtml(err?.message || String(err))}</em>`;
         } finally {
-            setComposerBusy(false);
-            // If the user stayed near the bottom, snap once; otherwise leave their scroll alone
+            setBusy(false);
+            // If user stayed at the bottom, keep following; otherwise leave their scroll alone
             if (isNearBottom()) followOutput = true;
             maybeFollow();
         }
+    }
+
+    /* ------------------------------------------------------------------------
+       Section 8: Keyboard niceties
+       - Enter submits when not busy
+       - Shift+Enter inserts a newline
+       - While busy, Enter is suppressed (prevents accidental re-sends)
+       ---------------------------------------------------------------------- */
+    if (textarea) {
+        textarea.addEventListener('keydown', (e) => {
+            const isEnter = e.key === 'Enter' || e.keyCode === 13;
+            if (!isEnter) return;
+
+            if (e.shiftKey) {
+                // Allow newline
+                return;
+            }
+
+            // Prevent native submit behavior
+            e.preventDefault();
+            if (!isBusy) send();
+        });
+
+        // Optional: while busy, block Enter entirely (also covers jQuery usage)
+        if (window.jQuery) {
+            jQuery(textarea).on('keydown', function (e) {
+                const isEnter = e.key === 'Enter' || e.keyCode === 13;
+                if (isBusy && isEnter) e.preventDefault();
+            });
+        }
+    }
+
+    /* ------------------------------------------------------------------------
+       Section 9: Public API
+       ---------------------------------------------------------------------- */
+    window.SAF_Chat = {
+        send,
+        setBusy,
+        get isBusy() { return isBusy; }
     };
 
-    // Optional: block Enter while busy
-    $('#txtQuestion').on('keydown', function (e) {
-        if (composerIsBusy() && (e.key === 'Enter' || e.keyCode === 13)) {
-            e.preventDefault();
-        }
-    });
-
-    // Export tiny state if needed
-    window.SAF_ComposerState = { setComposerBusy, composerIsBusy };
+    // If your Send button has onclick="SAF_Chat.send()", you’re done.
+    // Otherwise you can wire it up here by selector:
+    // document.getElementById('btnSend')?.addEventListener('click', send);
 })();

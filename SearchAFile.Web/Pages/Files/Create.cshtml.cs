@@ -220,7 +220,7 @@ public class CreateModel : PageModel
                     string strOpenAIFileID = await _openAIFileService.UploadAndAttachAsync(
                         healthyVectorStoreId,
                         Stream,
-                        IFormFile.FileName,
+                        strFileName,
                         IFormFile.ContentType,
                         ct);
 

@@ -1,9 +1,9 @@
 ﻿@page
 @model SearchAFile.Web.Pages.Common.ChatModel
 
-<link rel="stylesheet" href="/css/composer.css">
-<script src="/js/composer.js" defer></script>
-<script src="/js/chat-async.js" defer></script>
+<link rel="stylesheet" href="/css/composer.css" asp-append-version="true">
+<script src="/js/composer.js" asp-append-version="true" defer></script>
+<script src="/js/chat-async.js" asp-append-version="true" defer></script>
 
 <div class="pb-3">
     <a asp-page="@HttpContext.Session.GetString("DashboardURL")" title="Collections">
@@ -15,7 +15,9 @@
 <form id="objForm" method="post" onsubmit="$('.saf-composer').find('button, textarea').prop('disabled', true);">
 
     <div id="divValidationSummary" asp-validation-summary="All" hidden></div>
-    <input type="hidden" id="askAjaxUrl" value="@Url.Page(null, null, new { handler = "AskAjax" })" />
+    @* <input type="hidden" id="askAjaxUrl" value="@Url.Page(null, null, new { handler = "AskAjax" })" /> *@
+    <input type="hidden" id="askAjaxUrl" value="@Url.Page(null, null, new { handler = "AskAjax", id = Model.Id })" />
+
     @Html.AntiForgeryToken()
 
     <div class="card">
@@ -27,7 +29,29 @@
         <div id="divLoadingBlock" class="card-body pb-0" style="height:0; overflow: auto;">
 
             <div class="chat-body">
-                @Html.Raw(Model.Answer)  @* Render server-built HTML (links included) *@
+                <div class="chat-body">
+                    @if (Model.History?.Any() == true)
+                    {
+                        foreach (var m in Model.History)
+                        {
+                            var roleClass = m.Role?.Equals("user", StringComparison.OrdinalIgnoreCase) == true ? "user"
+                            : m.Role?.Equals("assistant", StringComparison.OrdinalIgnoreCase) == true ? "bot"
+                            : "system";
+
+                            <div class="chat-message @roleClass">
+                                <div class="message-text">
+                                    @Html.Raw(m.Html)
+                                </div>
+                                @if (m.Timestamp.HasValue)
+                                {
+                                    <div class="timestamp">
+                                        @m.Timestamp.Value.ToLocalTime().ToString("h:mm tt")
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
             </div>
             <div id="divEllipses" class="typing-indicator" style="display:none;">
                 <span></span><span></span><span></span>
@@ -39,7 +63,7 @@
                     <button asp-page-handler="StartNewChat" asp-route-id="@Model.Id" type="submit" class="saf-btn saf-reset" title="New chat" aria-label="New chat" formnovalidate>
                         <i class="fa fa-rotate-left"></i>
                     </button>
-                    <textarea id="txtQuestion" asp-for="question" class="saf-input" placeholder="Ask a question..." rows="1" autocomplete="off" aria-label="Message input"></textarea>
+                    <textarea id="txtQuestion" asp-for="Question" class="saf-input" placeholder="Ask a question..." rows="1" autocomplete="off" aria-label="Message input"></textarea>
                     <button class="saf-btn saf-send" type="button" title="Send" aria-label="Send" onclick="Send();">
                         <i class="fa fa-arrow-up"></i>
                     </button>

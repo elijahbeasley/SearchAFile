@@ -1,17 +1,10 @@
-﻿// ChatModel.cs (clean + single-source-of-truth file-citation mapping)
-using Microsoft.ApplicationInsights;
+﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SearchAFile.Core.Domain.Entities;
-using SearchAFile.Infrastructure.Mapping;
-using SearchAFile.Web.Extensions;
-using SearchAFile.Web.Helpers;
+using SearchAFile.Core.Interfaces;
 using SearchAFile.Web.Services;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using File = SearchAFile.Core.Domain.Entities.File;
 
 namespace SearchAFile.Web.Pages.Common;
@@ -19,546 +12,275 @@ namespace SearchAFile.Web.Pages.Common;
 [BindProperties(SupportsGet = true)]
 public class ChatModel : PageModel
 {
-    // ---- Injected services --------------------------------------------------
-    private readonly TelemetryClient _telemetryClient;
+    private readonly TelemetryClient _telemetry;
     private readonly AuthenticatedApiClient _api;
-    private readonly IConfiguration _configuration;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IOpenAIChatService _chat;
 
-    // ---- OpenAI -------------------------------------------------------------
-    private readonly string _baseOpenAiUrl = "https://api.openai.com/v1/";
-    private HttpClient _httpClient; // named client with headers from DI
-
-    // ---- Bound + view model props ------------------------------------------
     public Guid? Id { get; set; }
-    public Collection Collection { get; set; }
+    public Collection Collection { get; set; } = default!;
+    [BindProperty] public string? Question { get; set; }
+    public string AnswerHtml { get; set; } = "";
 
-    //[Required(AllowEmptyStrings = false, ErrorMessage = "Question is required.")]
-    public string question { get; set; }
-
-    // Only used by server-rendered history
-    public string Answer;
-
-    // ---- Busy lock (server-side) -------------------------------------------
-    private const string BusyKey = "ChatBusy";
-    private bool IsChatBusy() =>
-        string.Equals(HttpContext.Session.GetString(BusyKey), "1", StringComparison.Ordinal);
-    private void SetChatBusy(bool busy)
+    public sealed class ChatBubble
     {
-        if (busy) HttpContext.Session.SetString(BusyKey, "1");
-        else HttpContext.Session.Remove(BusyKey);
+        public string Role { get; set; } = "";     // "user" | "assistant" | "system"
+        public string Html { get; set; } = "";     // rendered HTML
+        public DateTimeOffset? Timestamp { get; set; }
     }
 
-    // ---- DI -----------------------------------------------------------------
-    public ChatModel(
-        TelemetryClient telemetryClient,
-        AuthenticatedApiClient api,
-        IConfiguration configuration,
-        IHttpClientFactory httpClientFactory)
+    public List<ChatBubble> History { get; set; } = new();
+
+    public ChatModel(TelemetryClient telemetry, AuthenticatedApiClient api, IOpenAIChatService chat)
     {
-        _telemetryClient = telemetryClient;
+        _telemetry = telemetry;
         _api = api;
-        _configuration = configuration;
-        _httpClientFactory = httpClientFactory;
+        _chat = chat;
     }
 
-    // ---- DTO for async JSON endpoint ---------------------------------------
-    public record AskAjaxDto(string Question);
-
-    // ========================================================================
-    //  GET: Page load (loads history if thread exists)                        |
-    // ========================================================================
-    public async Task<IActionResult> OnGetAsync([FromQuery] Guid? id)
+    // --------------------- GET ---------------------
+    public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        try
-        {
-            if (id == null)
-                return Redirect(HttpContext.Session.GetString("DashboardURL") ?? "/");
+        if (id == null) return RedirectToPage("/Index");
+        Id = id;
 
-            var sessionCollection = HttpContext.Session.GetObject<Collection>("Collection");
-            if (sessionCollection != null && id != sessionCollection.CollectionId)
+        var colRes = await _api.GetAsync<Collection>($"collections/{Id}");
+        if (!colRes.IsSuccess || colRes.Data == null) return NotFound();
+        Collection = colRes.Data;
+
+        // Cache this collection's files into Session so we can resolve links locally
+        HttpContext.Session.Remove("CollectionFiles");
+        var filesRes = await _api.GetAsync<List<File>>("files");
+        if (!filesRes.IsSuccess || filesRes.Data == null) return NotFound();
+
+        var files = filesRes.Data
+            .Where(f => f.CollectionId == Id)
+            .ToList();
+
+        HttpContext.Session.SetObject("CollectionFiles", files);
+
+        // Pull the whole conversation (assistant messages already contain HTML)
+        if (!string.IsNullOrWhiteSpace(Collection.OpenAiThreadId))
+        {
+            try
             {
-                await DeleteThread(); // switching collections → nuke previous thread
-                HttpContext.Session.Remove("Collection"); // Clear out the old collection
+                var msgs = await _chat.GetThreadHistoryHtmlAsync(Collection.OpenAiThreadId!, takeLast: 200);
+                History = new();
+                foreach (var m in msgs)
+                {
+                    var html = await ResolveSafCiteAnchorsFromSessionAsync(m.Html); // <a class="saf-cite" ...>
+                    html = await ResolveDocTokensFromSessionAsync(html);           // [[doc:"guid.ext"[ , page:N]]]
+                    History.Add(new ChatBubble { Role = m.Role, Html = html, Timestamp = m.Timestamp });
+                }
             }
-
-            HttpContext.Session.SetString("PageTitle", "Chat");
-            HttpContext.Session.SetObject("id", id);
-
-            await LoadData();
-
-            if (HttpContext.Session.GetString("strThreadID") != null)
-                await LoadChat(); // fills Answer with HTML (links included)
-
-            ModelState.Remove("Question");
-        }
-        catch (Exception ex)
-        {
-            LogAndNotifyException(ex);
-            return Redirect(HttpContext.Session.GetString("DashboardURL") ?? "/");
+            catch (Exception ex)
+            {
+                _telemetry.TrackException(new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Warning });
+                History = new List<ChatBubble>();
+            }
         }
 
         return Page();
     }
 
-    // ========================================================================
-    //  POST: Async JSON endpoint (?handler=AskAjax)                           |
-    //  - Sends user message, starts run, waits, returns latest assistant msg  |
-    //  - Returns BOTH plain + html (for typing then swap)                     |
-    // ========================================================================
+    // --------------------- AJAX: POST /?handler=AskAjax ---------------------
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> OnPostAskAjaxAsync([FromBody] AskAjaxDto dto)
+    [Consumes("application/json")]
+    public async Task<IActionResult> OnPostAskAjax([FromBody] AskAjaxRequest req)
     {
-        if (IsChatBusy())
-            return StatusCode(409, "Chat is busy. Please wait for the current response to finish.");
-
         try
         {
-            SetChatBusy(true);
+            if (Id is null) return BadRequest(new { ok = false, message = "Missing collection id." });
+            if (string.IsNullOrWhiteSpace(req?.Question))
+                return BadRequest(new { ok = false, message = "Question is required." });
 
-            Id = HttpContext.Session.GetObject<Guid>("id");
-            if (Id == null) return BadRequest("Missing collection id.");
-            if (string.IsNullOrWhiteSpace(dto?.Question)) return BadRequest("Question is required.");
+            var colRes = await _api.GetAsync<Collection>($"collections/{Id}");
+            if (!colRes.IsSuccess || colRes.Data is null)
+                return NotFound(new { ok = false, message = "Collection not found." });
 
-            await LoadData();
-            _httpClient ??= _httpClientFactory.CreateClient("SearchAFileClient");
+            var collection = colRes.Data;
+            var threadId = await EnsureThreadForCollectionAsync(collection);
 
-            var threadId = await EnsureThreadExists();
+            var assistantId = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["OpenAI:AssistantId"];
+            if (string.IsNullOrWhiteSpace(assistantId))
+                return StatusCode(500, new { ok = false, message = "AssistantId missing in configuration." });
 
-            // Attach up to 20 known files for file_search
-            var fileIds = Collection.Files?
-                .Where(f => !string.IsNullOrEmpty(f.OpenAIFileId))
-                .Select(f => f.OpenAIFileId!)
-                .Take(20)
-                .ToList();
+            var (plain, html) = await _chat.AskAsync(threadId, assistantId!, req.Question!);
 
-            var messagePayload = new
-            {
-                role = "user",
-                content = dto.Question.Trim(),
-                attachments = fileIds?.Select(id => new { file_id = id, tools = new[] { new { type = "file_search" } } })
-            };
-
-            using (var messageContent = Conversions.CreateStringContentObject(messagePayload))
-            using (var msgResp = await _httpClient.PostAsync($"{_baseOpenAiUrl}threads/{threadId}/messages", messageContent))
-            {
-                if (!msgResp.IsSuccessStatusCode)
-                    return StatusCode((int)msgResp.StatusCode, await msgResp.Content.ReadAsStringAsync());
-            }
-
-            var runPayload = new { assistant_id = _configuration["OpenAI:AssistantId"] };
-            using (var runContent = Conversions.CreateStringContentObject(runPayload))
-            using (var runResp = await _httpClient.PostAsync($"{_baseOpenAiUrl}threads/{threadId}/runs", runContent))
-            {
-                if (!runResp.IsSuccessStatusCode)
-                    return StatusCode((int)runResp.StatusCode, await runResp.Content.ReadAsStringAsync());
-
-                using var runDoc = await Conversions.CreateJsonDocumentObject(runResp);
-                var runId = runDoc.RootElement.GetProperty("id").GetString();
-                await PollUntilRunCompletes(threadId, runId);
-            }
-
-            // Build latest assistant message in both forms
-            var (plain, html) = await GetLatestAssistantAsync(threadId);
+            // Convert sources to local links **using session only**
+            html = await ResolveSafCiteAnchorsFromSessionAsync(html);
+            html = await ResolveDocTokensFromSessionAsync(html);
 
             return new JsonResult(new { ok = true, assistantPlain = plain, assistantHtml = html });
         }
         catch (Exception ex)
         {
-            _telemetryClient.TrackException(ex);
-            return StatusCode(500, ex.Message);
-        }
-        finally
-        {
-            SetChatBusy(false);
+            _telemetry.TrackException(new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error });
+            return StatusCode(500, new { ok = false, message = ex.Message });
         }
     }
 
-    // ========================================================================
-    //  POST: Start new chat                                                   |
-    // ========================================================================
-    public async Task OnPostStartNewChatAsync(Guid? id)
+    // --------------------- New Chat ---------------------
+    public async Task<IActionResult> OnPostStartNewChatAsync(Guid? id)
     {
-        try
-        {
-            if (id == null)
-                throw new Exception("New Chat: No ID provided.");
+        if (id is null) return BadRequest("Missing collection id.");
 
-            await LoadData();
-            await DeleteThread();
+        var colRes = await _api.GetAsync<Collection>($"collections/{id}");
+        if (!colRes.IsSuccess || colRes.Data is null) return NotFound();
 
-            TempData["StartupJavaScript"] = "ShowSnack('success', 'Chat successfully cleared.', 7000, true)";
-            ModelState.Remove("Question");
-        }
-        catch (Exception ex)
+        var collection = colRes.Data;
+
+        if (!string.IsNullOrWhiteSpace(collection.OpenAiThreadId))
         {
-            LogAndNotifyException(ex);
+            try { await _chat.DeleteThreadAsync(collection.OpenAiThreadId!); } catch { /* ignore */ }
+            collection.OpenAiThreadId = null;
+
+            var save = await _api.PutAsync<object>($"collections/{collection.CollectionId}", collection);
+            if (!save.IsSuccess) throw new Exception("Failed to clear thread id in DB.");
         }
+
+        TempData["StartupJavaScript"] = "ShowSnack('success','Started new chat.',5000,true);";
+        return RedirectToPage(new { id });
     }
 
-    // ========================================================================
-    //  Helpers: OpenAI thread/run                                             |
-    // ========================================================================
-    private async Task<string> EnsureThreadExists()
+    // --------------------- Helpers ---------------------
+    private async Task<string> EnsureThreadForCollectionAsync(Collection collection, CancellationToken ct = default)
     {
-        var threadId = HttpContext.Session.GetString("strThreadID");
-        if (string.IsNullOrEmpty(threadId))
-        {
-            using var resp = await _httpClient.PostAsync($"{_baseOpenAiUrl}threads", content: null);
-            if (!resp.IsSuccessStatusCode)
-                throw new Exception("Thread creation failed: " + await resp.Content.ReadAsStringAsync());
+        if (!string.IsNullOrWhiteSpace(collection.OpenAiThreadId))
+            return collection.OpenAiThreadId!;
 
-            using var doc = await Conversions.CreateJsonDocumentObject(resp);
-            threadId = doc.RootElement.GetProperty("id").GetString();
-            HttpContext.Session.SetString("strThreadID", threadId);
-        }
+        if (string.IsNullOrWhiteSpace(collection.OpenAiVectorStoreId))
+            throw new InvalidOperationException("Collection has no OpenAI vector store.");
+
+        var threadId = await _chat.CreateThreadForVectorStoreAsync(collection.OpenAiVectorStoreId!, ct);
+        collection.OpenAiThreadId = threadId;
+
+        var save = await _api.PutAsync<object>($"collections/{collection.CollectionId}", collection);
+        if (!save.IsSuccess) throw new Exception("Failed to save thread id to the collection.");
+
         return threadId;
     }
 
-    private async Task PollUntilRunCompletes(string threadId, string runId)
+    // === SESSION-ONLY SOURCE RESOLUTION =======================================
+    // Build URL + LABEL dictionaries from files cached in Session: /Files/{FileId}.{Extension}
+    private (Dictionary<string, (string Url, string Label)> byOpenAiId,
+             Dictionary<string, (string Url, string Label)> byStorageName,
+             Dictionary<string, (string Url, string Label)> byDisplayName)
+    BuildFileUrlMaps()
     {
-        for (int i = 0; i < 300; i++) // ~5 minutes
+        var files = HttpContext.Session.GetObject<List<File>>("CollectionFiles") ?? new List<File>();
+
+        static (string Url, string Label) Info(File f)
         {
-            await Task.Delay(1000);
+            var extDot = string.IsNullOrWhiteSpace(f.Extension) ? "" : "." + f.Extension.TrimStart('.');
+            var url = $"/Files/{f.FileId}{extDot}";
 
-            using var runStatusResp = await _httpClient.GetAsync($"{_baseOpenAiUrl}threads/{threadId}/runs/{runId}");
-            if (!runStatusResp.IsSuccessStatusCode)
-            {
-                await DeleteThread();
-                throw new Exception("Run status check failed: " + await runStatusResp.Content.ReadAsStringAsync());
-            }
+            // Prefer the original filename; append extension if it's not already there.
+            var baseName = string.IsNullOrWhiteSpace(f.File1) ? f.FileId.ToString() : f.File1!;
+            var label = baseName.EndsWith(extDot, StringComparison.OrdinalIgnoreCase) ? baseName : baseName + extDot;
 
-            using var runStatusDoc = await JsonDocument.ParseAsync(await runStatusResp.Content.ReadAsStreamAsync());
-            if (!runStatusDoc.RootElement.TryGetProperty("status", out var statusProp))
-            {
-                await DeleteThread();
-                throw new Exception("Run status missing in response.");
-            }
-
-            var status = statusProp.GetString();
-            if (status == "completed") return;
-            if (status is "failed" or "cancelled" or "expired")
-                throw new Exception("OpenAI run ended: " + status);
+            return (url, label);
         }
 
-        await DeleteThread();
-        throw new Exception("OpenAI run timed out.");
+        // 1) OpenAI file id -> (Url, Label)
+        var byOpenAiId = files
+            .Where(f => !string.IsNullOrWhiteSpace(f.OpenAIFileId))
+            .ToDictionary(f => f.OpenAIFileId!, f => Info(f), StringComparer.OrdinalIgnoreCase);
+
+        // 2) Stored name "GUID.ext" -> (Url, Label)
+        var byStorageName = files
+            .ToDictionary(f => $"{f.FileId}{(string.IsNullOrWhiteSpace(f.Extension) ? "" : "." + f.Extension.TrimStart('.'))}",
+                          f => Info(f),
+                          StringComparer.OrdinalIgnoreCase);
+
+        // 3) Display/original name -> (Url, Label)
+        var byDisplayName = files
+            .Where(f => !string.IsNullOrWhiteSpace(f.File1))
+            .ToDictionary(f => f.File1!, f => Info(f), StringComparer.OrdinalIgnoreCase);
+
+        return (byOpenAiId, byStorageName, byDisplayName);
     }
 
-    private async Task DeleteThread()
+    // Convert <a class="saf-cite" data-file-id="...">[n]</a> into real links
+    private Task<string> ResolveSafCiteAnchorsFromSessionAsync(string html)
     {
-        try
+        if (string.IsNullOrWhiteSpace(html)) return Task.FromResult(html);
+
+        var (byOpenAiId, _, _) = BuildFileUrlMaps();
+
+        var rx = new System.Text.RegularExpressions.Regex(
+            "<a\\s+[^>]*class=\"saf-cite\"[^>]*data-file-id=\"([^\"]+)\"[^>]*>(.*?)</a>",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase |
+            System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        string ReplaceAnchor(System.Text.RegularExpressions.Match m)
         {
-            var threadId = HttpContext.Session.GetString("strThreadID");
-            if (!string.IsNullOrEmpty(threadId))
-            {
-                var client = _httpClientFactory.CreateClient("SearchAFileClient");
-                await client.DeleteAsync($"{_baseOpenAiUrl}threads/{threadId}");
-                HttpContext.Session.Remove("strThreadID");
-            }
+            var fileId = m.Groups[1].Value;
+            var inner = m.Groups[2].Value;
+
+            if (!byOpenAiId.TryGetValue(fileId, out var info) || string.IsNullOrWhiteSpace(info.Url))
+                return m.Value;
+
+            var safeUrl = System.Net.WebUtility.HtmlEncode(info.Url);
+            var label = System.Net.WebUtility.HtmlEncode(info.Label ?? inner);
+            return $"<a class=\"saf-cite\" href=\"{safeUrl}\" target=\"_blank\" rel=\"noopener\">{label}</a>";
         }
-        catch { throw; }
+
+        var result = rx.Replace(html, new System.Text.RegularExpressions.MatchEvaluator(ReplaceAnchor));
+        return Task.FromResult(result);
     }
 
-    // ========================================================================
-    //  Assistant message builders (single source of truth)                    |
-    // ========================================================================
-    private Dictionary<string, (string url, string display)> BuildOpenAiFileLinkMap()
+    // Convert [[doc:"GUID.ext"[ , page:N]]] (or with &quot;) to <a href=...>OriginalName.ext</a>
+    private Task<string> ResolveDocTokensFromSessionAsync(string html)
     {
-        // OpenAI file_id  ->  (/Files/{FileId}{Extension}, display text)
-        var map = new Dictionary<string, (string url, string display)>(StringComparer.Ordinal);
-        if (Collection?.Files == null) return map;
+        if (string.IsNullOrWhiteSpace(html)) return Task.FromResult(html);
 
-        foreach (var f in Collection.Files)
+        var (byOpenAiId, byStorageName, byDisplayName) = BuildFileUrlMaps();
+
+        // Supports both literal quotes "..." and HTML-encoded quotes &quot;...&quot;
+        var rx = new System.Text.RegularExpressions.Regex(
+            @"\[\[\s*doc\s*:\s*(?:(?:""(?<t1>[^""]+)"")|(?:&quot;(?<t2>[^&]+)&quot;))" +
+            @"(?:\s*,\s*page\s*:\s*(?<p>\d+))?\s*\]\]",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        string ReplaceTag(System.Text.RegularExpressions.Match m)
         {
-            if (string.IsNullOrWhiteSpace(f.OpenAIFileId)) continue;
+            var token = m.Groups["t1"].Success ? m.Groups["t1"].Value.Trim()
+                                               : m.Groups["t2"].Value.Trim();
+            var page = m.Groups["p"].Success ? m.Groups["p"].Value : null;
 
-            var ext = (f.Extension ?? "").Trim();
-            if (!string.IsNullOrEmpty(ext) && ext[0] != '.') ext = "." + ext;
+            (string Url, string Label)? info = null;
 
-            var physicalName = $"{f.FileId}{ext}";
-            var url = $"/Files/{physicalName}";
-            var display =
-                !string.IsNullOrWhiteSpace(f.File1) ? f.File1 :
-                //!string.IsNullOrWhiteSpace(f.OriginalFileName) ? f.OriginalFileName :
-                !string.IsNullOrWhiteSpace(f.File1) ? f.File1 :
-                physicalName;
-
-            map[f.OpenAIFileId] = (url, display);
-        }
-
-        return map;
-    }
-
-    private static string HtmlFromTextPart(
-    string rawText,
-    JsonElement? annotationsOpt,
-    Dictionary<string, (string url, string display)> fileLinkMap)
-    {
-        // Helper: encode text, render **bold**, [label](url), and raw URLs.
-        static string EncodeWithSimpleMarkdownAndLinks(string text)
-        {
-            if (string.IsNullOrEmpty(text)) return string.Empty;
-
-            // Build output incrementally by scanning for three token types:
-            // 1) Markdown links: [label](https://url)
-            // 2) Raw URLs (http/https/www.)
-            // 3) Bold spans: **text**
-            //
-            // Priority is important: links are handled before bold so we don't
-            // create <strong> inside <a> text accidentally.
-            //
-            // We process left-to-right with a single alternation regex.
-            var pattern = string.Join("|", new[]
+            if (token.StartsWith("file_", StringComparison.OrdinalIgnoreCase))
             {
-            // [label](url) — url stops before whitespace or ')'
-            @"\[(?<mdlabel>[^\]]+)\]\((?<mdurl>https?:\/\/[^\s)]+)\)",
-            // raw URL (captures trailing punctuation separately so it stays outside the <a>)
-            @"(?<raw>(?:https?:\/\/|www\.)[^\s<)]+?)(?<trail>[.,;:!?)]+)?",
-            // **bold**
-            @"\*\*(?<bold>.+?)\*\*"
-        });
-
-            var rx = new Regex(pattern, RegexOptions.Compiled | RegexOptions.Singleline);
-            var sb = new StringBuilder();
-            int last = 0;
-
-            foreach (Match m in rx.Matches(text))
-            {
-                if (m.Index > last)
-                    sb.Append(System.Net.WebUtility.HtmlEncode(text.Substring(last, m.Index - last)));
-
-                if (m.Groups["mdlabel"].Success && m.Groups["mdurl"].Success)
-                {
-                    var label = System.Net.WebUtility.HtmlEncode(m.Groups["mdlabel"].Value);
-                    var href = m.Groups["mdurl"].Value;
-                    var safeHref = System.Net.WebUtility.HtmlEncode(href);
-                    sb.Append($"<a href='{safeHref}' target='_blank' rel='noopener noreferrer' class='citation-link'>{label}</a>");
-                }
-                else if (m.Groups["raw"].Success)
-                {
-                    var raw = m.Groups["raw"].Value;
-                    var display = System.Net.WebUtility.HtmlEncode(raw);
-                    // Normalize www. -> https://www.
-                    var href = raw.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? $"https://{raw}" : raw;
-                    var safeHref = System.Net.WebUtility.HtmlEncode(href);
-                    sb.Append($"<a href='{safeHref}' target='_blank' rel='noopener noreferrer' class='citation-link'>{display}</a>");
-
-                    // Put any trailing punctuation *outside* the link
-                    if (m.Groups["trail"].Success)
-                        sb.Append(System.Net.WebUtility.HtmlEncode(m.Groups["trail"].Value));
-                }
-                else if (m.Groups["bold"].Success)
-                {
-                    var inner = System.Net.WebUtility.HtmlEncode(m.Groups["bold"].Value);
-                    sb.Append("<strong>").Append(inner).Append("</strong>");
-                }
-
-                last = m.Index + m.Length;
+                if (byOpenAiId.TryGetValue(token, out var i)) info = i;
             }
-
-            if (last < text.Length)
-                sb.Append(System.Net.WebUtility.HtmlEncode(text.Substring(last)));
-
-            return sb.ToString();
-        }
-
-        // If there are no annotations, just encode with bold + links
-        if (annotationsOpt == null || annotationsOpt.Value.ValueKind != JsonValueKind.Array || annotationsOpt.Value.GetArrayLength() == 0)
-            return EncodeWithSimpleMarkdownAndLinks(rawText);
-
-        var annotations = annotationsOpt.Value;
-        var spans = new List<(int s, int e, string html)>();
-
-        foreach (var ann in annotations.EnumerateArray())
-        {
-            if (!ann.TryGetProperty("start_index", out var sEl) ||
-                !ann.TryGetProperty("end_index", out var eEl))
-                continue;
-
-            var s = sEl.GetInt32();
-            var e = Math.Min(eEl.GetInt32(), rawText.Length);
-            if (s < 0 || e <= s || s >= rawText.Length) continue;
-
-            string? openAiFileId = null;
-            if (ann.TryGetProperty("file_citation", out var fc) && fc.TryGetProperty("file_id", out var fcid))
-                openAiFileId = fcid.GetString();
-            else if (ann.TryGetProperty("file_path", out var fp) && fp.TryGetProperty("file_id", out var fpid))
-                openAiFileId = fpid.GetString();
-
-            var snippet = rawText.Substring(s, e - s);
-
-            string html;
-            if (!string.IsNullOrWhiteSpace(openAiFileId) && fileLinkMap.TryGetValue(openAiFileId!, out var link))
+            else if (token.Contains('.'))
             {
-                var anchorText = System.Net.WebUtility.HtmlEncode(link.display);
-                var safeUrl = System.Net.WebUtility.HtmlEncode(link.url);
-                html = $" <strong>source:</strong> <a href='{safeUrl}' target='_blank' rel='noopener noreferrer' class='citation-link' title='{anchorText}'>{anchorText}</a>";
+                if (byStorageName.TryGetValue(token, out var i)) info = i;
             }
             else
             {
-                // For annotated-but-unknown spans, still apply bold + links inside them
-                html = EncodeWithSimpleMarkdownAndLinks(snippet);
+                if (byDisplayName.TryGetValue(token, out var i)) info = i;
             }
 
-            spans.Add((s, e, html));
-        }
+            if (info is null) return m.Value;
 
-        if (spans.Count == 0)
-            return EncodeWithSimpleMarkdownAndLinks(rawText);
-
-        spans.Sort((a, b) => a.s.CompareTo(b.s));
-
-        var outSb = new StringBuilder();
-        var cur = 0;
-        foreach (var (s, e, html) in spans)
-        {
-            if (cur < s)
-                outSb.Append(EncodeWithSimpleMarkdownAndLinks(rawText.Substring(cur, s - cur)));
-
-            outSb.Append(html);
-            cur = e;
-        }
-        if (cur < rawText.Length)
-            outSb.Append(EncodeWithSimpleMarkdownAndLinks(rawText.Substring(cur)));
-
-        return outSb.ToString();
-    }
-
-    private static (string Plain, string Html) BuildAssistantMessage(JsonElement assistantMessage, Dictionary<string, (string url, string display)> fileLinkMap)
-    {
-        var plainSb = new System.Text.StringBuilder();
-        var htmlSb = new System.Text.StringBuilder();
-
-        foreach (var part in assistantMessage.GetProperty("content").EnumerateArray())
-        {
-            if (!part.TryGetProperty("text", out var t)) continue;
-
-            var raw = t.GetProperty("value").GetString() ?? string.Empty;
-            plainSb.Append(raw);
-
-            JsonElement? anns = null;
-            if (t.TryGetProperty("annotations", out var a)) anns = a;
-
-            var htmlPart = HtmlFromTextPart(raw, anns, fileLinkMap);
-            htmlSb.Append(htmlPart);
-        }
-
-        // Convert newlines only in HTML flavor (plain keeps \n for typing)
-        var html = Regex.Replace(htmlSb.ToString(), "\r\n|\n|\r", "<br>");
-        return (plainSb.ToString(), html);
-    }
-
-    private async Task<(string Plain, string Html)> GetLatestAssistantAsync(string threadId)
-    {
-        using var resp = await _httpClient.GetAsync($"{_baseOpenAiUrl}threads/{threadId}/messages?limit=10");
-        resp.EnsureSuccessStatusCode();
-
-        using var doc = await Conversions.CreateJsonDocumentObject(resp);
-        var map = BuildOpenAiFileLinkMap();
-
-        foreach (var msg in doc.RootElement.GetProperty("data").EnumerateArray())
-        {
-            if (!string.Equals(msg.GetProperty("role").GetString(), "assistant", StringComparison.Ordinal))
-                continue;
-
-            return BuildAssistantMessage(msg, map);
-        }
-
-        return ("", "");
-    }
-
-    // ========================================================================
-    //  History loader (server renders bubbles into Answer)                    |
-    // ========================================================================
-    private async Task LoadChat()
-    {
-        _httpClient ??= _httpClientFactory.CreateClient("SearchAFileClient");
-        var threadId = HttpContext.Session.GetString("strThreadID");
-        if (string.IsNullOrEmpty(threadId)) return;
-
-        using var resp = await _httpClient.GetAsync($"{_baseOpenAiUrl}threads/{threadId}/messages");
-        if (!resp.IsSuccessStatusCode)
-            throw new Exception("Chat retrieval failed: " + await resp.Content.ReadAsStringAsync());
-
-        using var doc = await Conversions.CreateJsonDocumentObject(resp);
-
-        var map = BuildOpenAiFileLinkMap();
-
-        foreach (var msg in doc.RootElement.GetProperty("data").EnumerateArray().Reverse())
-        {
-            var role = msg.GetProperty("role").GetString();
-            if (role != "user" && role != "assistant") continue;
-
-            var timestamp = DateTimeOffset
-                .FromUnixTimeSeconds(msg.GetProperty("created_at").GetInt64())
-                .ToLocalTime().ToString("h:mm tt");
-
-            string html;
-            if (role == "assistant")
+            var finalUrl = info.Value.Url;
+            if (!string.IsNullOrWhiteSpace(page) &&
+                finalUrl.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) &&
+                !finalUrl.Contains('#'))
             {
-                // Use the same converter as live path
-                (_, html) = BuildAssistantMessage(msg, map);
-            }
-            else
-            {
-                // Encode user content (no annotations) and add <br>
-                var userSb = new System.Text.StringBuilder();
-                foreach (var part in msg.GetProperty("content").EnumerateArray())
-                {
-                    if (!part.TryGetProperty("text", out var t)) continue;
-                    var raw = t.GetProperty("value").GetString() ?? string.Empty;
-                    userSb.Append(System.Net.WebUtility.HtmlEncode(raw));
-                }
-                html = Regex.Replace(userSb.ToString(), "\r\n|\n|\r", "<br>");
+                finalUrl += $"#page={page}";
             }
 
-            var cssClass = role == "user" ? "user" : "bot";
-            Answer += $"<div class='chat-message {cssClass}'>" +
-                      $"  <div class='message-text'>{html}</div>" +
-                      $"  <div class='timestamp'>{timestamp}</div>" +
-                      $"</div>";
+            var safeUrl = System.Net.WebUtility.HtmlEncode(finalUrl);
+            var safeLabel = System.Net.WebUtility.HtmlEncode(info.Value.Label);
+            return $"<a href=\"{safeUrl}\" target=\"_blank\" rel=\"noopener\">{safeLabel}</a>";
         }
+
+        var output = rx.Replace(html, new System.Text.RegularExpressions.MatchEvaluator(ReplaceTag));
+        return Task.FromResult(output);
     }
 
-    // ========================================================================
-    //  Data + error utils                                                     |
-    // ========================================================================
-    private async Task LoadData()
-    {
-        var sessionCollection = HttpContext.Session.GetObject<Collection>("Collection");
-        if (sessionCollection == null)
-        {
-            var collectionResult = await _api.GetAsync<Collection>($"collections/{Id}");
-            if (!collectionResult.IsSuccess || collectionResult.Data == null)
-                throw new Exception(collectionResult.ErrorMessage ?? "Failed to load collection.");
-
-            var filesResult = await _api.GetAsync<List<File>>("files");
-            if (!filesResult.IsSuccess || filesResult.Data == null)
-                throw new Exception(filesResult.ErrorMessage ?? "Failed to load files.");
-
-            var files = filesResult.Data.Where(f => f.CollectionId == collectionResult.Data.CollectionId).ToList();
-            CollectionFileCountMapper.MapFilesToCollection(collectionResult.Data, files);
-            Collection = collectionResult.Data;
-            HttpContext.Session.SetObject("Collection", Collection);
-        }
-        else
-        {
-            Collection = sessionCollection;
-        }
-    }
-
-    private void LogAndNotifyException(Exception ex)
-    {
-        _telemetryClient.TrackException(new ExceptionTelemetry(ex) { SeverityLevel = SeverityLevel.Error });
-        TempData["StartupJavaScript"] = BuildErrorMessage(ex);
-    }
-
-    private string BuildErrorMessage(Exception ex)
-    {
-        var contact = HttpContext.Session.GetString("ContactInfo") ?? "support";
-        var msg = ex.InnerException == null ? ex.Message : ex.Message + " (Inner: " + ex.InnerException.Message + ")";
-        return $"window.top.ShowToast('danger', 'Error', 'An error occured. {msg.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString()}', 0, false);";
-        //return $"window.top.ShowToast('danger', 'Error', 'An error occured. Please report to {contact}: {msg.Replace("\r", " ").Replace("\n", "<br>").EscapeJsString()}', 0, false);";
-    }
+    public sealed class AskAjaxRequest { public string? Question { get; set; } }
 }
