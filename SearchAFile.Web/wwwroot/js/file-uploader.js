@@ -1,5 +1,5 @@
 ﻿/* ==================================
- * 4) wwwroot/js/fileUploader.js
+ * 4) wwwroot/js/file-uploader.js
  *    (Component logic — supports multiple instances)
  * ================================== */
 (function () {
@@ -150,7 +150,15 @@
             for (let i = 0; i < workingFiles.length; i++) {
                 const it = workingFiles[i]; const li = document.createElement('li'); li.className = 'list-group-item'; li.dataset.id = it.id;
                 const row = document.createElement('div'); row.className = 'd-flex align-items-center gap-2';
-                const nameBox = document.createElement('input'); nameBox.type = 'text'; nameBox.className = 'form-control'; if (cfg.maxNameLength > 0) nameBox.maxLength = cfg.maxNameLength; nameBox.value = it.name; nameBox.disabled = (it.status !== 'ready'); nameBox.addEventListener('change', () => rename(i, nameBox.value));
+
+                const nameBox = document.createElement('input');
+                nameBox.type = 'text'; nameBox.className = 'form-control';
+                if (cfg.maxNameLength > 0) nameBox.maxLength = cfg.maxNameLength; nameBox.value = it.name; nameBox.disabled = (it.status !== 'ready');
+
+                nameBox.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); } });
+                nameBox.addEventListener('change', () => rename(i, nameBox.value));
+
+
                 const meta = document.createElement('span'); meta.className = 'ms-auto small text-muted file-status'; meta.textContent = (it.status === 'ready') ? 'Ready' : (it.status === 'error' ? 'Error' : 'Uploading…');
                 const removeBtn = document.createElement('button'); removeBtn.type = 'button'; removeBtn.className = 'btn btn-outline-danger btn-sm'; removeBtn.setAttribute('data-role', 'remove'); removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>'; removeBtn.disabled = (it.status !== 'ready'); removeBtn.onclick = () => remove(i, li);
                 row.append(nameBox, meta, removeBtn);
